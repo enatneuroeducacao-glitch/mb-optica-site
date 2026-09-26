@@ -10,6 +10,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <style>
+    .hero-photo-wrap{position:relative;min-height:550px;display:flex;align-items:center;justify-content:center;padding:40px 5vw;overflow:hidden}
+    .hero-photo-wrap::before{content:"";position:absolute;width:430px;height:430px;border-radius:50%;background:radial-gradient(circle,#ead0a3,#bb8a4a);opacity:.34;right:10%;top:10%}
+    .hero-photo{position:relative;z-index:2;width:min(78%,460px);height:600px;object-fit:cover;object-position:center 22%;border:8px solid #fff8f0;box-shadow:0 24px 60px #6f59352e,0 0 0 1px #b98a4b66;border-radius:18px 18px 120px 18px}
+    @media(max-width:900px){.hero-photo-wrap{min-height:480px;padding:25px 8vw;align-items:flex-end}.hero-photo{width:min(70%,360px);height:500px}.hero-photo-wrap::before{width:330px;height:330px;right:2%;top:8%}}
+    @media(max-width:600px){.hero-photo-wrap{min-height:430px;padding:10px 7vw 45px}.hero-photo{width:72%;height:430px;border-width:6px;border-radius:14px 14px 90px 14px}}
+  </style>
 </head>
 <body>
   <div class="topbar">ATENDIMENTO PERSONALIZADO • ÓTICA MENI BECKER</div>
@@ -43,11 +50,8 @@
         </div>
         <div class="hero-note"><span>✦</span> Atendimento próximo, humano e personalizado</div>
       </div>
-      <div class="hero-art" aria-hidden="true">
-        <div class="sun"></div>
-        <div class="lens lens-a"></div>
-        <div class="lens lens-b"></div>
-        <div class="frame-shape"></div>
+      <div class="hero-photo-wrap">
+        <img class="hero-photo" src="assets/amorinha.jpg" alt="Amorinha usando óculos da Ótica Meni Becker">
       </div>
     </section>
 
