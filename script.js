@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const message = $("#message").value.trim();
     const text = `Olá, Ótica Moni Becker!%0A%0A meu nome é ${encodeURIComponent(name)}.%0AWhatsApp: ${encodeURIComponent(phone)}%0AInteresse: ${encodeURIComponent(interest)}%0A${encodeURIComponent(message)}`;
     if (!WHATSAPP || WHATSAPP === "5547999999999") {
-      showToast("Configure o número do WhatsApp em script.js antes de usar o botão.");
+      showToast("O WhatsApp da loja ainda não está configurado. Tente novamente em instantes.");
       return;
     }
     window.open(`https://wa.me/${WHATSAPP}?text=${text}`, "_blank", "noopener");
@@ -89,7 +89,7 @@ async function loadCmsContent(){
     if(settings.address) document.querySelectorAll(".contact-items p")[0].textContent=settings.address;
     if(settings.hours) document.querySelectorAll(".contact-items p")[1].textContent=settings.hours;
     if(settings.whatsapp) document.querySelectorAll(".contact-items p")[2].textContent=settings.whatsapp;
-    if(settings.whatsapp){ WHATSAPP=settings.whatsapp.replace(/\\D/g,""); window.MB_WHATSAPP=WHATSAPP; }
+    if(settings.whatsapp){ WHATSAPP=settings.whatsapp.replace(/\D/g,""); window.MB_WHATSAPP=WHATSAPP; }
 
     const products=(await client.from("products").select("*").eq("active",true).order("sort_order").order("created_at",{ascending:false})).data||[];
     if(products.length){
