@@ -103,7 +103,7 @@ async function loadCmsContent(){
     }
     const gallery=(await client.from("gallery").select("*").eq("active",true).order("sort_order").order("created_at",{ascending:false})).data||[];
     if(gallery.length){
-      document.querySelector(".gallery-grid").innerHTML=gallery.map(g=>'<div class="gallery-tile" style="background-image:linear-gradient(transparent 40%,#0009),url(\''+escapeCss(g.image_url)+'\');background-size:cover;background-position:center"><span>'+escapeCms(g.title||"ÓTICA MENI BECKER")+'</span></div>').join("");
+      document.querySelector(".gallery-grid").innerHTML=gallery.map(g=>'<div class="gallery-tile" style="background-image:linear-gradient(transparent 40%,#0009),url(\''+escapeCss(g.image_url)+'\');background-size:cover;background-position:center"><span>'+escapeCms(g.title||"ÓTICA MONI BECKER")+'</span></div>').join("");
     }
     const offers=(await client.from("offers").select("*").eq("active",true).order("sort_order").order("created_at",{ascending:false})).data||[];
     if(offers.length){
