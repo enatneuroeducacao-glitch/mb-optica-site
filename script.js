@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const phone = $("#phone").value.trim();
     const interest = $("#interest").value;
     const message = $("#message").value.trim();
-    const text = `Olá, Ótica Meni Becker!%0A%0A meu nome é ${encodeURIComponent(name)}.%0AWhatsApp: ${encodeURIComponent(phone)}%0AInteresse: ${encodeURIComponent(interest)}%0A${encodeURIComponent(message)}`;
+    const text = `Olá, Ótica Moni Becker!%0A%0A meu nome é ${encodeURIComponent(name)}.%0AWhatsApp: ${encodeURIComponent(phone)}%0AInteresse: ${encodeURIComponent(interest)}%0A${encodeURIComponent(message)}`;
     if (!WHATSAPP || WHATSAPP === "5547999999999") {
       showToast("Configure o número do WhatsApp em script.js antes de usar o botão.");
       return;
@@ -109,7 +109,7 @@ async function loadCmsContent(){
     if(offers.length){
       const o=offers[0];
       document.querySelector(".offer h2").innerHTML=escapeCms(o.title).replace(/\\n/g,"<br>");
-      document.querySelector(".offer p").textContent=o.description||"Confira as novidades e condições especiais da Ótica Meni Becker.";
+      document.querySelector(".offer p").textContent=o.description||"Confira as novidades e condições especiais da Ótica Moni Becker.";
     }
   }catch(error){console.warn("CMS MB.Óptica:",error)}
 }
