@@ -1,0 +1,1 @@
+window.MB_SUPABASE={url:"https://emnnwizogqxrdsnjpwze.supabase.co",key:"sb_publishable_oh5dPBnEcljkt_RLAHaPcw_s5iDJ7Dm"};
