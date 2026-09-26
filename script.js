@@ -73,3 +73,46 @@ function showToast(message){
   const t = $("#toast"); t.textContent = message; t.classList.add("show");
   setTimeout(() => t.classList.remove("show"), 4200);
 }
+
+
+async function loadCmsContent(){
+  try{
+    const client=supabase.createClient(window.MB_SUPABASE.url,window.MB_SUPABASE.key);
+    const settingsRows=(await client.from("site_settings").select("key,value")).data||[];
+    const settings=Object.fromEntries(settingsRows.map(x=>[x.key,x.value]));
+    if(settings.store_name){
+      document.querySelectorAll(".topbar").forEach(x=>x.textContent="ATENDIMENTO PERSONALIZADO • "+settings.store_name.toUpperCase());
+      document.title=settings.store_name+" | Enxergar bem é viver melhor";
+    }
+    if(settings.hero_title) document.querySelector(".hero h1").innerHTML=escapeCms(settings.hero_title).replace(/\\n/g,"<br>");
+    if(settings.hero_subtitle) document.querySelector(".hero-text").textContent=settings.hero_subtitle;
+    if(settings.address) document.querySelectorAll(".contact-items p")[0].textContent=settings.address;
+    if(settings.hours) document.querySelectorAll(".contact-items p")[1].textContent=settings.hours;
+    if(settings.whatsapp) document.querySelectorAll(".contact-items p")[2].textContent=settings.whatsapp;
+    if(settings.whatsapp) window.MB_WHATSAPP=settings.whatsapp.replace(/\\D/g,"");
+
+    const products=(await client.from("products").select("*").eq("active",true).order("sort_order").order("created_at",{ascending:false})).data||[];
+    if(products.length){
+      const grid=document.querySelector(".product-grid");
+      grid.innerHTML=products.map(p=>'<article class="product-card" data-category="'+escapeCms(p.category)+'"><div class="product-visual" style="'+(p.image_url?"background-image:url(\''+escapeCss(p.image_url)+'\');background-size:cover;background-position:center":"")+'"><span>MB</span></div><div class="product-info"><small>'+escapeCms((p.category||"outros").toUpperCase())+'</small><h3>'+escapeCms(p.name)+'</h3><p>'+escapeCms(p.description||"")+'</p><button class="text-link" data-product="'+escapeCms(p.name)+'">Tenho interesse →</button></div></article>').join("");
+      grid.querySelectorAll(".text-link").forEach(btn=>btn.addEventListener("click",()=>{document.querySelector("#interest").value=btn.dataset.product;document.querySelector("#agendamento").scrollIntoView({behavior:"smooth"});document.querySelector("#message").value="Tenho interesse no modelo "+btn.dataset.product+". Gostaria de saber se está disponível.";document.querySelector("#name").focus()}));
+    }
+    const services=(await client.from("services").select("*").eq("active",true).order("sort_order").order("created_at",{ascending:false})).data||[];
+    if(services.length){
+      document.querySelector(".service-list").innerHTML=services.map((s,i)=>'<div><span>'+String(i+1).padStart(2,"0")+'</span><div><h3>'+escapeCms(s.name)+'</h3><p>'+escapeCms(s.description||"")+'</p></div></div>').join("");
+    }
+    const gallery=(await client.from("gallery").select("*").eq("active",true).order("sort_order").order("created_at",{ascending:false})).data||[];
+    if(gallery.length){
+      document.querySelector(".gallery-grid").innerHTML=gallery.map(g=>'<div class="gallery-tile" style="background-image:linear-gradient(transparent 40%,#0009),url(\''+escapeCss(g.image_url)+'\');background-size:cover;background-position:center"><span>'+escapeCms(g.title||"ÓTICA MENI BECKER")+'</span></div>').join("");
+    }
+    const offers=(await client.from("offers").select("*").eq("active",true).order("sort_order").order("created_at",{ascending:false})).data||[];
+    if(offers.length){
+      const o=offers[0];
+      document.querySelector(".offer h2").innerHTML=escapeCms(o.title).replace(/\\n/g,"<br>");
+      document.querySelector(".offer p").textContent=o.description||"Confira as novidades e condições especiais da Ótica Meni Becker.";
+    }
+  }catch(error){console.warn("CMS MB.Óptica:",error)}
+}
+function escapeCms(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function escapeCss(v){return String(v??"").replace(/['\\)]/g,"\\$&")}
+document.addEventListener("DOMContentLoaded",()=>{loadCmsContent()});
