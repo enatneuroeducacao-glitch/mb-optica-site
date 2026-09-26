@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#9b6a2f">
+  <meta name="description" content="Ótica Meni Becker — cuidado visual, estilo e atendimento personalizado.">
+  <title>Ótica Meni Becker | Enxergar bem é viver melhor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="topbar">ATENDIMENTO PERSONALIZADO • ÓTICA MENI BECKER</div>
+
+  <header class="site-header" id="top">
+    <a class="brand" href="#inicio" aria-label="Ótica Meni Becker - início">
+      <img src="assets/logo.jpg" alt="Logo Ótica Meni Becker">
+    </a>
+    <button class="menu-toggle" aria-label="Abrir menu" aria-expanded="false">☰</button>
+    <nav class="nav" aria-label="Navegação principal">
+      <a href="#inicio">Início</a>
+      <a href="#colecao">Coleção</a>
+      <a href="#servicos">Serviços</a>
+      <a href="#experiencia">A Ótica</a>
+      <a href="#galeria">Galeria</a>
+      <a href="#promocoes">Ofertas</a>
+      <a href="#contato">Contato</a>
+      <a class="nav-cta" href="#agendamento">Agendar atendimento</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" id="inicio">
+      <div class="hero-content">
+        <p class="eyebrow">ÓTICA MENI BECKER</p>
+        <h1>Seu olhar merece<br><em>um cuidado especial.</em></h1>
+        <p class="hero-text">Armações, lentes e atendimento pensado para unir conforto, proteção e personalidade.</p>
+        <div class="hero-actions">
+          <a class="btn btn-gold" href="#colecao">Conheça a coleção</a>
+          <a class="btn btn-outline" href="#agendamento">Fale conosco</a>
+        </div>
+        <div class="hero-note"><span>✦</span> Atendimento próximo, humano e personalizado</div>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="sun"></div>
+        <div class="lens lens-a"></div>
+        <div class="lens lens-b"></div>
+        <div class="frame-shape"></div>
+      </div>
+    </section>
+
+    <section class="trust-strip">
+      <div><strong>VISÃO</strong><span>Cuidado com o que importa</span></div>
+      <div><strong>ESTILO</strong><span>Escolhas que combinam com você</span></div>
+      <div><strong>CONFORTO</strong><span>Lentes para sua rotina</span></div>
+      <div><strong>ATENÇÃO</strong><span>Atendimento sem pressa</span></div>
+    </section>
+
+    <section class="section" id="colecao">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">COLEÇÃO</p>
+          <h2>Encontre seu próximo <em>olhar.</em></h2>
+        </div>
+        <p>Uma vitrine digital para você conhecer estilos e depois experimentar na loja.</p>
+      </div>
+
+      <div class="filters" role="tablist" aria-label="Filtrar coleção">
+        <button class="filter active" data-filter="todos">Todos</button>
+        <button class="filter" data-filter="feminino">Feminino</button>
+        <button class="filter" data-filter="masculino">Masculino</button>
+        <button class="filter" data-filter="solar">Solar</button>
+        <button class="filter" data-filter="infantil">Infantil</button>
+      </div>
+
+      <div class="product-grid">
+        <article class="product-card" data-category="feminino">
+          <div class="product-visual pv-1"><span>MB</span></div>
+          <div class="product-info"><small>ARMAÇÃO</small><h3>Essencial Dourada</h3><p>Elegância leve para todos os dias.</p><button class="text-link" data-product="Essencial Dourada">Tenho interesse →</button></div>
+        </article>
+        <article class="product-card" data-category="masculino">
+          <div class="product-visual pv-2"><span>MB</span></div>
+          <div class="product-info"><small>ARMAÇÃO</small><h3>Clássico Havana</h3><p>Presença e conforto em equilíbrio.</p><button class="text-link" data-product="Clássico Havana">Tenho interesse →</button></div>
+        </article>
+        <article class="product-card" data-category="solar">
+          <div class="product-visual pv-3"><span>MB</span></div>
+          <div class="product-info"><small>SOLAR</small><h3>Sun Signature</h3><p>Proteção com personalidade.</p><button class="text-link" data-product="Sun Signature">Tenho interesse →</button></div>
+        </article>
+        <article class="product-card" data-category="infantil">
+          <div class="product-visual pv-4"><span>MB</span></div>
+          <div class="product-info"><small>INFANTIL</small><h3>Mini Vision</h3><p>Conforto para acompanhar cada descoberta.</p><button class="text-link" data-product="Mini Vision">Tenho interesse →</button></div>
+        </article>
+        <article class="product-card" data-category="feminino">
+          <div class="product-visual pv-5"><span>MB</span></div>
+          <div class="product-info"><small>ARMAÇÃO</small><h3>Champagne Soft</h3><p>Delicadeza em uma silhueta contemporânea.</p><button class="text-link" data-product="Champagne Soft">Tenho interesse →</button></div>
+        </article>
+        <article class="product-card" data-category="solar">
+          <div class="product-visual pv-6"><span>MB</span></div>
+          <div class="product-info"><small>SOLAR</small><h3>Urban Black</h3><p>Linhas marcantes para dias intensos.</p><button class="text-link" data-product="Urban Black">Tenho interesse →</button></div>
+        </article>
+      </div>
+      <p class="catalog-note">* Os modelos exibidos são uma vitrine demonstrativa. O catálogo real pode ser conectado ao estoque do MB.Óptica.</p>
+    </section>
+
+    <section class="split-section" id="servicos">
+      <div class="split-image service-art">
+        <div class="service-circle"><span>VISÃO</span></div>
+      </div>
+      <div class="split-copy">
+        <p class="eyebrow">SERVIÇOS</p>
+        <h2>Mais do que óculos.<br><em>Cuidado visual.</em></h2>
+        <div class="service-list">
+          <div><span>01</span><div><h3>Armações e lentes</h3><p>Orientação para encontrar uma combinação adequada à sua necessidade e ao seu estilo.</p></div></div>
+          <div><span>02</span><div><h3>Lentes oftálmicas</h3><p>Opções para diferentes rotinas, necessidades visuais e preferências de uso.</p></div></div>
+          <div><span>03</span><div><h3>Óculos solares</h3><p>Proteção e personalidade para acompanhar seus dias ao ar livre.</p></div></div>
+          <div><span>04</span><div><h3>Ajustes e manutenção</h3><p>Pequenos cuidados para manter seus óculos confortáveis e bem ajustados.</p></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="experience section" id="experiencia">
+      <div class="section-heading centered">
+        <p class="eyebrow">A EXPERIÊNCIA MENI BECKER</p>
+        <h2>Escolher seus óculos pode ser uma <em>experiência.</em></h2>
+        <p>Queremos que você se sinta acolhido desde o primeiro contato até a escolha final.</p>
+      </div>
+      <div class="experience-grid">
+        <div class="experience-card"><b>01</b><h3>Entender</h3><p>Conhecemos sua rotina, preferências e necessidades.</p></div>
+        <div class="experience-card"><b>02</b><h3>Experimentar</h3><p>Você vê, prova e compara diferentes possibilidades.</p></div>
+        <div class="experience-card"><b>03</b><h3>Escolher</h3><p>Tomamos a decisão junto com você, sem pressa.</p></div>
+      </div>
+    </section>
+
+    <section class="gallery section" id="galeria">
+      <div class="section-heading">
+        <div><p class="eyebrow">GALERIA</p><h2>Um pouco do nosso <em>universo.</em></h2></div>
+        <p>Espaço reservado para fotos reais da loja, equipe, coleções e experiências dos clientes.</p>
+      </div>
+      <div class="gallery-grid">
+        <div class="gallery-tile g1"><span>LOJA</span></div>
+        <div class="gallery-tile g2"><span>COLEÇÃO</span></div>
+        <div class="gallery-tile g3"><span>DETALHES</span></div>
+        <div class="gallery-tile g4"><span>ESTILO</span></div>
+      </div>
+    </section>
+
+    <section class="offer" id="promocoes">
+      <div>
+        <p class="eyebrow">OFERTAS & NOVIDADES</p>
+        <h2>Seu próximo par pode estar<br><em>esperando por você.</em></h2>
+        <p>Cadastre-se para receber novidades, campanhas e condições especiais da Ótica Meni Becker.</p>
+      </div>
+      <form class="newsletter" id="newsletterForm">
+        <input type="email" placeholder="Seu melhor e-mail" aria-label="Seu melhor e-mail" required>
+        <button class="btn btn-dark" type="submit">Quero receber</button>
+        <small id="newsletterMsg"></small>
+      </form>
+    </section>
+
+    <section class="appointment section" id="agendamento">
+      <div class="appointment-card">
+        <div>
+          <p class="eyebrow">ATENDIMENTO</p>
+          <h2>Vamos encontrar o<br><em>óculos certo para você?</em></h2>
+          <p>Solicite um atendimento. O formulário prepara uma mensagem para o WhatsApp da ótica.</p>
+        </div>
+        <form id="appointmentForm" class="appointment-form">
+          <label>Nome<input id="name" required placeholder="Como podemos chamar você?"></label>
+          <label>WhatsApp<input id="phone" required placeholder="(47) 99999-9999"></label>
+          <label>Interesse
+            <select id="interest">
+              <option>Armações</option><option>Lentes</option><option>Óculos solares</option><option>Infantil</option><option>Ajuste/manutenção</option><option>Outro</option>
+            </select>
+          </label>
+          <label>Mensagem<textarea id="message" rows="3" placeholder="Conte brevemente o que você procura."></textarea></label>
+          <button class="btn btn-gold" type="submit">Solicitar atendimento</button>
+          <small class="form-note">O número do WhatsApp deve ser configurado no arquivo <code>script.js</code>.</small>
+        </form>
+      </div>
+    </section>
+
+    <section class="contact section" id="contato">
+      <div class="contact-info">
+        <p class="eyebrow">CONTATO</p>
+        <h2>Estamos prontos para<br><em>receber você.</em></h2>
+        <div class="contact-items">
+          <div><span>⌖</span><div><small>ENDEREÇO</small><p>Configure aqui o endereço da loja</p></div></div>
+          <div><span>◷</span><div><small>HORÁRIO</small><p>Configure aqui os horários de atendimento</p></div></div>
+          <div><span>✆</span><div><small>WHATSAPP</small><p>Configure aqui o número comercial</p></div></div>
+        </div>
+      </div>
+      <div class="map-placeholder">
+        <div class="map-pin">MB</div>
+        <p>MAPA DA LOJA</p>
+        <small>O mapa real pode ser inserido aqui quando o endereço for definido.</small>
+      </div>
+    </section>
+
+    <section class="accessibility">
+      <div><strong>Seu conforto importa.</strong><span>Use os controles para ajustar o tamanho do texto.</span></div>
+      <div class="access-controls"><button data-font="down">A−</button><button data-font="reset">A</button><button data-font="up">A+</button></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-brand"><img src="assets/logo.jpg" alt="Ótica Meni Becker"><p>Enxergar bem é viver melhor.</p></div>
+    <div><h4>Navegação</h4><a href="#colecao">Coleção</a><a href="#servicos">Serviços</a><a href="#experiencia">A Ótica</a><a href="#contato">Contato</a></div>
+    <div><h4>Atendimento</h4><a href="#agendamento">Agendar</a><a href="#promocoes">Ofertas</a><a href="#galeria">Galeria</a></div>
+    <div><h4>Legal</h4><a href="#lgpd" onclick="openModal('lgpdModal'); return false;">Privacidade & LGPD</a><a href="#cookies" onclick="openModal('cookieModal'); return false;">Cookies</a></div>
+    <div class="footer-bottom">© <span id="year"></span> Ótica Meni Becker. Todos os direitos reservados.</div>
+  </footer>
+
+  <div class="modal" id="lgpdModal" role="dialog" aria-modal="true" aria-labelledby="lgpdTitle">
+    <div class="modal-box"><button class="close" onclick="closeModal('lgpdModal')" aria-label="Fechar">×</button><p class="eyebrow">PRIVACIDADE</p><h2 id="lgpdTitle">Privacidade & LGPD</h2><p>Esta versão do site foi preparada para receber uma política de privacidade real. Antes da publicação definitiva, devem ser inseridos os dados da empresa, finalidades de tratamento, canais de contato e informações sobre direitos dos titulares.</p><button class="btn btn-dark" onclick="closeModal('lgpdModal')">Entendi</button></div>
+  </div>
+
+  <div class="modal" id="cookieModal" role="dialog" aria-modal="true" aria-labelledby="cookieTitle">
+    <div class="modal-box"><button class="close" onclick="closeModal('cookieModal')" aria-label="Fechar">×</button><p class="eyebrow">COOKIES</p><h2 id="cookieTitle">Uso de cookies</h2><p>O site-base não utiliza cookies de publicidade ou rastreamento. Caso sejam adicionadas ferramentas de analytics, anúncios ou integrações de terceiros, o aviso deverá ser atualizado.</p><button class="btn btn-dark" onclick="closeModal('cookieModal')">Fechar</button></div>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+  <script src="script.js"></script>
+</body>
+</html>
