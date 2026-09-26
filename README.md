@@ -1,4 +1,4 @@
-# Ótica Meni Becker — site público
+# Ótica Moni Becker — site público
 
 Site institucional responsivo em HTML, CSS e JavaScript puro.
 
