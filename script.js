@@ -89,7 +89,7 @@ async function loadCmsContent(){
     if(settings.address) document.querySelectorAll(".contact-items p")[0].textContent=settings.address;
     if(settings.hours) document.querySelectorAll(".contact-items p")[1].textContent=settings.hours;
     if(settings.whatsapp) document.querySelectorAll(".contact-items p")[2].textContent=settings.whatsapp;
-    if(settings.whatsapp) window.MB_WHATSAPP=settings.whatsapp.replace(/\\D/g,"");
+    if(settings.whatsapp){ WHATSAPP=settings.whatsapp.replace(/\\D/g,""); window.MB_WHATSAPP=WHATSAPP; }
 
     const products=(await client.from("products").select("*").eq("active",true).order("sort_order").order("created_at",{ascending:false})).data||[];
     if(products.length){
