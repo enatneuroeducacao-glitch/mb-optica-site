@@ -1,6 +1,6 @@
 // MB.Óptica — site público
 // CONFIGURE AQUI o WhatsApp comercial antes da publicação.
-const WHATSAPP = "5547999999999"; // Exemplo: 5547999999999
+let WHATSAPP = "5547999999999"; // Exemplo: 5547999999999
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => [...document.querySelectorAll(sel)];
@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const interest = $("#interest").value;
     const message = $("#message").value.trim();
     const text = `Olá, Ótica Meni Becker!%0A%0A meu nome é ${encodeURIComponent(name)}.%0AWhatsApp: ${encodeURIComponent(phone)}%0AInteresse: ${encodeURIComponent(interest)}%0A${encodeURIComponent(message)}`;
-    if (WHATSAPP === "5547999999999") {
+    if (!WHATSAPP || WHATSAPP === "5547999999999") {
       showToast("Configure o número do WhatsApp em script.js antes de usar o botão.");
       return;
     }
