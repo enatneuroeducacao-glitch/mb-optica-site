@@ -2,6 +2,10 @@ const db=supabase.createClient(window.MB_SUPABASE.url,window.MB_SUPABASE.key);
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const settings=[["store_name","Nome da ótica"],["whatsapp","WhatsApp (somente números)"],["phone","Telefone"],["email","E-mail"],["address","Endereço"],["hours","Horário de atendimento"],["instagram","Instagram"],["hero_title","Título principal"],["hero_subtitle","Subtítulo principal"]];
 
+db.auth.onAuthStateChange((event,session)=>{
+  if(event==="PASSWORD_RECOVERY"&&session) showResetView();
+});
+
 document.addEventListener("DOMContentLoaded",async()=>{
   bindNav();
   $("#loginForm").addEventListener("submit",login);
