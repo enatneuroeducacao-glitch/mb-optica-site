@@ -115,7 +115,7 @@ function securityMsg(m,k){$("#securityStatus").textContent=m;$("#securityStatus"
 setTimeout(()=>{if($("#appearanceFields"))addUploadControls()},100);
 
 $("#createUserForm")?.addEventListener("submit",async e=>{e.preventDefault();
- const f=e.target, email=f.elements[0].value.trim().toLowerCase(), secret=f.elements[1].value, confirm=f.elements[2].value, status=$("#createUserStatus");
+ const f=e.target, email=$("#newAdminEmail")?.value.trim().toLowerCase()||"", secret=$("#newAdminPassword")?.value||"", confirm=$("#newAdminPasswordConfirm")?.value||"", status=$("#createUserStatus");
  const msg=(m,k)=>{status.textContent=m;status.className="status "+k};
  if(!email)return msg("Informe o e-mail.","err");
  if(secret.length<8)return msg("A senha precisa ter pelo menos 8 caracteres.","err");
