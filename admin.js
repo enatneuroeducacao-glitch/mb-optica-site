@@ -1,3 +1,4 @@
+window.__MB_ADMIN_LOADED=true;
 const db=supabase.createClient(window.MB_SUPABASE.url,window.MB_SUPABASE.key);
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const ADMIN_EMAIL="becker.optica@gmail.com";
