@@ -43,7 +43,7 @@ async function start(user){
  $("#loginView").classList.add("hidden");$("#appView").classList.remove("hidden");$("#userEmail").textContent=user.email;$("#securityEmail").textContent=user.email;loadAll()
 }
 async function logout(){await db.auth.signOut();location.reload()}
-function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",""":"&quot;","'":"&#39;"}[c]))}
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function setStatus(m,k){const e=$("#loginStatus");e.textContent=m;e.className=m?"status "+k:""}
 
 function renderFields(container,defs,settings){
