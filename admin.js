@@ -113,3 +113,16 @@ $("#passwordForm").addEventListener("submit",async e=>{e.preventDefault();const 
 $("#resetPassword").addEventListener("click",async()=>{const email=$("#securityEmail").textContent;const r=await db.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});$("#resetStatus").textContent=r.error?r.error.message:"Link de recuperação enviado.";$("#resetStatus").className="status "+(r.error?"err":"ok")});
 function securityMsg(m,k){$("#securityStatus").textContent=m;$("#securityStatus").className="status "+k}
 setTimeout(()=>{if($("#appearanceFields"))addUploadControls()},100);
+
+$("#createUserForm")?.addEventListener("submit",async e=>{e.preventDefault();
+ const f=e.target, email=f.elements[0].value.trim().toLowerCase(), secret=f.elements[1].value, confirm=f.elements[2].value, status=$("#createUserStatus");
+ const msg=(m,k)=>{status.textContent=m;status.className="status "+k};
+ if(!email)return msg("Informe o e-mail.","err");
+ if(secret.length<8)return msg("A senha precisa ter pelo menos 8 caracteres.","err");
+ if(secret!==confirm)return msg("A confirmação da senha não confere.","err");
+ msg("Criando usuário...","ok");
+ try{const s=await db.auth.getSession(),token=s.data.session?.access_token;if(!token)return msg("Sessão administrativa expirada. Entre novamente.","err");
+  const r=await fetch(window.MB_SUPABASE.url+"/functions/v1/create-admin-user",{method:"POST",headers:{Authorization:"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify({email,password:secret})});
+  const data=await r.json().catch(()=>({}));if(!r.ok)return msg(data.error||"Não foi possível criar o usuário.","err");f.reset();msg("Usuário administrativo criado com sucesso.","ok");
+ }catch(err){msg("Falha de conexão: "+(err?.message||err),"err")}
+});
