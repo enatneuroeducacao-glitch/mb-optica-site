@@ -29,9 +29,13 @@ document.addEventListener("DOMContentLoaded",async()=>{
 function showSection(id){$$( ".nav button").forEach(x=>x.classList.toggle("active",x.dataset.section===id));$$( ".section").forEach(x=>x.classList.add("hidden"));$("#"+id)?.classList.remove("hidden");const b=$('.nav button[data-section="'+id+'"]');if(b)$("#sectionTitle").textContent=b.textContent.replace(/^\S+\s/,"");window.scrollTo({top:0,behavior:"smooth"})}
 function bindNav(){$$(".nav button").forEach(b=>b.onclick=()=>showSection(b.dataset.section))}
 async function login(e){e.preventDefault();setStatus("","");
- let login=$("#loginUser").value.trim().toLowerCase(); if(login==="admin")login=ADMIN_EMAIL;
- const r=await db.auth.signInWithPassword({email:login,password:$("#loginPassword").value});
- if(r.error){setStatus(r.error.message,"err");return} start(r.data.user)
+ const userField=$("#loginUser"),passField=$("#loginPassword");
+ const rawUser=(userField?.value||"").trim().toLowerCase(),password=passField?.value||"";
+ if(!rawUser)return setStatus("Informe o usuário ou e-mail.","err");
+ if(!password)return setStatus("Informe a senha.","err");
+ let login=rawUser==="admin"?ADMIN_EMAIL:rawUser;
+ setStatus("Entrando...","ok");
+ try{const r=await db.auth.signInWithPassword({email:login,password});if(r.error){setStatus("Usuário ou senha inválidos.","err");return}await start(r.data.user)}catch(err){setStatus("Não foi possível conectar ao serviço de autenticação.","err")}
 }
 async function start(user){
  const r=await db.from("admin_users").select("user_id").eq("user_id",user.id).maybeSingle();
