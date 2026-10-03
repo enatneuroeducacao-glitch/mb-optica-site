@@ -3,9 +3,9 @@
 <title>Central Administrativa | Ótica Moni Becker</title><link rel="stylesheet" href="admin.css"></head><body>
 <div id="loginView" class="login"><div class="login-box">
 <img src="assets/logo.jpg" alt="Ótica Moni Becker"><p class="eyebrow">ÓTICA MONI BECKER</p><h1>Central Administrativa</h1>
-<p>Controle completo do site</p><form id="loginForm">
-<div class="field"><label>Usuário ou e-mail</label><input id="loginUser" autocomplete="username" placeholder="admin" required></div>
-<div class="field"><label>Senha</label><input id="loginPassword" type="password" autocomplete="current-password" placeholder="••••••" required></div>
+<p>Controle completo do site</p><form id="loginForm" novalidate>
+<div class="field"><label>Usuário ou e-mail</label><input id="loginUser" type="text" autocomplete="username" placeholder="admin"></div>
+<div class="field"><label>Senha</label><input id="loginPassword" type="password" autocomplete="current-password" placeholder="Digite sua senha"></div>
 <button class="btn primary" type="submit">Entrar</button><div id="loginStatus"></div></form>
 <p class="login-help">Usuário administrativo: <strong>admin</strong>. O e-mail técnico permanece vinculado ao Supabase.</p>
 </div></div>
