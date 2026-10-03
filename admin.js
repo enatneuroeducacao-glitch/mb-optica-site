@@ -27,8 +27,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
  const r=await db.auth.getSession(); if(r.data.session) start(r.data.session.user);
 });
 
-let securityUnlocked=false;
-function showSection(id){if(id==="security"&&!securityUnlocked){openSecurityLock();return}if(id==="security")loadSystemUsers();$$( ".nav button").forEach(x=>x.classList.toggle("active",x.dataset.section===id));$$( ".section").forEach(x=>x.classList.add("hidden"));$("#"+id)?.classList.remove("hidden");const b=$('.nav button[data-section="'+id+'"]');if(b)$("#sectionTitle").textContent=b.textContent.replace(/^\S+\s/,"").replace(/\s*🔒$/,"");window.scrollTo({top:0,behavior:"smooth"})}
+function showSection(id){if(id==="security"){loadAdminUsers();loadSystemUsers()}$$( ".nav button").forEach(x=>x.classList.toggle("active",x.dataset.section===id));$$( ".section").forEach(x=>x.classList.add("hidden"));$("#"+id)?.classList.remove("hidden");const b=$('.nav button[data-section="'+id+'"]');if(b)$("#sectionTitle").textContent=b.textContent.replace(/^\S+\s/,"").replace(/\s*🔒$/,"");window.scrollTo({top:0,behavior:"smooth"})}
 function bindNav(){$$(".nav button").forEach(b=>b.onclick=()=>showSection(b.dataset.section))}
 async function login(e){e.preventDefault();setStatus("","");
  const userField=$("#loginUser"),passField=$("#loginPassword");
@@ -156,10 +155,6 @@ async function deleteAdminUser(id,email){
  if(!confirm("Excluir o usuário administrativo "+email+"?"))return;
  try{await adminApi({action:"delete",id});alert("Usuário excluído.");await loadAdminUsers()}catch(e){alert(e.message)}
 }
-
-function openSecurityLock(){$("#securityLock").style.display="flex";setTimeout(()=>$("#securityUnlockPassword")?.focus(),50)}
-$("#securityCancel")?.addEventListener("click",()=>{$("#securityLock").style.display="none";$("#securityUnlockPassword").value="";$("#securityUnlockStatus").textContent=""});
-$("#securityUnlockForm")?.addEventListener("submit",async e=>{e.preventDefault();const p=$("#securityUnlockPassword").value,status=$("#securityUnlockStatus");status.textContent="Verificando...";status.className="status ok";try{const s=await db.auth.getSession(),email=s.data.session?.user?.email;if(!email)throw new Error("Sessão administrativa expirada. Entre novamente.");const r=await fetch(window.MB_SUPABASE.url+"/auth/v1/token?grant_type=password",{method:"POST",headers:{"apikey":window.MB_SUPABASE.key,"Content-Type":"application/json"},body:JSON.stringify({email,password:p})});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error_description||d.msg||"Senha administrativa incorreta.");securityUnlocked=true;$("#securityLock").style.display="none";$("#securityUnlockPassword").value="";status.textContent="";$(".nav button").forEach(x=>x.classList.toggle("active",x.dataset.section==="security"));$(".section").forEach(x=>x.classList.add("hidden"));$("#security")?.classList.remove("hidden");const b=$('.nav button[data-section="security"]');if(b)$("#sectionTitle").textContent=b.textContent.replace(/^\\S+\\s/,"").replace(/\\s*🔒$/,"");window.scrollTo({top:0,behavior:"smooth"});loadSystemUsers()}catch(err){status.textContent=err.message;status.className="status err"}});
 
 async function systemUserApi(body){const s=await db.auth.getSession(),token=s.data.session?.access_token;if(!token)throw new Error("Sessão expirada.");const r=await fetch(window.MB_SUPABASE.url+"/functions/v1/manage-system-users",{method:"POST",headers:{Authorization:"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify(body)});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||"Operação não autorizada.");return d}
 let systemUsersCache=[];
