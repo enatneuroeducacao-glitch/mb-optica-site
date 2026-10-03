@@ -156,3 +156,7 @@ async function deleteAdminUser(id,email){
  if(!confirm("Excluir o usuário administrativo "+email+"?"))return;
  try{await adminApi({action:"delete",id});alert("Usuário excluído.");await loadAdminUsers()}catch(e){alert(e.message)}
 }
+
+function openSecurityLock(){$("#securityLock").style.display="flex";setTimeout(()=>$("#securityUnlockPassword")?.focus(),50)}
+$("#securityCancel")?.addEventListener("click",()=>{$("#securityLock").style.display="none";$("#securityUnlockPassword").value="";$("#securityUnlockStatus").textContent=""});
+$("#securityUnlockForm")?.addEventListener("submit",async e=>{e.preventDefault();const p=$("#securityUnlockPassword").value,status=$("#securityUnlockStatus");status.textContent="Verificando...";status.className="status ok";try{const s=await db.auth.getSession(),email=s.data.session?.user?.email;if(!email)throw new Error("Sessão expirada. Entre novamente.");const r=await db.auth.signInWithPassword({email,password:p});if(r.error)throw new Error("Senha administrativa incorreta.");securityUnlocked=true;$("#securityLock").style.display="none";$("#securityUnlockPassword").value="";status.textContent="";showSection("security")}catch(err){status.textContent=err.message;status.className="status err"}});
