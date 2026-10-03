@@ -114,7 +114,7 @@ $("#resetPassword").addEventListener("click",async()=>{const email=$("#securityE
 function securityMsg(m,k){$("#securityStatus").textContent=m;$("#securityStatus").className="status "+k}
 setTimeout(()=>{if($("#appearanceFields"))addUploadControls()},100);
 
-$("#createUserForm")?.addEventListener("submit",async e=>{e.preventDefault();
+$( "#createAdminForm")?.addEventListener("submit",async e=>{e.preventDefault();
  const f=e.target, email=$("#newAdminEmail")?.value.trim().toLowerCase()||"", secret=$("#newAdminPassword")?.value||"", confirm=$("#newAdminPasswordConfirm")?.value||"", status=$("#createUserStatus");
  const msg=(m,k)=>{status.textContent=m;status.className="status "+k};
  if(!email)return msg("Informe o e-mail.","err");
