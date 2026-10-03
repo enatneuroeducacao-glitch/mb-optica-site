@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
  const r=await db.auth.getSession(); if(r.data.session) start(r.data.session.user);
 });
 
-function showSection(id){$$( ".nav button").forEach(x=>x.classList.toggle("active",x.dataset.section===id));$$( ".section").forEach(x=>x.classList.add("hidden"));$("#"+id)?.classList.remove("hidden");const b=$('.nav button[data-section="'+id+'"]');if(b)$("#sectionTitle").textContent=b.textContent.replace(/^\S+\s/,"");window.scrollTo({top:0,behavior:"smooth"})}
+function showSection(id){if(id==="security")loadAdminUsers();$$( ".nav button").forEach(x=>x.classList.toggle("active",x.dataset.section===id));$$( ".section").forEach(x=>x.classList.add("hidden"));$("#"+id)?.classList.remove("hidden");const b=$('.nav button[data-section="'+id+'"]');if(b)$("#sectionTitle").textContent=b.textContent.replace(/^\S+\s/,"");window.scrollTo({top:0,behavior:"smooth"})}
 function bindNav(){$$(".nav button").forEach(b=>b.onclick=()=>showSection(b.dataset.section))}
 async function login(e){e.preventDefault();setStatus("","");
  const userField=$("#loginUser"),passField=$("#loginPassword");
@@ -133,19 +133,20 @@ async function adminApi(body){
  const r=await fetch(window.MB_SUPABASE.url+"/functions/v1/manage-admin-users",{method:"POST",headers:{Authorization:"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify(body)});
  const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.error||"Operação administrativa não autorizada.");return data;
 }
+let adminUsersCache=[];
 async function loadAdminUsers(){
  const box=$("#adminUsersTable"),status=$("#adminUsersStatus");if(!box)return;
  try{status.textContent="";box.innerHTML='<div class="empty">Carregando usuários...</div>';
-  const data=await adminApi({action:"list"});const users=data.users||[];
+  const data=await adminApi({action:"list"});const users=data.users||[];adminUsersCache=users;
   if(!users.length){box.innerHTML='<div class="empty">Nenhum usuário administrativo cadastrado.</div>';return}
   box.innerHTML='<div class="table-wrap"><table class="table"><thead><tr><th>E-mail</th><th>Criado em</th><th>Último acesso</th><th>Ações</th></tr></thead><tbody>'+
-  users.map(u=>'<tr><td><strong>'+esc(u.email||"")+'</strong></td><td>'+fmtDate(u.created_at)+'</td><td>'+fmtDate(u.last_sign_in_at)+'</td><td><button class="btn small" onclick="editAdminUser(\''+u.id+'\',\''+esc(u.email||"")+'\')">Editar</button> <button class="btn danger small" onclick="deleteAdminUser(\''+u.id+'\',\''+esc(u.email||"")+'\')">Excluir</button></td></tr>').join("")+
+  users.map(u=>'<tr><td><strong>'+esc(u.email||"")+'</strong></td><td>'+fmtDate(u.created_at)+'</td><td>'+fmtDate(u.last_sign_in_at)+'</td><td><button class="btn small" onclick="editAdminUser(\''+u.id+'\')">Editar</button> <button class="btn danger small" onclick="deleteAdminUser(\''+u.id+'\',\''+esc(u.email||"")+'\')">Excluir</button></td></tr>').join("")+
   '</tbody></table></div>';
  }catch(e){box.innerHTML='<div class="empty">'+esc(e.message)+'</div>';status.textContent="Acesso administrativo obrigatório.";status.className="status err";}
 }
 function fmtDate(v){if(!v)return "—";try{return new Intl.DateTimeFormat("pt-BR",{dateStyle:"short",timeStyle:"short"}).format(new Date(v))}catch(_){return "—"}}
-async function editAdminUser(id,email){
- const newEmail=prompt("E-mail do usuário:",email);if(newEmail===null)return;
+async function editAdminUser(id){
+ const user=adminUsersCache.find(x=>x.id===id);if(!user)return;const newEmail=prompt("E-mail do usuário:",user.email);if(newEmail===null)return;
  const newPassword=prompt("Nova senha (deixe em branco para manter):","");
  if(newPassword===null)return;
  try{await adminApi({action:"update",id,email:newEmail,password:newPassword});alert("Usuário atualizado com sucesso.");await loadAdminUsers()}catch(e){alert(e.message)}
