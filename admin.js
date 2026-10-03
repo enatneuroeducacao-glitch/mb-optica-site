@@ -27,7 +27,8 @@ document.addEventListener("DOMContentLoaded",async()=>{
  const r=await db.auth.getSession(); if(r.data.session) start(r.data.session.user);
 });
 
-function showSection(id){if(id==="security")loadAdminUsers();$$( ".nav button").forEach(x=>x.classList.toggle("active",x.dataset.section===id));$$( ".section").forEach(x=>x.classList.add("hidden"));$("#"+id)?.classList.remove("hidden");const b=$('.nav button[data-section="'+id+'"]');if(b)$("#sectionTitle").textContent=b.textContent.replace(/^\S+\s/,"");window.scrollTo({top:0,behavior:"smooth"})}
+let securityUnlocked=false;
+function showSection(id){if(id==="security"&&!securityUnlocked){openSecurityLock();return}if(id==="security")loadSystemUsers();$$( ".nav button").forEach(x=>x.classList.toggle("active",x.dataset.section===id));$$( ".section").forEach(x=>x.classList.add("hidden"));$("#"+id)?.classList.remove("hidden");const b=$('.nav button[data-section="'+id+'"]');if(b)$("#sectionTitle").textContent=b.textContent.replace(/^\S+\s/,"").replace(/\s*🔒$/,"");window.scrollTo({top:0,behavior:"smooth"})}
 function bindNav(){$$(".nav button").forEach(b=>b.onclick=()=>showSection(b.dataset.section))}
 async function login(e){e.preventDefault();setStatus("","");
  const userField=$("#loginUser"),passField=$("#loginPassword");
