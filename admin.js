@@ -122,7 +122,35 @@ $("#createUserForm")?.addEventListener("submit",async e=>{e.preventDefault();
  if(secret!==confirm)return msg("A confirmação da senha não confere.","err");
  msg("Criando usuário...","ok");
  try{const s=await db.auth.getSession(),token=s.data.session?.access_token;if(!token)return msg("Sessão administrativa expirada. Entre novamente.","err");
-  const r=await fetch(window.MB_SUPABASE.url+"/functions/v1/create-admin-user",{method:"POST",headers:{Authorization:"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify({email,password:secret})});
+  const r=await fetch(window.MB_SUPABASE.url+"/functions/v1/manage-admin-users",{method:"POST",headers:{Authorization:"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify({action:"create",email,password:secret})});
   const data=await r.json().catch(()=>({}));if(!r.ok)return msg(data.error||"Não foi possível criar o usuário.","err");f.reset();msg("Usuário administrativo criado com sucesso.","ok");
  }catch(err){msg("Falha de conexão: "+(err?.message||err),"err")}
 });
+
+async function adminApi(body){
+ const s=await db.auth.getSession(),token=s.data.session?.access_token;
+ if(!token)throw new Error("Sessão administrativa expirada. Entre novamente.");
+ const r=await fetch(window.MB_SUPABASE.url+"/functions/v1/manage-admin-users",{method:"POST",headers:{Authorization:"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify(body)});
+ const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.error||"Operação administrativa não autorizada.");return data;
+}
+async function loadAdminUsers(){
+ const box=$("#adminUsersTable"),status=$("#adminUsersStatus");if(!box)return;
+ try{status.textContent="";box.innerHTML='<div class="empty">Carregando usuários...</div>';
+  const data=await adminApi({action:"list"});const users=data.users||[];
+  if(!users.length){box.innerHTML='<div class="empty">Nenhum usuário administrativo cadastrado.</div>';return}
+  box.innerHTML='<div class="table-wrap"><table class="table"><thead><tr><th>E-mail</th><th>Criado em</th><th>Último acesso</th><th>Ações</th></tr></thead><tbody>'+
+  users.map(u=>'<tr><td><strong>'+esc(u.email||"")+'</strong></td><td>'+fmtDate(u.created_at)+'</td><td>'+fmtDate(u.last_sign_in_at)+'</td><td><button class="btn small" onclick="editAdminUser(\''+u.id+'\',\''+esc(u.email||"")+'\')">Editar</button> <button class="btn danger small" onclick="deleteAdminUser(\''+u.id+'\',\''+esc(u.email||"")+'\')">Excluir</button></td></tr>').join("")+
+  '</tbody></table></div>';
+ }catch(e){box.innerHTML='<div class="empty">'+esc(e.message)+'</div>';status.textContent="Acesso administrativo obrigatório.";status.className="status err";}
+}
+function fmtDate(v){if(!v)return "—";try{return new Intl.DateTimeFormat("pt-BR",{dateStyle:"short",timeStyle:"short"}).format(new Date(v))}catch(_){return "—"}}
+async function editAdminUser(id,email){
+ const newEmail=prompt("E-mail do usuário:",email);if(newEmail===null)return;
+ const newPassword=prompt("Nova senha (deixe em branco para manter):","");
+ if(newPassword===null)return;
+ try{await adminApi({action:"update",id,email:newEmail,password:newPassword});alert("Usuário atualizado com sucesso.");await loadAdminUsers()}catch(e){alert(e.message)}
+}
+async function deleteAdminUser(id,email){
+ if(!confirm("Excluir o usuário administrativo "+email+"?"))return;
+ try{await adminApi({action:"delete",id});alert("Usuário excluído.");await loadAdminUsers()}catch(e){alert(e.message)}
+}
