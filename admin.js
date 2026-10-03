@@ -34,9 +34,17 @@ async function login(e){e.preventDefault();setStatus("","");
  const rawUser=(userField?.value||"").trim().toLowerCase(),password=passField?.value||"";
  if(!rawUser)return setStatus("Informe o usuário ou e-mail.","err");
  if(!password)return setStatus("Informe a senha.","err");
- let login=rawUser==="admin"?ADMIN_EMAIL:rawUser;
+ const login=rawUser==="admin"?ADMIN_EMAIL:rawUser;
  setStatus("Entrando...","ok");
- try{const r=await db.auth.signInWithPassword({email:login,password});if(r.error){setStatus("Usuário ou senha inválidos.","err");return}await start(r.data.user)}catch(err){setStatus("Não foi possível conectar ao serviço de autenticação.","err")}
+ try{
+   const url=window.MB_SUPABASE.url,key=window.MB_SUPABASE.key;
+   const response=await fetch(url+"/auth/v1/token?grant_type=password",{method:"POST",headers:{"apikey":key,"Content-Type":"application/json"},body:JSON.stringify({email:login,password})});
+   let data={};try{data=await response.json()}catch(_){data={}};
+   if(!response.ok){const msg=data.error_description||data.msg||data.message||("Falha de autenticação ("+response.status+").");setStatus(msg,"err");return}
+   const session=await db.auth.setSession({access_token:data.access_token,refresh_token:data.refresh_token});
+   if(session.error){setStatus("Sessão recebida, mas não pôde ser criada: "+session.error.message,"err");return}
+   await start(session.data.user)
+ }catch(err){setStatus("Falha de conexão com o Supabase: "+(err?.message||err),"err")}
 }
 async function start(user){
  const r=await db.from("admin_users").select("user_id").eq("user_id",user.id).maybeSingle();
