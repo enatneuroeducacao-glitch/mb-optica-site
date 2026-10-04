@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" role="img" aria-labelledby="title desc">
+  <title id="title">Leitor de DNP</title>
+  <desc id="desc">Ilustração elegante de um olho humano com mira de medição, representando leitura de DNP.</desc>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="48%" r="70%">
+      <stop offset="0" stop-color="#f4e8d3"/>
+      <stop offset="1" stop-color="#ded0ba"/>
+    </radialGradient>
+    <radialGradient id="iris" cx="42%" cy="38%" r="70%">
+      <stop offset="0" stop-color="#d9b47a"/>
+      <stop offset=".45" stop-color="#9b6a2f"/>
+      <stop offset="1" stop-color="#4a3320"/>
+    </radialGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="18" stdDeviation="20" flood-color="#4b3826" flood-opacity=".25"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="900" fill="url(#bg)"/>
+  <path d="M115 450 C260 190 445 115 600 115 C755 115 940 190 1085 450 C940 710 755 785 600 785 C445 785 260 710 115 450Z"
+        fill="#fffaf1" stroke="#9b6a2f" stroke-width="10" filter="url(#shadow)"/>
+  <path d="M150 450 C290 245 450 185 600 185 C750 185 910 245 1050 450 C910 655 750 715 600 715 C450 715 290 655 150 450Z"
+        fill="#e8ddcc" stroke="#c29a61" stroke-width="4"/>
+  <circle cx="600" cy="450" r="205" fill="url(#iris)" stroke="#6f4b28" stroke-width="12"/>
+  <circle cx="600" cy="450" r="78" fill="#17130f"/>
+  <circle cx="535" cy="375" r="30" fill="#fff" opacity=".78"/>
+  <circle cx="600" cy="450" r="250" fill="none" stroke="#9b6a2f" stroke-width="5" stroke-dasharray="16 12" opacity=".9"/>
+  <circle cx="600" cy="450" r="155" fill="none" stroke="#fff" stroke-width="3" opacity=".75"/>
+  <path d="M330 450 H870 M600 250 V650" stroke="#9b6a2f" stroke-width="5" opacity=".85"/>
+  <path d="M600 245 V285 M600 615 V655 M395 450 H435 M765 450 H805" stroke="#fffaf1" stroke-width="8"/>
+  <circle cx="600" cy="450" r="18" fill="#fffaf1" stroke="#9b6a2f" stroke-width="5"/>
+  <g fill="#5b4630" font-family="Arial, sans-serif" text-anchor="middle">
+    <text x="600" y="840" font-size="34" font-weight="700" letter-spacing="6">LEITOR DE DNP</text>
+    <text x="600" y="875" font-size="18" letter-spacing="2">PRECISÃO • FOCO • MEDIÇÃO</text>
+  </g>
+</svg>
