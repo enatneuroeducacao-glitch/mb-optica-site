@@ -31,7 +31,7 @@ a{color:inherit;text-decoration:none}button,input,select,textarea{font:inherit}
 /* Seção especial da Amorinha — imagem preservada fora do hero */
 .story{display:grid;grid-template-columns:minmax(320px,.9fr) 1.1fr;gap:7vw;align-items:center;background:var(--cream)}
 .story-photo-wrap{display:flex;justify-content:center}
-.story-photo{width:min(100%,460px);aspect-ratio:4/5;object-fit:cover;object-position:center;border:10px solid #fff8f0;box-shadow:0 22px 55px #6f59352e,0 0 0 1px #b98a4b55;border-radius:22px 22px 110px 22px;filter:brightness(1.03) contrast(1.04) saturate(.96);}
+.story-photo{width:min(100%,460px);height:auto;aspect-ratio:auto;object-fit:contain;object-position:center;border:10px solid #fff8f0;box-shadow:0 22px 55px #6f59352e,0 0 0 1px #b98a4b55;border-radius:22px 22px 110px 22px;filter:brightness(1.03) contrast(1.04) saturate(.96);}
 .story-copy{max-width:680px}
 .story-copy h2{font-size:clamp(2.7rem,5vw,4.6rem);margin:12px 0 20px}
 .story-copy>p:not(.eyebrow){color:var(--muted);line-height:1.9;max-width:620px}
@@ -77,4 +77,4 @@ body.album-open{overflow:hidden}
 @media(max-width:900px){.collection-album-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.collection-admin-grid{grid-template-columns:1fr}}
 @media(max-width:600px){.collection-album{padding:10px}.collection-album-box{padding:18px}.collection-album-grid{grid-template-columns:1fr}.collection-album-grid .product-visual{height:230px}.collection-admin-thumbs{grid-template-columns:repeat(3,1fr)}}
 .filters:empty{display:none}.collection-showcase .product-info{padding-top:16px}.collection-showcase .collection-link{margin-top:8px;border:0;padding-left:0;padding-right:0;background:transparent}.collection-showcase .collection-link:hover{background:transparent}
-.experience-image-wrap{margin:28px auto 0;max-width:900px;overflow:hidden;border-radius:14px}.experience-image{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
+.experience-image-wrap{margin:28px auto 0;max-width:900px;overflow:hidden;border-radius:14px}.experience-image{width:100%;height:auto;aspect-ratio:auto;object-fit:contain;display:block}
