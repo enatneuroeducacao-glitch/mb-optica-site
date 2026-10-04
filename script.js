@@ -15,11 +15,25 @@ document.addEventListener("DOMContentLoaded",()=>{
  $$(".access-controls button").forEach(btn=>btn.addEventListener("click",()=>{const root=document.documentElement,current=parseFloat(getComputedStyle(root).getPropertyValue("--scale"))||1;if(btn.dataset.font==="up")root.style.setProperty("--scale",Math.min(current+.08,1.25));if(btn.dataset.font==="down")root.style.setProperty("--scale",Math.max(current-.08,.9));if(btn.dataset.font==="reset")root.style.setProperty("--scale",1)}));
  loadCmsContent();
 });
+function bindCollectionFilters(){
+ $(".filter").forEach(btn=>btn.onclick=()=>{
+  $(".filter").forEach(b=>b.classList.remove("active"));btn.classList.add("active");
+  if(btn.dataset.filter==="todos"){filterProducts("todos");closeCollectionAlbum();return}
+  filterProducts(btn.dataset.filter);openCollectionAlbum(btn.dataset.filter);
+ });
+}
+async function loadPublicCollections(client){
+ const r=await client.from("collections").select("name,slug,active,sort_order").eq("active",true).order("sort_order").order("created_at");
+ if(r.error)return;
+ const filters=$(".filters");if(!filters)return;
+ filters.innerHTML='<button class="filter active" data-filter="todos">Todos</button>'+(r.data||[]).map(x=>'<button class="filter" data-filter="'+escapeCms(x.slug)+'">'+escapeCms(x.name)+'</button>').join("");
+ bindCollectionFilters();
+}
 function openCollectionAlbum(category){
  const modal=$("#collectionAlbum"),grid=$("#collectionAlbumGrid"),title=$("#collectionAlbumTitle"),count=$("#collectionAlbumCount");if(!modal||!grid)return;
- const labels={feminino:"Feminino",masculino:"Masculino",solar:"Solar",infantil:"Infantil",outros:"Outros"};
+ const filter=$(".filter").find(btn=>btn.dataset.filter===category);
  const cards=$(".product-card").filter(card=>card.dataset.category===category);
- title.textContent=labels[category]||category;
+ title.textContent=filter?.textContent?.trim()||category;
  count.textContent=cards.length+" modelo"+(cards.length===1?"":"s")+" nesta coleção";
  grid.innerHTML=cards.length?cards.map(card=>card.outerHTML).join(""):'<p class="album-empty">Ainda não há modelos cadastrados nesta coleção.</p>';
  modal.classList.remove("hidden");modal.setAttribute("aria-hidden","false");document.body.classList.add("album-open");
@@ -82,6 +96,7 @@ async function loadCmsContent(){
   setText(".footer-brand p",s.footer_tagline);setText(".footer-bottom",s.footer_copyright?("© "+new Date().getFullYear()+" "+s.footer_copyright):"");
   const root=document.documentElement;if(s.primary_color)root.style.setProperty("--gold",s.primary_color);if(s.cream_color)root.style.setProperty("--cream",s.cream_color);if(s.dark_color)root.style.setProperty("--dark",s.dark_color);if(s.muted_color)root.style.setProperty("--muted",s.muted_color);
   if(s.whatsapp)WHATSAPP=s.whatsapp.replace(/\D/g,"");
+  await loadPublicCollections(client);
   const products=(await client.from("products").select("*").eq("active",true).order("sort_order").order("created_at",{ascending:false})).data||[];
   if(products.length){const grid=$(".product-grid");grid.innerHTML=products.map(p=>'<article class="product-card" data-category="'+escapeCms(p.category)+'"><div class="product-visual" style="'+(p.image_url?"background-image:url('"+escapeCss(p.image_url)+"');background-size:cover;background-position:center":"")+'"><span>MB</span></div><div class="product-info"><small>'+escapeCms((p.category||"outros").toUpperCase())+'</small><h3>'+escapeCms(p.name)+'</h3><div class="product-description">'+sanitizeCms(p.description||"")+'</div>'+(p.price!==null&&p.price!==undefined&&p.price!==""?'<strong class="product-price">R$ '+Number(p.price).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})+'</strong>':"")+'<button class="text-link" data-product="'+escapeCms(p.name)+'">Tenho interesse →</button></div></article>').join("");bindInterestButtons()}
   const servicesResult=await client.from("services").select("*").eq("active",true).order("sort_order").order("created_at",{ascending:false});const services=servicesResult.data||[];if(services.length){$(".service-list").innerHTML=services.map((x,i)=>'<div><span>'+String(i+1).padStart(2,"0")+'</span><div><h3>'+sanitizeCms(x.name||"")+'</h3><div class="service-desc">'+sanitizeCms(x.description||"")+'</div></div></div>').join("");if(services[0].image_url){const serviceImage=$("#serviceImage");if(serviceImage){serviceImage.src=services[0].image_url;serviceImage.alt=services[0].name||"Imagem dos serviços";serviceImage.style.backgroundImage="none"}}}
