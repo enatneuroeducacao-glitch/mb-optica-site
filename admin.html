@@ -33,7 +33,7 @@
 
 <section id="appearance" class="section hidden"><div class="card"><h2>Aparência e identidade</h2><p class="muted">Cores, logotipo, imagens do site e mapa. A imagem da seção Serviços pode ser substituída aqui.</p><form id="appearanceForm"><div id="appearanceFields" class="form-grid"></div><div class="actions"><button class="btn primary">Salvar aparência</button></div></form></div></section>
 
-<section id="collections" class="section hidden"><div class="card"><div class="section-head"><div><h2>Álbuns de coleções</h2><p class="muted">Cada modelo cadastrado em Produtos pertence a uma coleção. A foto de cada modelo alimenta automaticamente o álbum correspondente no site público.</p></div><button id="createCollectionBtn" class="btn primary">Criar coleção</button></div><div id="collectionsTable" class="collection-admin-grid"></div></div></section><section id="products" class="section hidden"><div class="card"><h2>Novo produto</h2><form id="productForm"><div class="form-grid">
+<section id="collections" class="section hidden"><div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap"><div><h2>Álbuns de coleções</h2><p class="muted">Cada modelo cadastrado em Produtos pertence a uma coleção. A foto de cada modelo alimenta automaticamente o álbum correspondente no site público.</p></div><button id="createCollectionBtn" class="btn primary" type="button">Criar coleção</button></div><div id="collectionsTable" class="collection-admin-grid"></div></div></section><section id="products" class="section hidden"><div class="card"><h2>Novo produto</h2><form id="productForm"><div class="form-grid">
 <div class="field"><label>Nome</label><input id="pName" required></div><div class="field"><label>Coleção</label><select id="pCollection" required><option value="">Selecione a coleção</option></select></div><div class="field"><label>Preço</label><input id="pPrice" type="number" step="0.01"></div>
 <div class="field wide"><label>Descrição</label><textarea id="pDescription"></textarea></div><div class="field wide"><label>Foto</label><input id="pImage" type="file" accept="image/*"></div></div><div class="actions"><button class="btn primary">Adicionar produto</button></div></form></div><div class="card"><h2>Produtos cadastrados</h2><div id="productsTable"></div></div></section>
 
@@ -70,5 +70,5 @@
     <div class="image-editor-actions"><button type="button" id="imageEditorCancel" class="btn secondary">Cancelar</button><button type="button" id="imageEditorApply" class="btn primary">Aplicar enquadramento</button></div>
   </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js?v=20261003-4"></script><script src="admin.js?v=20261004-32"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js?v=20261003-4"></script><script src="admin.js?v=20261004-33"></script>
 </body></html>
