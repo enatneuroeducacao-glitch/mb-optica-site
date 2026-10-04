@@ -41,3 +41,9 @@ a{color:inherit;text-decoration:none}button,input,select,textarea{font:inherit}
 .gallery-tile:hover img{transform:scale(1.02)}
 .gallery-tile figcaption{position:absolute;left:22px;bottom:20px;z-index:2;color:#fff;font-size:.68rem;letter-spacing:.2em}
 @media(max-width:800px){.story{grid-template-columns:1fr;gap:35px}.story-photo{width:min(88vw,390px)}}
+
+.service-desc{color:inherit;line-height:1.6}
+.service-desc p{margin:0 0 .55em}
+.service-desc p:last-child{margin-bottom:0}
+.service-desc ul,.service-desc ol{margin:.35em 0 .55em 1.2em}
+.service-desc strong,.service-desc b{font-weight:700}
