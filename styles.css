@@ -26,3 +26,18 @@ a{color:inherit;text-decoration:none}button,input,select,textarea{font:inherit}
 .modal{display:none;position:fixed;inset:0;background:#1e1b17cc;z-index:100;place-items:center;padding:20px}.modal.open{display:grid}.modal-box{background:#fff;max-width:560px;padding:42px;position:relative}.modal-box h2{font-family:var(--serif);font-size:3rem;line-height:1;margin:0 0 20px}.modal-box p{font-size:.8rem;color:var(--muted)}.close{position:absolute;right:14px;top:10px;border:0;background:none;font-size:1.7rem;cursor:pointer}.toast{position:fixed;bottom:25px;right:25px;background:var(--dark);color:#fff;padding:13px 18px;font-size:.72rem;transform:translateY(100px);opacity:0;transition:.3s;z-index:200}.toast.show{transform:none;opacity:1}
 @media(max-width:900px){.nav{display:none}.menu-toggle{display:block}.nav.mobile-open{display:flex;position:absolute;top:92px;left:0;right:0;background:#fff;flex-direction:column;align-items:stretch;padding:20px 6vw;border-bottom:1px solid var(--line)}.hero{grid-template-columns:1fr}.hero-art{position:absolute;right:-140px;bottom:-40px;opacity:.35}.trust-strip{grid-template-columns:1fr 1fr;gap:18px}.trust-strip div{border:0;padding:0}.product-grid{grid-template-columns:1fr 1fr}.split-section,.contact,.appointment-card,.offer{grid-template-columns:1fr}.split-image{min-height:400px}.appointment-card{padding:35px}.gallery-grid{grid-template-columns:1fr 1fr}.g1{grid-row:span 1}.g4{grid-column:auto}.footer{grid-template-columns:1fr 1fr}}
 @media(max-width:600px){.site-header{height:76px}.brand img{height:64px}.hero-content{padding:80px 7vw 100px}.hero h1{font-size:3.5rem}.section{padding:75px 7vw}.section-heading{display:block}.section-heading>p{margin-top:18px}.product-grid{grid-template-columns:1fr}.product-visual{height:250px}.trust-strip{padding:24px 7vw}.gallery-grid{grid-template-columns:1fr;grid-template-rows:repeat(4,190px)}.appointment-form{grid-template-columns:1fr}.appointment-form label:nth-child(4),.appointment-form button,.form-note{grid-column:auto}.offer{padding:60px 7vw}.newsletter{display:block}.newsletter input,.newsletter button{width:100%;margin-bottom:8px}.footer{grid-template-columns:1fr}.footer-bottom{grid-column:auto}.accessibility{display:block}.access-controls{margin-top:10px}}
+
+
+/* Seção especial da Amorinha — imagem preservada fora do hero */
+.story{display:grid;grid-template-columns:minmax(320px,.9fr) 1.1fr;gap:7vw;align-items:center;background:var(--cream)}
+.story-photo-wrap{display:flex;justify-content:center}
+.story-photo{width:min(100%,460px);aspect-ratio:4/5;object-fit:cover;object-position:center;border:10px solid #fff8f0;box-shadow:0 22px 55px #6f59352e,0 0 0 1px #b98a4b55;border-radius:22px 22px 110px 22px;filter:brightness(1.03) contrast(1.04) saturate(.96);}
+.story-copy{max-width:680px}
+.story-copy h2{font-size:clamp(2.7rem,5vw,4.6rem);margin:12px 0 20px}
+.story-copy>p:not(.eyebrow){color:var(--muted);line-height:1.9;max-width:620px}
+.story-note{display:inline-block;margin-top:18px;font-family:var(--serif);font-size:1.2rem;color:var(--gold)}
+.gallery-tile{margin:0;display:block;padding:0;position:relative;overflow:hidden;background:none}
+.gallery-tile img{width:100%;height:100%;display:block;object-fit:cover;transition:transform .45s ease}
+.gallery-tile:hover img{transform:scale(1.035)}
+.gallery-tile figcaption{position:absolute;left:22px;bottom:20px;z-index:2;color:#fff;font-size:.68rem;letter-spacing:.2em}
+@media(max-width:800px){.story{grid-template-columns:1fr;gap:35px}.story-photo{width:min(88vw,390px)}}
