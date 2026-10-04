@@ -121,7 +121,14 @@ function renderFields(container,defs,settings){
 }
 async function getSettings(){const r=await db.from("site_settings").select("key,value");if(r.error)throw r.error;return Object.fromEntries((r.data||[]).map(x=>[x.key,x.value]))}
 async function loadAll(){
- try{const s=await getSettings();renderFields($("#contentFields"),contentFields,s);renderFields($("#appearanceFields"),appearanceFields,s);bindColorSync();}catch(e){console.error(e)}
+ try{
+  const s=await getSettings();
+  renderFields($("#contentFields"),contentFields,s);
+  renderFields($("#appearanceFields"),appearanceFields,s);
+  addUploadControls();
+  bindImageEditor();
+  bindColorSync();
+ }catch(e){console.error(e)}
  await Promise.all([loadStats(),loadList("products"),loadList("services"),loadList("gallery"),loadList("offers"),loadCollectionOptions(),loadCollections()]);
 }
 function initFormRichEditors(){
@@ -407,7 +414,7 @@ $("#passwordForm").addEventListener("submit",async e=>{e.preventDefault();const 
 });
 $("#resetPassword").addEventListener("click",async()=>{const email=$("#securityEmail").textContent;const r=await db.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});$("#resetStatus").textContent=r.error?r.error.message:"Link de recuperação enviado.";$("#resetStatus").className="status "+(r.error?"err":"ok")});
 function securityMsg(m,k){$("#securityStatus").textContent=m;$("#securityStatus").className="status "+k}
-setTimeout(()=>{if($("#appearanceFields")){addUploadControls();bindImageEditor()}},100);
+// Os controles de imagem são montados dentro de loadAll(), depois que os campos da Aparência existem.
 
 $( "#createAdminForm")?.addEventListener("submit",async e=>{e.preventDefault();
  const f=e.target, email=$("#newAdminEmail")?.value.trim().toLowerCase()||"", secret=$("#newAdminPassword")?.value||"", confirm=$("#newAdminPasswordConfirm")?.value||"", status=$("#createUserStatus");
