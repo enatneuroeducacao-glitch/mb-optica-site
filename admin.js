@@ -341,7 +341,7 @@ async function loadCollections(){
   const products=(r.data||[]).filter(x=>x.active!==false);
   el.innerHTML=collections.map(col=>{
    const items=products.filter(x=>(x.category||"outros")===col.slug);
-   return '<article class="collection-admin-card"><div class="collection-admin-head"><div><span class="eyebrow">'+esc(col.name)+'</span><h3>'+items.length+' modelo'+(items.length===1?"":"s")+'</h3></div><button class="btn small" onclick="showSection(&quot;products&quot;)">Adicionar modelo</button></div><div class="collection-admin-thumbs">'+(items.length?items.slice(0,8).map(x=>x.image_url?'<img src="'+esc(x.image_url)+'" alt="'+esc(x.name||col.name)+'">':'<div class="collection-thumb-empty">MB</div>').join(""):'<div class="empty">Nenhum modelo cadastrado nesta coleção.</div>')+'</div></article>';
+   return '<article class="collection-admin-card"><div class="collection-admin-head"><div><span class="eyebrow">'+esc(col.name)+'</span><h3>'+items.length+' modelo'+(items.length===1?"":"s")+'</h3></div><button class="btn small" onclick="showSection(&quot;collection&quot;)">Adicionar modelo</button></div><div class="collection-admin-thumbs">'+(items.length?items.slice(0,8).map(x=>x.image_url?'<img src="'+esc(x.image_url)+'" alt="'+esc(x.name||col.name)+'">':'<div class="collection-thumb-empty">MB</div>').join(""):'<div class="empty">Nenhum modelo cadastrado nesta coleção.</div>')+'</div></article>';
   }).join("");
  }catch(e){el.innerHTML='<div class="empty">'+esc(e.message||"Não foi possível carregar as coleções.")+'</div>'}
 }
