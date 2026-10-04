@@ -119,7 +119,7 @@ function closeImageEditor(cancel=true){
 async function applyImageEditor(){
  const e=editorState;if(!e)return;const target=e.target,canvas=document.createElement("canvas");canvas.width=target.width;canvas.height=target.height;const ctx=canvas.getContext("2d"),stage=$("#imageEditorStage"),scaleOut=target.width/stage.clientWidth;
  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);
- const sx=e.x*scaleOut,sy=e.y*scaleOut,sw=e.baseW*e.scale*scaleOut,sh=e.baseH*e.scale*scaleOut;
+ const visualX=e.x+((e.baseW*(1-e.scale))/2),visualY=e.y+((e.baseH*(1-e.scale))/2);const sx=visualX*scaleOut,sy=visualY*scaleOut,sw=e.baseW*e.scale*scaleOut,sh=e.baseH*e.scale*scaleOut;
  ctx.drawImage(e.image,sx,sy,sw,sh);
  const blob=await new Promise(res=>canvas.toBlob(res,"image/jpeg",.94));
  if(!blob)throw new Error("Não foi possível preparar a imagem.");
