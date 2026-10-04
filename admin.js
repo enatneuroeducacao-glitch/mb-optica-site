@@ -144,7 +144,18 @@ async function saveSettings(form,defs){
 }
 $("#contentForm").addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,contentFields)}catch(x){alert(x.message)}});
 $("#appearanceForm").addEventListener("submit",async e=>{e.preventDefault();try{
- for(const id of ["logoFile","heroFile","serviceFile","amorinhaFile"]){const f=$("#"+id)?.files?.[0];if(f){const url=await upload(f);const key=id==="logoFile"?"logo_url":id==="heroFile"?"hero_image_url":id==="serviceFile"?"service_image_url":"amorinha_image_url";const field=$("#appearanceFields [name='"+key+"']");if(field)field.value=url;const row={key,value:url,updated_at:new Date().toISOString()};const rr=await db.from("site_settings").upsert([row],{onConflict:"key"});if(rr.error)throw rr.error}}
+ for(const id of ["logoFile","heroFile","serviceFile","amorinhaFile"]){
+  const file=$("#"+id)?.files?.[0];
+  if(file){
+   const edited=await prepareUpload(id);
+   const url=await upload(edited);
+   const key=id==="logoFile"?"logo_url":id==="heroFile"?"hero_image_url":id==="serviceFile"?"service_image_url":"amorinha_image_url";
+   const field=$("#appearanceFields [name='"+key+"']");if(field)field.value=url;
+   const row={key,value:url,updated_at:new Date().toISOString()};
+   const rr=await db.from("site_settings").upsert([row],{onConflict:"key"});if(rr.error)throw rr.error;
+   editedImages.delete(id);
+  }
+ }
  await saveSettings(e.target,appearanceFields);alert("Aparência salva.")
 }catch(x){alert(x.message)}});
 const editedImages=new Map();
@@ -245,7 +256,25 @@ async function prepareUpload(inputId){
 }
 
 async function upload(file){const ext=(file.name.split(".").pop()||"jpg").toLowerCase();const path=Date.now()+"-"+crypto.randomUUID()+"."+ext;const r=await db.storage.from("site-assets").upload(path,file,{upsert:false});if(r.error)throw r.error;return db.storage.from("site-assets").getPublicUrl(path).data.publicUrl}
-function addUploadControls(){const box=$("#appearanceFields");box.insertAdjacentHTML("beforeend",'<div class="field"><label>Enviar logotipo</label><input id="logoFile" type="file" accept="image/*"></div><div class="field"><label>Enviar imagem principal</label><input id="heroFile" type="file" accept="image/*"></div><div class="field"><label>Enviar imagem da seção Serviços</label><input id="serviceFile" type="file" accept="image/*"></div><div class="field"><label>Enviar foto da Amorinha</label><input id="amorinhaFile" type="file" accept="image/*"></div>')}
+function addUploadControls(){
+ const box=$("#appearanceFields");if(!box||box.dataset.uploadControlsBound)return;
+ const maps=[
+  ["logo_url","logoFile","Anexar logotipo"],
+  ["hero_image_url","heroFile","Anexar imagem principal"],
+  ["service_image_url","serviceFile","Anexar imagem dos serviços"],
+  ["amorinha_image_url","amorinhaFile","Anexar foto da Amorinha"]
+ ];
+ maps.forEach(([key,id,label])=>{
+  const urlInput=box.querySelector('[name="'+key+'"]');if(!urlInput)return;
+  const field=urlInput.closest(".field");if(!field)return;
+  const control=document.createElement("div");control.className="appearance-image-control";
+  control.innerHTML='<button type="button" class="btn secondary appearance-upload-btn">'+esc(label)+'</button><input id="'+id+'" type="file" accept="image/*" hidden><span class="appearance-upload-note">A imagem será aberta no editor antes de ser publicada.</span>';
+  field.appendChild(control);
+  const file=control.querySelector("#"+id);
+  control.querySelector("button").addEventListener("click",()=>file.click());
+ });
+ box.dataset.uploadControlsBound="1";
+}
 async function loadStats(){const ts=["products","services","gallery","offers"];const nums=await Promise.all(ts.map(async t=>(await db.from(t).select("*",{count:"exact",head:true})).count||0));$("#stats").innerHTML=ts.map((t,i)=>'<div><strong>'+nums[i]+'</strong><span>'+({products:"Produtos",services:"Serviços",gallery:"Fotos",offers:"Ofertas"}[t])+'</span></div>').join("")}
 async function getCollections(){
  const r=await db.from("collections").select("id,name,slug,active,sort_order").order("sort_order").order("created_at");
@@ -327,17 +356,21 @@ async function editExistingImage(table,id){
 }
 async function replaceImage(table,id){
  const input=document.createElement("input");
+ const inputId=table==="gallery"?"gImage":table==="products"?"pImage":table==="services"?"sImage":"oImage";
  input.type="file";input.accept="image/png,image/jpeg,image/webp";
  input.onchange=async()=>{
   const file=input.files?.[0];if(!file)return;
   if(file.size>5000000){alert("A imagem deve ter no máximo 5 MB.");return}
   try{
-   const url=await upload(file);
+   await openImageEditor(file,inputId);
+   const edited=editedImages.get(inputId);if(!edited)return;
+   const url=await upload(edited);
    const r=await db.from(table).update({image_url:url,updated_at:new Date().toISOString()}).eq("id",id);
    if(r.error)throw r.error;
+   editedImages.delete(inputId);
    await loadList(table);
-   alert("Foto atualizada no site.");
-  }catch(e){alert(e.message||"Não foi possível trocar a foto.")}
+   alert("Foto atualizada após o editor.");
+  }catch(e){if(e.message!=="Edição cancelada.")alert(e.message||"Não foi possível trocar a foto.")}
  };
  input.click();
 }
@@ -363,10 +396,10 @@ async function editRow(table,id){
 async function removeRow(table,id){if(!confirm("Excluir este registro?"))return;const r=await db.from(table).delete().eq("id",id);if(r.error){alert(r.error.message);return}await loadList(table);await loadStats();if(table==="products")await loadCollections()}
 
 $("#createCollectionBtn")?.addEventListener("click",createCollection);
-$("#productForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload(await prepareUpload("pImage"));const description=$("#pDescriptionRich")?.value||$("#pDescription").value;const r=await db.from("products").insert({name:$("#pName").value,category:$("#pCategory").value,price:$("#pPrice").value||null,description,image_url:image});if(r.error)throw r.error;e.target.reset();await loadList("products");await loadStats();alert("Produto adicionado.")}catch(x){alert(x.message)}});
-$("#serviceForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload(await prepareUpload("sImage"));const description=$("#sDescriptionRich")?.value||$("#sDescription").value;const r=await db.from("services").insert({name:$("#sName").value,description,image_url:image});if(r.error)throw r.error;e.target.reset();await loadList("services");await loadStats();alert("Serviço adicionado.")}catch(x){alert(x.message)}});
-$("#galleryForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload(await prepareUpload("gImage"));const r=await db.from("gallery").insert({title:$("#gTitle").value,alt_text:$("#gAlt").value,image_url:image});if(r.error)throw r.error;e.target.reset();await loadList("gallery");await loadStats();alert("Foto adicionada.")}catch(x){alert(x.message)}});
-$("#offerForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload(await prepareUpload("oImage"));const description=$("#oDescriptionRich")?.value||$("#oDescription").value;const r=await db.from("offers").insert({title:$("#oTitle").value,price_text:$("#oPrice").value,description,image_url:image,starts_at:$("#oStart").value||null,ends_at:$("#oEnd").value||null});if(r.error)throw r.error;e.target.reset();await loadList("offers");await loadStats();alert("Oferta adicionada.")}catch(x){alert(x.message)}});
+$("#productForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload(await prepareUpload("pImage"));const description=$("#pDescriptionRich")?.value||$("#pDescription").value;const r=await db.from("products").insert({name:$("#pName").value,category:$("#pCategory").value,price:$("#pPrice").value||null,description,image_url:image});if(r.error)throw r.error;editedImages.delete("pImage");e.target.reset();await loadList("products");await loadStats();alert("Produto adicionado.")}catch(x){alert(x.message)}});
+$("#serviceForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload(await prepareUpload("sImage"));const description=$("#sDescriptionRich")?.value||$("#sDescription").value;const r=await db.from("services").insert({name:$("#sName").value,description,image_url:image});if(r.error)throw r.error;editedImages.delete("sImage");e.target.reset();await loadList("services");await loadStats();alert("Serviço adicionado.")}catch(x){alert(x.message)}});
+$("#galleryForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload(await prepareUpload("gImage"));const r=await db.from("gallery").insert({title:$("#gTitle").value,alt_text:$("#gAlt").value,image_url:image});if(r.error)throw r.error;editedImages.delete("gImage");e.target.reset();await loadList("gallery");await loadStats();alert("Foto adicionada.")}catch(x){alert(x.message)}});
+$("#offerForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload(await prepareUpload("oImage"));const description=$("#oDescriptionRich")?.value||$("#oDescription").value;const r=await db.from("offers").insert({title:$("#oTitle").value,price_text:$("#oPrice").value,description,image_url:image,starts_at:$("#oStart").value||null,ends_at:$("#oEnd").value||null});if(r.error)throw r.error;editedImages.delete("oImage");e.target.reset();await loadList("offers");await loadStats();alert("Oferta adicionada.")}catch(x){alert(x.message)}});
 
 $("#passwordForm").addEventListener("submit",async e=>{e.preventDefault();const old=$("#currentPassword").value,newP=$("#newPassword").value,confirmP=$("#confirmPassword").value;
  if(newP.length<8)return securityMsg("A nova senha precisa ter pelo menos 8 caracteres.","err");if(newP!==confirmP)return securityMsg("A confirmação não confere.","err");
