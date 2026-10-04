@@ -15,6 +15,7 @@ const contentFields=[
 ["contact_eyebrow","Contato — etiqueta"],["contact_title","Contato — título"],["address","Endereço"],["hours","Horário"],["whatsapp","WhatsApp"],["phone","Telefone"],["email","E-mail"],["instagram","Instagram"],
 ["footer_tagline","Rodapé — frase"],["footer_copyright","Rodapé — copyright"],["privacy_text","Privacidade / LGPD"],["cookies_text","Cookies"]
 ];
+const historyFields=[["history_eyebrow","Etiqueta da seção"],["history_title","Título da seção"],["history_text","Texto da seção"],["history_note","Frase de destaque"]];
 const appearanceFields=[
 ["logo_url","URL do logotipo","url"],["hero_image_url","URL da imagem principal","url"],["service_image_url","URL da imagem dos serviços","url"],["amorinha_image_url","URL da foto da Amorinha","url"],["map_url","URL do Google Maps","url"],
 ["primary_color","Cor principal","color"],["cream_color","Cor de fundo","color"],["dark_color","Cor escura","color"],["muted_color","Cor de texto secundário","color"]
@@ -128,6 +129,7 @@ async function loadAll(){
  try{
   const s=await getSettings();
   renderFields($("#contentFields"),contentFields,s);
+  renderFields($("#historyFields"),historyFields,s);
   renderFields($("#appearanceFields"),appearanceFields,s);
   addUploadControls();
   bindImageEditor();
@@ -154,6 +156,7 @@ async function saveSettings(form,defs){
  const r=await db.from("site_settings").upsert(rows,{onConflict:"key"});if(r.error)throw r.error;alert("Alterações salvas no site.")
 }
 $("#contentForm").addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,contentFields)}catch(x){alert(x.message)}});
+$("#historyForm").addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,historyFields)}catch(x){alert(x.message)}});
 $("#appearanceForm").addEventListener("submit",async e=>{e.preventDefault();try{
  for(const id of ["logoFile","heroFile","serviceFile","amorinhaFile"]){
   const file=$("#"+id)?.files?.[0];
