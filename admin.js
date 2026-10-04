@@ -16,7 +16,7 @@ const contentFields=[
 ["footer_tagline","Rodapé — frase"],["footer_copyright","Rodapé — copyright"],["privacy_text","Privacidade / LGPD"],["cookies_text","Cookies"]
 ];
 const appearanceFields=[
-["logo_url","URL do logotipo","url"],["hero_image_url","URL da imagem principal","url"],["map_url","URL do Google Maps","url"],
+["logo_url","URL do logotipo","url"],["hero_image_url","URL da imagem principal","url"],["amorinha_image_url","URL da foto da Amorinha","url"],["map_url","URL do Google Maps","url"],
 ["primary_color","Cor principal","color"],["cream_color","Cor de fundo","color"],["dark_color","Cor escura","color"],["muted_color","Cor de texto secundário","color"]
 ];
 
@@ -76,11 +76,11 @@ async function saveSettings(form,defs){
 }
 $("#contentForm").addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,contentFields)}catch(x){alert(x.message)}});
 $("#appearanceForm").addEventListener("submit",async e=>{e.preventDefault();try{
- for(const id of ["logoFile","heroFile"]){const f=$("#"+id)?.files?.[0];if(f){const url=await upload(f);const key=id==="logoFile"?"logo_url":"hero_image_url";const row={key,value:url,updated_at:new Date().toISOString()};const rr=await db.from("site_settings").upsert([row],{onConflict:"key"});if(rr.error)throw rr.error}}
+ for(const id of ["logoFile","heroFile","amorinhaFile"]){const f=$("#"+id)?.files?.[0];if(f){const url=await upload(f);const key=id==="logoFile"?"logo_url":id==="heroFile"?"hero_image_url":"amorinha_image_url";const row={key,value:url,updated_at:new Date().toISOString()};const rr=await db.from("site_settings").upsert([row],{onConflict:"key"});if(rr.error)throw rr.error}}
  await saveSettings(e.target,appearanceFields);alert("Aparência salva.")
 }catch(x){alert(x.message)}});
 async function upload(file){const ext=(file.name.split(".").pop()||"jpg").toLowerCase();const path=Date.now()+"-"+crypto.randomUUID()+"."+ext;const r=await db.storage.from("site-assets").upload(path,file,{upsert:false});if(r.error)throw r.error;return db.storage.from("site-assets").getPublicUrl(path).data.publicUrl}
-function addUploadControls(){const box=$("#appearanceFields");box.insertAdjacentHTML("beforeend",'<div class="field"><label>Enviar logotipo</label><input id="logoFile" type="file" accept="image/*"></div><div class="field"><label>Enviar imagem principal</label><input id="heroFile" type="file" accept="image/*"></div>')}
+function addUploadControls(){const box=$("#appearanceFields");box.insertAdjacentHTML("beforeend",'<div class="field"><label>Enviar logotipo</label><input id="logoFile" type="file" accept="image/*"></div><div class="field"><label>Enviar imagem principal</label><input id="heroFile" type="file" accept="image/*"></div><div class="field"><label>Enviar foto da Amorinha</label><input id="amorinhaFile" type="file" accept="image/*"></div>')}
 async function loadStats(){const ts=["products","services","gallery","offers"];const nums=await Promise.all(ts.map(async t=>(await db.from(t).select("*",{count:"exact",head:true})).count||0));$("#stats").innerHTML=ts.map((t,i)=>'<div><strong>'+nums[i]+'</strong><span>'+({products:"Produtos",services:"Serviços",gallery:"Fotos",offers:"Ofertas"}[t])+'</span></div>').join("")}
 async function loadList(table){
  const r=await db.from(table).select("*").order("sort_order").order("created_at",{ascending:false});const el=$("#"+table+"Table");
