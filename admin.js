@@ -163,10 +163,34 @@ async function loadList(table){
  if(r.error){el.innerHTML='<div class="empty">'+esc(r.error.message)+'</div>';return}
  const rows=r.data||[];if(!rows.length){el.innerHTML='<div class="empty">Nenhum registro cadastrado ainda.</div>';return}
  el.innerHTML='<div class="table-wrap"><table class="table"><thead><tr><th>Foto</th><th>Informação</th><th>Status</th><th>Ações</th></tr></thead><tbody>'+
- rows.map(x=>'<tr><td>'+(x.image_url?'<img class="thumb" src="'+esc(x.image_url)+'">':"—")+'</td><td><strong>'+esc(x.name||x.title||"")+'</strong><br><small>'+esc(x.description||x.price_text||x.category||"")+'</small></td><td><button class="pill '+(x.active===false?"off":"on")+'" onclick="toggleActive(\''+table+'\',\''+x.id+'\','+(x.active===false?'true':'false')+')">'+(x.active===false?"Oculto":"Publicado")+'</button></td><td><button class="btn small" onclick="editRow(\''+table+'\',\''+x.id+'\')">Editar</button> '+(x.image_url?'<button class="btn small" onclick="replaceImage(\''+table+'\',\''+x.id+'\')">Trocar foto</button>':"")+' <button class="btn danger small" onclick="removeRow(\''+table+'\',\''+x.id+'\')">Excluir</button></td></tr>').join("")+
+ rows.map(x=>'<tr><td>'+(x.image_url?'<img class="thumb" src="'+esc(x.image_url)+'">':"—")+'</td><td><strong>'+esc(x.name||x.title||"")+'</strong><br><small>'+esc(x.description||x.price_text||x.category||"")+'</small></td><td><button class="pill '+(x.active===false?"off":"on")+'" onclick="toggleActive(\''+table+'\',\''+x.id+'\','+(x.active===false?'true':'false')+')">'+(x.active===false?"Oculto":"Publicado")+'</button></td><td><button class="btn small" onclick="editRow(\''+table+'\',\''+x.id+'\')">Editar</button> '+(x.image_url?'<button class="btn small" onclick="editExistingImage(\''+table+'\',\''+x.id+'\')">Editar foto</button> <button class="btn small" onclick="replaceImage(\''+table+'\',\''+x.id+'\')">Trocar foto</button>':"")+' <button class="btn danger small" onclick="removeRow(\''+table+'\',\''+x.id+'\')">Excluir</button></td></tr>').join("")+
  "</tbody></table></div>"
 }
 async function toggleActive(table,id,value){const r=await db.from(table).update({active:value,updated_at:new Date().toISOString()}).eq("id",id);if(r.error){alert(r.error.message);return}loadList(table)}
+async function editExistingImage(table,id){
+ const r=await db.from(table).select("image_url").eq("id",id).single();
+ if(r.error)return alert(r.error.message);
+ if(!r.data?.image_url)return alert("Este registro não possui foto.");
+ try{
+  const response=await fetch(r.data.image_url,{cache:"no-store"});
+  if(!response.ok)throw new Error("Não foi possível carregar a foto atual.");
+  const blob=await response.blob();
+  const ext=(blob.type||"image/jpeg").split("/")[1]||"jpeg";
+  const file=new File([blob],"foto-atual."+ext,{type:blob.type||"image/jpeg"});
+  const inputId=table==="gallery"?"gImage":table==="products"?"pImage":table==="services"?"sImage":"oImage";
+  await openImageEditor(file,inputId);
+  const edited=editedImages.get(inputId);
+  if(!edited)return;
+  const url=await upload(edited);
+  const u=await db.from(table).update({image_url:url,updated_at:new Date().toISOString()}).eq("id",id);
+  if(u.error)throw u.error;
+  editedImages.delete(inputId);
+  await loadList(table);
+  alert("Foto editada e atualizada no site.");
+ }catch(e){
+  if(e.message!=="Edição cancelada.")alert(e.message||"Não foi possível editar a foto.");
+ }
+}
 async function replaceImage(table,id){
  const input=document.createElement("input");
  input.type="file";input.accept="image/png,image/jpeg,image/webp";
