@@ -31,17 +31,14 @@ async function login(e){e.preventDefault();setStatus("","");
  const rawUser=(userField?.value||"").trim().toLowerCase(),password=passField?.value||"";
  if(!rawUser)return setStatus("Informe o usuário ou e-mail.","err");
  if(!password)return setStatus("Informe a senha.","err");
- const login=rawUser==="admin"?ADMIN_EMAIL:rawUser;
+ const email=rawUser==="admin"?ADMIN_EMAIL:rawUser;
  setStatus("Entrando...","ok");
  try{
-   const url=window.MB_SUPABASE.url,key=window.MB_SUPABASE.key;
-   const response=await fetch(url+"/auth/v1/token?grant_type=password",{method:"POST",headers:{"apikey":key,"Content-Type":"application/json"},body:JSON.stringify({email:login,password})});
-   let data={};try{data=await response.json()}catch(_){data={}};
-   if(!response.ok){const msg=data.error_description||data.msg||data.message||("Falha de autenticação ("+response.status+").");setStatus(msg,"err");return}
-   const session=await db.auth.setSession({access_token:data.access_token,refresh_token:data.refresh_token});
-   if(session.error){setStatus("Sessão recebida, mas não pôde ser criada: "+session.error.message,"err");return}
-   await start(session.data.user)
- }catch(err){setStatus("Falha de conexão com o Supabase: "+(err?.message||err),"err")}
+   const {data,error}=await db.auth.signInWithPassword({email,password});
+   if(error){setStatus(error.message==="Invalid login credentials"?"Usuário ou senha incorretos.":error.message,"err");return}
+   if(!data?.user){setStatus("Não foi possível iniciar a sessão administrativa.","err");return}
+   await start(data.user);
+ }catch(err){setStatus("Falha ao entrar na Central: "+(err?.message||err),"err")}
 }
 async function start(user){
  initFormRichEditors();
@@ -158,16 +155,16 @@ async function saveSettings(form,defs){
  const rows=Object.entries(data).map(([key,value])=>({key,value:String(value),updated_at:new Date().toISOString()}));
  const r=await db.from("site_settings").upsert(rows,{onConflict:"key"});if(r.error)throw r.error;alert("Alterações salvas no site.")
 }
-$("#homeForm").addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,homeFields)}catch(x){alert(x.message)}});
-$("#collectionContentForm").addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,collectionFields)}catch(x){alert(x.message)}});
-$("#servicesContentForm").addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,servicesFields)}catch(x){alert(x.message)}});
-$("#experienceForm").addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,experienceFields)}catch(x){alert(x.message)}});
-$("#historyForm").addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,historyFields)}catch(x){alert(x.message)}});
-$("#galleryContentForm").addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,galleryFields)}catch(x){alert(x.message)}});
-$("#offerContentForm").addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,offerFields)}catch(x){alert(x.message)}});
-$("#appointmentFormCms").addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,appointmentFields)}catch(x){alert(x.message)}});
-$("#contactForm").addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,contactFields)}catch(x){alert(x.message)}});
-$("#appearanceForm").addEventListener("submit",async e=>{e.preventDefault();try{
+$("#homeForm")?.addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,homeFields)}catch(x){alert(x.message)}});
+$("#collectionContentForm")?.addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,collectionFields)}catch(x){alert(x.message)}});
+$("#servicesContentForm")?.addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,servicesFields)}catch(x){alert(x.message)}});
+$("#experienceForm")?.addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,experienceFields)}catch(x){alert(x.message)}});
+$("#historyForm")?.addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,historyFields)}catch(x){alert(x.message)}});
+$("#galleryContentForm")?.addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,galleryFields)}catch(x){alert(x.message)}});
+$("#offerContentForm")?.addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,offerFields)}catch(x){alert(x.message)}});
+$("#appointmentFormCms")?.addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,appointmentFields)}catch(x){alert(x.message)}});
+$("#contactForm")?.addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,contactFields)}catch(x){alert(x.message)}});
+$("#appearanceForm")?.addEventListener("submit",async e=>{e.preventDefault();try{
  for(const id of ["logoFile","heroFile","serviceFile","amorinhaFile"]){
   const file=$("#"+id)?.files?.[0];
   if(file){
