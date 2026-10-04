@@ -1,4 +1,4 @@
-let WHATSAPP="5547999999999";const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+let WHATSAPP="5547999999999";let PUBLIC_PRODUCTS=[];let PUBLIC_COLLECTIONS=[];const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 document.addEventListener("DOMContentLoaded",()=>{
  $("#year").textContent=new Date().getFullYear();
  const menuToggle=$(".menu-toggle"),nav=$(".nav");
@@ -24,21 +24,21 @@ function bindCollectionFilters(){
 }
 async function loadPublicCollections(client){
  const r=await client.from("collections").select("name,slug,active,sort_order").eq("active",true).order("sort_order").order("created_at");
- if(r.error)return;
- const filters=$(".filters");if(!filters)return;
+ if(r.error)return [];
  const collections=(r.data||[]).filter(x=>x.slug!=="outros");
- filters.innerHTML=collections.map((x,i)=>'<button class="filter'+(i===0?" active":"")+'" data-filter="'+escapeCms(x.slug)+'">'+escapeCms(x.name)+'</button>').join("");
- bindCollectionFilters();
+ PUBLIC_COLLECTIONS=collections;
+ const filters=$(".filters");if(filters)filters.innerHTML="";
+ return collections;
 }
 function openCollectionAlbum(category){
  const modal=$("#collectionAlbum"),grid=$("#collectionAlbumGrid"),title=$("#collectionAlbumTitle"),count=$("#collectionAlbumCount");if(!modal||!grid)return;
- const filter=$$(".filter").find(btn=>btn.dataset.filter===category);
- const cards=$(".product-card").filter(card=>card.dataset.category===category);
- title.textContent=filter?.textContent?.trim()||category;
- count.textContent=cards.length+" modelo"+(cards.length===1?"":"s")+" nesta coleção";
- grid.innerHTML=cards.length?cards.map(card=>card.outerHTML).join(""):'<p class="album-empty">Ainda não há modelos cadastrados nesta coleção.</p>';
+ const collection=PUBLIC_COLLECTIONS.find(x=>x.slug===category);
+ const products=PUBLIC_PRODUCTS.filter(p=>String(p.category||"").toLowerCase()===String(category).toLowerCase());
+ title.textContent=collection?.name||category;
+ count.textContent=products.length+" modelo"+(products.length===1?"":"s")+" nesta coleção";
+ grid.innerHTML=products.length?products.map(p=>'<article class="product-card"><div class="product-visual">'+(p.image_url?'<img src="'+escapeCms(p.image_url)+'" alt="'+escapeCms(p.name||"Produto")+'" loading="lazy">':'<span>MB</span>')+'</div><div class="product-info"><small>'+escapeCms((p.category||"").toUpperCase())+'</small><h3>'+escapeCms(p.name||"Produto")+'</h3><div class="product-description">'+sanitizeCms(p.description||"")+'</div>'+(p.price!==null&&p.price!==undefined&&p.price!==""?'<strong class="product-price">R$ '+Number(p.price).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})+'</strong>':"")+'<button class="text-link" data-product="'+escapeCms(p.name||"Produto")+'">Tenho interesse →</button></div></article>').join(""):'<p class="album-empty">Ainda não há modelos cadastrados nesta coleção.</p>';
  modal.classList.remove("hidden");modal.setAttribute("aria-hidden","false");document.body.classList.add("album-open");
- $("#collectionAlbumGrid .text-link").forEach(btn=>btn.addEventListener("click",()=>{const interest=$("#interest");if(interest)interest.value=btn.dataset.product;closeCollectionAlbum();$("#agendamento")?.scrollIntoView({behavior:"smooth"});if($("#message"))$("#message").value="Tenho interesse no modelo "+btn.dataset.product+". Gostaria de saber se está disponível.";$("#name")?.focus()}));
+ $$("#collectionAlbumGrid .text-link").forEach(btn=>btn.addEventListener("click",()=>{const interest=$("#interest");if(interest)interest.value=btn.dataset.product;closeCollectionAlbum();$("#agendamento")?.scrollIntoView({behavior:"smooth"});if($("#message"))$("#message").value="Tenho interesse no modelo "+btn.dataset.product+". Gostaria de saber se está disponível.";$("#name")?.focus()}));
 }
 function closeCollectionAlbum(){const modal=$("#collectionAlbum");if(!modal)return;modal.classList.add("hidden");modal.setAttribute("aria-hidden","true");document.body.classList.remove("album-open")}
 document.addEventListener("click",e=>{if(e.target.matches("[data-close-album]"))closeCollectionAlbum()});
@@ -101,8 +101,18 @@ async function loadCmsContent(){
   const root=document.documentElement;if(s.primary_color)root.style.setProperty("--gold",s.primary_color);if(s.cream_color)root.style.setProperty("--cream",s.cream_color);if(s.dark_color)root.style.setProperty("--dark",s.dark_color);if(s.muted_color)root.style.setProperty("--muted",s.muted_color);
   if(s.whatsapp)WHATSAPP=s.whatsapp.replace(/\D/g,"");
   await loadPublicCollections(client);
+  const collections=await loadPublicCollections(client);
   const products=(await client.from("products").select("*").eq("active",true).order("sort_order").order("created_at",{ascending:false})).data||[];
-  if(products.length){const grid=$(".product-grid");grid.innerHTML=products.map(p=>'<article class="product-card" data-category="'+escapeCms(p.category)+'"><div class="product-visual">'+(p.image_url?'<img src="'+escapeCms(p.image_url)+'" alt="'+escapeCms(p.name||"Produto")+'" loading="lazy">':'<span>MB</span>')+'</div><button type="button" class="collection-link" data-collection="'+escapeCms(p.category||"")+'">Conheça a coleção →</button><div class="product-info"><small>'+escapeCms((p.category||"outros").toUpperCase())+'</small><h3>'+escapeCms(p.name)+'</h3><div class="product-description">'+sanitizeCms(p.description||"")+'</div>'+(p.price!==null&&p.price!==undefined&&p.price!==""?'<strong class="product-price">R$ '+Number(p.price).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})+'</strong>':"")+'<button class="text-link" data-product="'+escapeCms(p.name)+'">Tenho interesse →</button></div></article>').join("");bindInterestButtons()}
+  PUBLIC_PRODUCTS=products;
+  const grid=$(".product-grid");
+  if(grid){
+   const showcase=collections.map(collection=>{
+    const product=products.find(p=>String(p.category||"").toLowerCase()===String(collection.slug).toLowerCase());
+    return '<article class="product-card collection-showcase" data-category="'+escapeCms(collection.slug)+'"><div class="product-visual">'+(product?.image_url?'<img src="'+escapeCms(product.image_url)+'" alt="'+escapeCms(collection.name)+'" loading="lazy">':'<span>MB</span>')+'</div><div class="product-info"><small>'+escapeCms(collection.name.toUpperCase())+'</small><h3>'+escapeCms(collection.name)+'</h3><button type="button" class="collection-link" data-collection="'+escapeCms(collection.slug)+'">Conheça a coleção →</button></div></article>';
+   }).join("");
+   grid.innerHTML=showcase;
+   $$(".collection-link").forEach(btn=>btn.addEventListener("click",()=>openCollectionAlbum(btn.dataset.collection)));
+  }
   const servicesResult=await client.from("services").select("*").eq("active",true).order("sort_order").order("created_at",{ascending:false});const services=servicesResult.data||[];if(services.length){$(".service-list").innerHTML=services.map((x,i)=>'<div><span>'+String(i+1).padStart(2,"0")+'</span><div><h3>'+sanitizeCms(x.name||"")+'</h3><div class="service-desc">'+sanitizeCms(x.description||"")+'</div></div></div>').join("");if(services[0].image_url){const serviceImage=$("#serviceImage");if(serviceImage){serviceImage.src=services[0].image_url;serviceImage.alt=services[0].name||"Imagem dos serviços";serviceImage.style.backgroundImage="none"}}}
   const gallery=(await client.from("gallery").select("*").eq("active",true).order("sort_order").order("created_at",{ascending:false})).data||[];
   if(gallery.length){$(".gallery-grid").innerHTML=gallery.map(x=>'<figure class="gallery-tile"><img src="'+escapeCms(x.image_url)+'" alt="'+escapeCms(x.alt_text||x.title||"Ótica Moni Becker")+'" loading="lazy"><figcaption>'+escapeCms(x.title||"ÓTICA MONI BECKER")+'</figcaption></figure>').join("")}
