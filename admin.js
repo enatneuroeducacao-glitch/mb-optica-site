@@ -116,7 +116,11 @@ function renderFields(container,defs,settings){
   }
   const long=label.includes("descrição")||label.includes("texto")||label.includes("título")||label.includes("observação")||label.includes("LGPD")||label.includes("Cookies")||key.endsWith("_text")||key.includes("subtitle")||key.includes("title");
   if(long) mountRichField(container,key,label,value);
-  else container.insertAdjacentHTML("beforeend",'<div class="field"><label>'+label+'</label><input name="'+key+'" type="'+(type||"text")+'" value="'+esc(value)+'"></div>');
+  else {
+   const imageUrlField=["logo_url","hero_image_url","service_image_url","amorinha_image_url"].includes(key);
+   const inputType=imageUrlField?"text":(type||"text");
+   container.insertAdjacentHTML("beforeend",'<div class="field"><label>'+label+'</label><input name="'+key+'" type="'+inputType+'" value="'+esc(value)+'"'+(imageUrlField?' placeholder="Opcional — use o botão Anexar para enviar uma imagem"':"")+'></div>');
+  }
  });
 }
 async function getSettings(){const r=await db.from("site_settings").select("key,value");if(r.error)throw r.error;return Object.fromEntries((r.data||[]).map(x=>[x.key,x.value]))}
