@@ -126,6 +126,7 @@ async function loadAll(){
   renderFields($("#servicesFields"),servicesFields,s);
   renderFields($("#experienceFields"),experienceFields,s);
   renderFields($("#historyFields"),historyFields,s);
+  const historyPreview=$("#historyImagePreview");if(historyPreview)historyPreview.src=s.amorinha_image_url||"assets/amorinha.jpg";
   renderFields($("#galleryFields"),galleryFields,s);
   renderFields($("#offerFields"),offerFields,s);
   renderFields($("#appointmentFields"),appointmentFields,s);
@@ -262,6 +263,7 @@ async function applyImageEditor(){
  const resolve=e.resolve;closeImageEditor(false);resolve(edited);
 }
 function bindImageEditor(){
+ const historyInput=$("#historyImage");const historyAttach=$("#historyImageAttach");if(historyInput&&historyAttach&&!historyAttach.dataset.bound){historyAttach.dataset.bound="1";historyAttach.addEventListener("click",()=>historyInput.click())}
  Object.keys(imageTargets).forEach(id=>{
   const input=$("#"+id);if(!input||input.dataset.editorBound)return;
   input.dataset.editorBound="1";
