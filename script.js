@@ -4,11 +4,6 @@ document.addEventListener("DOMContentLoaded",()=>{
  const menuToggle=$(".menu-toggle"),nav=$(".nav");
  menuToggle?.addEventListener("click",()=>{const open=nav.classList.toggle("mobile-open");menuToggle.setAttribute("aria-expanded",String(open))});
  $$(".nav a").forEach(a=>a.addEventListener("click",()=>nav.classList.remove("mobile-open")));
- $$(".filter").forEach(btn=>btn.addEventListener("click",()=>{
- $$(".filter").forEach(b=>b.classList.remove("active"));btn.classList.add("active");
- if(btn.dataset.filter==="todos"){filterProducts("todos");closeCollectionAlbum();return}
- filterProducts(btn.dataset.filter);openCollectionAlbum(btn.dataset.filter);
-}));
  bindInterestButtons();
  $("#appointmentForm")?.addEventListener("submit",appointmentSubmit);
  $("#newsletterForm")?.addEventListener("submit",e=>{e.preventDefault();$("#newsletterMsg").textContent="Cadastro recebido. Em breve enviaremos novidades.";e.target.reset()});
@@ -23,8 +18,8 @@ function bindCollectionFilters(){
  });
 }
 async function loadPublicCollections(client){
- const r=await client.from("collections").select("name,slug,active,sort_order").eq("active",true).order("sort_order").order("created_at");
- if(r.error)return [];
+ const r=await client.from("collections").select("name,slug,active,sort_order").eq("active",true).order("sort_order");
+ if(r.error){console.warn("Coleções:",r.error);return []}
  const collections=(r.data||[]).filter(x=>x.slug!=="outros");
  PUBLIC_COLLECTIONS=collections;
  const filters=$(".filters");if(filters)filters.innerHTML="";
@@ -33,7 +28,7 @@ async function loadPublicCollections(client){
 function openCollectionAlbum(category){
  const modal=$("#collectionAlbum"),grid=$("#collectionAlbumGrid"),title=$("#collectionAlbumTitle"),count=$("#collectionAlbumCount");if(!modal||!grid)return;
  const collection=PUBLIC_COLLECTIONS.find(x=>x.slug===category);
- const products=PUBLIC_PRODUCTS.filter(p=>String(p.category||"").toLowerCase()===String(category).toLowerCase());
+ const products=PUBLIC_PRODUCTS.filter(p=>String(p.category||"").toLowerCase()===String(category||"").toLowerCase());
  title.textContent=collection?.name||category;
  count.textContent=products.length+" modelo"+(products.length===1?"":"s")+" nesta coleção";
  grid.innerHTML=products.length?products.map(p=>'<article class="product-card"><div class="product-visual">'+(p.image_url?'<img src="'+escapeCms(p.image_url)+'" alt="'+escapeCms(p.name||"Produto")+'" loading="lazy">':'<span>MB</span>')+'</div><div class="product-info"><small>'+escapeCms((p.category||"").toUpperCase())+'</small><h3>'+escapeCms(p.name||"Produto")+'</h3><div class="product-description">'+sanitizeCms(p.description||"")+'</div>'+(p.price!==null&&p.price!==undefined&&p.price!==""?'<strong class="product-price">R$ '+Number(p.price).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})+'</strong>':"")+'<button class="text-link" data-product="'+escapeCms(p.name||"Produto")+'">Tenho interesse →</button></div></article>').join(""):'<p class="album-empty">Ainda não há modelos cadastrados nesta coleção.</p>';
@@ -44,10 +39,7 @@ function closeCollectionAlbum(){const modal=$("#collectionAlbum");if(!modal)retu
 document.addEventListener("click",e=>{if(e.target.matches("[data-close-album]"))closeCollectionAlbum()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeCollectionAlbum()});
 function filterProducts(filter){$$(".product-card").forEach(card=>{card.style.display=filter==="todos"||card.dataset.category===filter?"":"none"})}
-function bindInterestButtons(){
- $(".text-link").forEach(btn=>btn.addEventListener("click",()=>{const interest=$("#interest");if(interest)interest.value=btn.dataset.product;$("#agendamento")?.scrollIntoView({behavior:"smooth"});if($("#message"))$("#message").value="Tenho interesse no modelo "+btn.dataset.product+". Gostaria de saber se está disponível.";$("#name")?.focus()}));
- $(".collection-link").forEach(btn=>btn.addEventListener("click",()=>{const category=btn.dataset.collection;if(category)openCollectionAlbum(category)}));
-}
+function bindInterestButtons(){$$(".text-link").forEach(btn=>btn.addEventListener("click",()=>{const interest=$("#interest");if(interest)interest.value=btn.dataset.product;$("#agendamento")?.scrollIntoView({behavior:"smooth"});if($("#message"))$("#message").value="Tenho interesse no modelo "+btn.dataset.product+". Gostaria de saber se está disponível.";$("#name")?.focus()}))}
 function appointmentSubmit(e){e.preventDefault();const name=$("#name").value.trim(),phone=$("#phone").value.trim(),interest=$("#interest").value,message=$("#message").value.trim();const text="Olá, Ótica Moni Becker!%0A%0AMeu nome é "+encodeURIComponent(name)+".%0AWhatsApp: "+encodeURIComponent(phone)+"%0AInteresse: "+encodeURIComponent(interest)+"%0A"+encodeURIComponent(message);if(!WHATSAPP||WHATSAPP==="5547999999999"){showToast("O WhatsApp da loja ainda não está configurado.");return}window.open("https://wa.me/"+WHATSAPP+"?text="+text,"_blank","noopener")}
 function openModal(id){document.getElementById(id)?.classList.add("open")}function closeModal(id){document.getElementById(id)?.classList.remove("open")}
 function showToast(message){const t=$("#toast");t.textContent=message;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),4200)}
@@ -106,11 +98,10 @@ async function loadCmsContent(){
   PUBLIC_PRODUCTS=products;
   const grid=$(".product-grid");
   if(grid){
-   const showcase=collections.map(collection=>{
-    const product=products.find(p=>String(p.category||"").toLowerCase()===String(collection.slug).toLowerCase());
+   grid.innerHTML=collections.map(collection=>{
+    const product=products.find(p=>String(p.category||"").toLowerCase()===String(collection.slug||"").toLowerCase());
     return '<article class="product-card collection-showcase" data-category="'+escapeCms(collection.slug)+'"><div class="product-visual">'+(product?.image_url?'<img src="'+escapeCms(product.image_url)+'" alt="'+escapeCms(collection.name)+'" loading="lazy">':'<span>MB</span>')+'</div><div class="product-info"><small>'+escapeCms(collection.name.toUpperCase())+'</small><h3>'+escapeCms(collection.name)+'</h3><button type="button" class="collection-link" data-collection="'+escapeCms(collection.slug)+'">Conheça a coleção →</button></div></article>';
    }).join("");
-   grid.innerHTML=showcase;
    $$(".collection-link").forEach(btn=>btn.addEventListener("click",()=>openCollectionAlbum(btn.dataset.collection)));
   }
   const servicesResult=await client.from("services").select("*").eq("active",true).order("sort_order").order("created_at",{ascending:false});const services=servicesResult.data||[];if(services.length){$(".service-list").innerHTML=services.map((x,i)=>'<div><span>'+String(i+1).padStart(2,"0")+'</span><div><h3>'+sanitizeCms(x.name||"")+'</h3><div class="service-desc">'+sanitizeCms(x.description||"")+'</div></div></div>').join("");if(services[0].image_url){const serviceImage=$("#serviceImage");if(serviceImage){serviceImage.src=services[0].image_url;serviceImage.alt=services[0].name||"Imagem dos serviços";serviceImage.style.backgroundImage="none"}}}
