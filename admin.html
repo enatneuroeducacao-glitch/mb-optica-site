@@ -14,13 +14,16 @@
 <aside class="sidebar"><div class="brand"><img src="assets/logo.jpg"><div><strong>MB.Óptica</strong><small>Central administrativa</small></div></div>
 <nav class="nav">
 <button data-section="dashboard" class="active">▦ Visão geral</button>
-<button data-section="content">✎ Conteúdo do site</button>
-<button data-section="history">◉ Nossa História</button>
-<button data-section="appearance">◈ Aparência</button>
-<button data-section="products">👓 Produtos</button>
+<button data-section="home">⌂ Início</button>
+<button data-section="collection">◇ Coleção</button>
 <button data-section="services">✦ Serviços</button>
+<button data-section="experience">◉ A Ótica</button>
+<button data-section="history">◉ Nossa História</button>
 <button data-section="gallery">▧ Galeria</button>
 <button data-section="offers">🏷 Ofertas</button>
+<button data-section="appointment">✆ Atendimento</button>
+<button data-section="contact">⌖ Contato</button>
+<button data-section="appearance">◈ Aparência</button>
 <button data-section="security">🔐 Segurança <span style="font-size:.7em;opacity:.7">🔒</span></button>
 </nav><a class="view-site" href="index.html" target="_blank">Ver site público ↗</a><button id="logout" class="logout">Sair</button></aside>
 
@@ -29,21 +32,58 @@
 <section id="dashboard" class="section"><div class="card hero-card"><h2>Central MB.Óptica</h2><p>Todo o conteúdo operacional do site público fica concentrado nesta área. Salve uma alteração e ela passa a ser usada pelo site.</p><div id="stats" class="stats"></div></div>
 <div class="card"><h2>Acesso rápido</h2><div class="quick"><button data-go="content">Editar conteúdo</button><button data-go="appearance">Cores e imagens</button><button data-go="security">Trocar senha</button><a href="index.html" target="_blank">Abrir site</a></div></div></section>
 
-<section id="content" class="section hidden"><div class="card"><h2>Conteúdo do site</h2><p class="muted">Textos, contatos, seções e rodapé. Você não precisa editar código.</p><form id="contentForm"><div id="contentFields" class="form-grid"></div><div class="actions"><button class="btn primary">Salvar conteúdo</button></div></form></div></section>
+<section id="home" class="section hidden">
+<div class="card"><h2>Início</h2><p class="muted">Tudo o que aparece na página inicial: identidade, destaque principal e mensagens de confiança.</p><form id="homeForm"><div id="homeFields" class="form-grid"></div><div class="actions"><button class="btn primary">Salvar Início</button></div></form></div>
+</section>
 
-<section id="history" class="section hidden"><div class="card"><h2>Nossa História</h2><p class="muted">Edite o texto da seção Nossa História. A foto da Amorinha continua sendo gerenciada em Aparência.</p><form id="historyForm"><div id="historyFields" class="form-grid"></div><div class="actions"><button class="btn primary">Salvar nossa história</button></div></form></div></section>
+<section id="collection" class="section hidden">
+<div class="card"><h2>Coleção</h2><p class="muted">Edite o título da seção e administre as coleções. Cada coleção funciona como um álbum no site público.</p><form id="collectionContentForm"><div id="collectionFields" class="form-grid"></div><div class="actions"><button class="btn primary">Salvar Coleção</button></div></form></div>
+<div class="card"><h2>Álbuns de coleções</h2><p class="muted">Crie coleções e acompanhe os modelos que pertencem a cada álbum.</p><div id="collectionsTable" class="collection-admin-grid"></div></div>
+<div class="card"><h2>Novo modelo</h2><form id="productForm"><div class="form-grid">
+<div class="field"><label>Nome</label><input id="pName" required></div>
+<div class="field"><label>Coleção</label><div style="display:flex;gap:8px;align-items:center"><select id="pCategory" style="flex:1"></select><button id="createCollectionBtn" class="btn primary" type="button">Criar coleção</button></div></div>
+<div class="field"><label>Preço</label><input id="pPrice" type="number" step="0.01"></div>
+<div class="field wide"><label>Descrição</label><textarea id="pDescription"></textarea></div>
+<div class="field wide"><label>Foto</label><input id="pImage" type="file" accept="image/*"></div>
+</div><div class="actions"><button class="btn primary">Adicionar modelo</button></div></form></div>
+<div class="card"><h2>Modelos cadastrados</h2><div id="productsTable"></div></div>
+</section>
 
-<section id="appearance" class="section hidden"><div class="card"><h2>Aparência e identidade</h2><p class="muted">Cores, logotipo, imagens do site e mapa. A imagem da seção Serviços pode ser substituída aqui.</p><form id="appearanceForm"><div id="appearanceFields" class="form-grid"></div><div class="actions"><button class="btn primary">Salvar aparência</button></div></form></div></section>
+<section id="services" class="section hidden">
+<div class="card"><h2>Serviços</h2><form id="servicesContentForm"><div id="servicesFields" class="form-grid"></div><div class="actions"><button class="btn primary">Salvar Serviços</button></div></form></div>
+<div class="card"><h2>Novo serviço</h2><form id="serviceForm"><div class="form-grid"><div class="field"><label>Nome</label><input id="sName" required></div><div class="field wide"><label>Descrição</label><textarea id="sDescription"></textarea></div><div class="field wide"><label>Foto</label><input id="sImage" type="file" accept="image/*"></div></div><div class="actions"><button class="btn primary">Adicionar serviço</button></div></form></div>
+<div class="card"><h2>Serviços cadastrados</h2><div id="servicesTable"></div></div>
+</section>
 
-<section id="collections" class="section hidden"><div class="card"><h2>Álbuns de coleções</h2><p class="muted">Cada modelo cadastrado em Produtos pertence a uma coleção. A foto de cada modelo alimenta automaticamente o álbum correspondente no site público.</p><div id="collectionsTable" class="collection-admin-grid"></div></div></section><section id="products" class="section hidden"><div class="card"><h2>Novo produto</h2><form id="productForm"><div class="form-grid">
-<div class="field"><label>Nome</label><input id="pName" required></div><div class="field"><label>Categoria</label><div style="display:flex;gap:8px;align-items:center"><select id="pCategory" style="flex:1"><option value="feminino">Feminino</option><option value="masculino">Masculino</option><option value="solar">Solar</option><option value="infantil">Infantil</option><option value="outros">Outros</option></select><button id="createCollectionBtn" class="btn primary" type="button">Criar coleção</button></div></div><div class="field"><label>Preço</label><input id="pPrice" type="number" step="0.01"></div>
-<div class="field wide"><label>Descrição</label><textarea id="pDescription"></textarea></div><div class="field wide"><label>Foto</label><input id="pImage" type="file" accept="image/*"></div></div><div class="actions"><button class="btn primary">Adicionar produto</button></div></form></div><div class="card"><h2>Produtos cadastrados</h2><div id="productsTable"></div></div></section>
+<section id="experience" class="section hidden">
+<div class="card"><h2>A Ótica</h2><p class="muted">Edite a seção “A Experiência Moni Becker” exibida no site.</p><form id="experienceForm"><div id="experienceFields" class="form-grid"></div><div class="actions"><button class="btn primary">Salvar A Ótica</button></div></form></div>
+</section>
 
-<section id="services" class="section hidden"><div class="card"><h2>Novo serviço</h2><form id="serviceForm"><div class="form-grid"><div class="field"><label>Nome</label><input id="sName" required></div><div class="field wide"><label>Descrição</label><textarea id="sDescription"></textarea></div><div class="field wide"><label>Foto</label><input id="sImage" type="file" accept="image/*"></div></div><div class="actions"><button class="btn primary">Adicionar serviço</button></div></form></div><div class="card"><h2>Serviços cadastrados</h2><div id="servicesTable"></div></div></section>
+<section id="history" class="section hidden">
+<div class="card"><h2>Nossa História</h2><p class="muted">Edite completamente a seção Nossa História. A foto da Amorinha continua em Aparência e sempre passa pelo editor antes da publicação.</p><form id="historyForm"><div id="historyFields" class="form-grid"></div><div class="actions"><button class="btn primary">Salvar Nossa História</button></div></form></div>
+</section>
 
-<section id="gallery" class="section hidden"><div class="card"><h2>Adicionar foto à galeria</h2><form id="galleryForm"><div class="form-grid"><div class="field"><label>Título</label><input id="gTitle"></div><div class="field"><label>Texto alternativo</label><input id="gAlt"></div><div class="field wide"><label>Foto</label><input id="gImage" type="file" accept="image/*" required></div></div><div class="actions"><button class="btn primary">Adicionar foto</button></div></form></div><div class="card"><h2>Galeria</h2><div id="galleryTable"></div></div></section>
+<section id="gallery" class="section hidden">
+<div class="card"><h2>Galeria</h2><form id="galleryContentForm"><div id="galleryFields" class="form-grid"></div><div class="actions"><button class="btn primary">Salvar Galeria</button></div></form></div>
+<div class="card"><h2>Adicionar foto</h2><form id="galleryForm"><div class="form-grid"><div class="field"><label>Título</label><input id="gTitle"></div><div class="field"><label>Texto alternativo</label><input id="gAlt"></div><div class="field wide"><label>Foto</label><input id="gImage" type="file" accept="image/*" required></div></div><div class="actions"><button class="btn primary">Adicionar foto</button></div></form></div>
+<div class="card"><h2>Fotos publicadas</h2><div id="galleryTable"></div></div>
+</section>
 
-<section id="offers" class="section hidden"><div class="card"><h2>Nova oferta</h2><form id="offerForm"><div class="form-grid"><div class="field"><label>Título</label><input id="oTitle" required></div><div class="field"><label>Texto do preço</label><input id="oPrice"></div><div class="field"><label>Foto</label><input id="oImage" type="file" accept="image/*"></div><div class="field wide"><label>Descrição</label><textarea id="oDescription"></textarea></div><div class="field"><label>Início</label><input id="oStart" type="date"></div><div class="field"><label>Fim</label><input id="oEnd" type="date"></div></div><div class="actions"><button class="btn primary">Adicionar oferta</button></div></form></div><div class="card"><h2>Ofertas cadastradas</h2><div id="offersTable"></div></div></section>
+<section id="offers" class="section hidden">
+<div class="card"><h2>Ofertas</h2><form id="offerContentForm"><div id="offerFields" class="form-grid"></div><div class="actions"><button class="btn primary">Salvar Ofertas</button></div></form></div>
+<div class="card"><h2>Nova oferta</h2><form id="offerForm"><div class="form-grid"><div class="field"><label>Título</label><input id="oTitle" required></div><div class="field"><label>Texto do preço</label><input id="oPrice"></div><div class="field"><label>Foto</label><input id="oImage" type="file" accept="image/*"></div><div class="field wide"><label>Descrição</label><textarea id="oDescription"></textarea></div><div class="field"><label>Início</label><input id="oStart" type="date"></div><div class="field"><label>Fim</label><input id="oEnd" type="date"></div></div><div class="actions"><button class="btn primary">Adicionar oferta</button></div></form></div>
+<div class="card"><h2>Ofertas cadastradas</h2><div id="offersTable"></div></div>
+</section>
+
+<section id="appointment" class="section hidden">
+<div class="card"><h2>Atendimento</h2><p class="muted">Edite o bloco de agendamento e a mensagem apresentada ao cliente.</p><form id="appointmentFormCms"><div id="appointmentFields" class="form-grid"></div><div class="actions"><button class="btn primary">Salvar Atendimento</button></div></form></div>
+</section>
+
+<section id="contact" class="section hidden">
+<div class="card"><h2>Contato</h2><p class="muted">Todos os dados de contato, redes sociais e mapa do site.</p><form id="contactForm"><div id="contactFields" class="form-grid"></div><div class="actions"><button class="btn primary">Salvar Contato</button></div></form></div>
+</section>
+
+<section id="appearance" class="section hidden"><div class="card"><h2>Aparência e identidade</h2><p class="muted">Cores, logotipo e imagens. Toda imagem anexada passa pelo editor antes de ser publicada.</p><form id="appearanceForm"><div id="appearanceFields" class="form-grid"></div><div class="actions"><button class="btn primary">Salvar Aparência</button></div></form></div></section>
 
 <section id="security" class="section hidden"><div class="card"><h2>Segurança e acesso</h2><p class="muted">Troque a senha do usuário administrativo sem editar banco ou código.</p><form id="passwordForm"><div class="form-grid"><div class="field"><label>Senha atual</label><input id="currentPassword" type="password" autocomplete="current-password" required></div><div class="field"><label>Nova senha</label><input id="newPassword" type="password" minlength="8" autocomplete="new-password" required></div><div class="field"><label>Confirmar nova senha</label><input id="confirmPassword" type="password" minlength="8" autocomplete="new-password" required></div></div><div class="actions"><button class="btn primary">Trocar senha</button></div><div id="securityStatus"></div></form></div>
 <div class="card"><h2>Criar usuário administrativo</h2><p class="muted">Crie outro acesso à Central Administrativa. O novo usuário terá permissão de administrador.</p><form id="createAdminForm"><div class="form-grid"><div class="field"><label>E-mail do novo usuário</label><input id="newAdminEmail" type="email" autocomplete="off" required placeholder="nome@exemplo.com"></div><div class="field"><label>Senha inicial</label><input id="newAdminPassword" type="password" minlength="8" autocomplete="new-password" required placeholder="Mínimo de 8 caracteres"></div><div class="field"><label>Confirmar senha</label><input id="newAdminPasswordConfirm" type="password" minlength="8" autocomplete="new-password" required placeholder="Repita a senha"></div></div><div class="actions"><button class="btn primary" type="submit">Criar usuário</button></div><div id="createUserStatus"></div></form></div>
