@@ -96,8 +96,9 @@ function openImageEditor(file,inputId){
   const target=imageTargets[inputId]||imageTargets.gImage, modal=$("#imageEditor"),stage=$("#imageEditorStage"),img=$("#imageEditorImage"),zoom=$("#imageEditorZoom");
   if(!modal||!stage||!img)return reject(new Error("Editor de imagem indisponível."));
   const url=URL.createObjectURL(file);
-  editorState={file,inputId,target,url,image:img,scale:1,x:0,y:0,drag:false,startX:0,startY:0,baseW:0,baseH:0,resolve,reject};
-  stage.style.aspectRatio=String(target.ratio);
+  editorState={file,inputId,target,url,image:img,scale:1,x:0,y:0,drag:false,startX:0,startY:0,baseW:0,baseH:0,ratio:target.ratio,width:target.width,height:target.height,resolve,reject};
+  stage.style.aspectRatio=String(editorState.ratio);
+  $("#imageEditorRatio").value=ratioToOption(editorState.ratio);
   $("#imageEditorTitle").textContent="Ajustar foto — "+target.label;
   $("#imageEditorHint").textContent="A área marcada é exatamente o formato que aparecerá no site. Arraste a foto, ajuste o zoom e clique em Aplicar enquadramento.";
   img.onload=()=>{
@@ -120,8 +121,22 @@ function applyEditorTransform(){
 function closeImageEditor(cancel=true){
  const e=editorState;if(!e)return;$("#imageEditor").classList.add("hidden");$("#imageEditor").setAttribute("aria-hidden","true");if(cancel){editedImages.delete(e.inputId);const input=$("#"+e.inputId);if(input)input.value=""}URL.revokeObjectURL(e.url);const fn=cancel?e.reject:e.resolve;editorState=null;if(cancel)fn(new Error("Edição cancelada."));else fn();
 }
+function ratioToOption(ratio){const options={"16:9":16/9,"4:3":4/3,"3:2":3/2,"1:1":1,"4:5":4/5,"9:16":9/16};let best="original",delta=Infinity;for(const [key,value] of Object.entries(options)){const d=Math.abs(value-ratio);if(d<delta&&d<0.02){best=key;delta=d}}return best}
+function setEditorRatio(value){
+ const e=editorState;if(!e)return;
+ let ratio;
+ if(value==="original")ratio=e.image.naturalWidth/e.image.naturalHeight;
+ else{const [w,h]=value.split(":").map(Number);ratio=w/h}
+ e.ratio=ratio;e.width=1600;e.height=Math.max(1,Math.round(1600/ratio));
+ const stage=$("#imageEditorStage");stage.style.aspectRatio=String(ratio);
+ e.scale=1;e.x=0;e.y=0;
+ requestAnimationFrame(()=>{
+   const sw=stage.clientWidth,sh=stage.clientHeight,cover=Math.max(sw/e.image.naturalWidth,sh/e.image.naturalHeight);
+   e.baseW=e.image.naturalWidth*cover;e.baseH=e.image.naturalHeight*cover;e.x=(sw-e.baseW)/2;e.y=(sh-e.baseH)/2;applyEditorTransform();
+ });
+}
 async function applyImageEditor(){
- const e=editorState;if(!e)return;const target=e.target,canvas=document.createElement("canvas");canvas.width=target.width;canvas.height=target.height;const ctx=canvas.getContext("2d"),stage=$("#imageEditorStage"),scaleOut=target.width/stage.clientWidth;
+ const e=editorState;if(!e)return;const canvas=document.createElement("canvas");canvas.width=e.width;canvas.height=e.height;const ctx=canvas.getContext("2d"),stage=$("#imageEditorStage"),scaleOut=e.width/stage.clientWidth;
  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);
  const visualX=e.x+((e.baseW*(1-e.scale))/2),visualY=e.y+((e.baseH*(1-e.scale))/2);const sx=visualX*scaleOut,sy=visualY*scaleOut,sw=e.baseW*e.scale*scaleOut,sh=e.baseH*e.scale*scaleOut;
  ctx.drawImage(e.image,sx,sy,sw,sh);
@@ -145,6 +160,7 @@ function bindImageEditor(){
  $("#imageEditorClose")?.addEventListener("click",()=>closeImageEditor(true));
  $("#imageEditorCancel")?.addEventListener("click",()=>closeImageEditor(true));
  $("#imageEditorApply")?.addEventListener("click",()=>applyImageEditor().catch(err=>alert(err.message)));
+ $("#imageEditorRatio")?.addEventListener("change",e=>setEditorRatio(e.target.value));
  $("#imageEditorReset")?.addEventListener("click",()=>{if(!editorState)return;const e=editorState,stage=$("#imageEditorStage");e.scale=1;e.x=(stage.clientWidth-e.baseW)/2;e.y=(stage.clientHeight-e.baseH)/2;$("#imageEditorZoom").value="1";applyEditorTransform()});
  $("#imageEditorZoom")?.addEventListener("input",e=>{if(editorState){editorState.scale=Number(e.target.value);applyEditorTransform()}});
  const stage=$("#imageEditorStage");
