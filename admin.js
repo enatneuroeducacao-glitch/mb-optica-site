@@ -101,9 +101,13 @@ function openImageEditor(file,inputId){
   $("#imageEditorTitle").textContent="Ajustar foto — "+target.label;
   $("#imageEditorHint").textContent="A área marcada é exatamente o formato que aparecerá no site. Arraste a foto, ajuste o zoom e clique em Aplicar enquadramento.";
   img.onload=()=>{
-    const sw=stage.clientWidth,sh=stage.clientHeight,cover=Math.max(sw/img.naturalWidth,sh/img.naturalHeight);
-    editorState.baseW=img.naturalWidth*cover;editorState.baseH=img.naturalHeight*cover;editorState.scale=1;editorState.x=(sw-editorState.baseW)/2;editorState.y=(sh-editorState.baseH)/2;
-    zoom.value="1";applyEditorTransform();modal.classList.remove("hidden");modal.setAttribute("aria-hidden","false");
+    modal.classList.remove("hidden");modal.setAttribute("aria-hidden","false");
+    requestAnimationFrame(()=>{
+      const sw=stage.clientWidth,sh=stage.clientHeight,cover=Math.max(sw/img.naturalWidth,sh/img.naturalHeight);
+      if(!sw||!sh||!img.naturalWidth||!img.naturalHeight)return;
+      editorState.baseW=img.naturalWidth*cover;editorState.baseH=img.naturalHeight*cover;editorState.scale=1;editorState.x=(sw-editorState.baseW)/2;editorState.y=(sh-editorState.baseH)/2;
+      zoom.value="1";applyEditorTransform();
+    });
   };
   img.onerror=()=>{URL.revokeObjectURL(url);img.removeAttribute("src");reject(new Error("Não foi possível abrir a imagem no editor."))};
   img.src=url;
