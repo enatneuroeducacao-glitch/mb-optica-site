@@ -243,6 +243,21 @@
     <div class="footer-bottom">© <span id="year"></span> Ótica Moni Becker. Todos os direitos reservados.</div>
   </footer>
 
+  <div class="collection-album hidden" id="collectionAlbum" role="dialog" aria-modal="true" aria-labelledby="collectionAlbumTitle" aria-hidden="true">
+    <div class="collection-album-backdrop" data-close-album></div>
+    <div class="collection-album-box">
+      <div class="collection-album-head">
+        <div>
+          <p class="eyebrow">COLEÇÃO</p>
+          <h2 id="collectionAlbumTitle">Coleção</h2>
+          <p id="collectionAlbumCount"></p>
+        </div>
+        <button class="collection-album-close" type="button" data-close-album aria-label="Fechar álbum">×</button>
+      </div>
+      <div class="collection-album-grid" id="collectionAlbumGrid"></div>
+    </div>
+  </div>
+
   <div class="modal" id="lgpdModal" role="dialog" aria-modal="true" aria-labelledby="lgpdTitle">
     <div class="modal-box"><button class="close" onclick="closeModal('lgpdModal')" aria-label="Fechar">×</button><p class="eyebrow">PRIVACIDADE</p><h2 id="lgpdTitle">Privacidade & LGPD</h2><p>Esta versão do site foi preparada para receber uma política de privacidade real. Antes da publicação definitiva, devem ser inseridos os dados da empresa, finalidades de tratamento, canais de contato e informações sobre direitos dos titulares.</p><button class="btn btn-dark" onclick="closeModal('lgpdModal')">Entendi</button></div>
   </div>
@@ -252,6 +267,6 @@
   </div>
 
   <div class="toast" id="toast" role="status"></div>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script><script src="script.js?v=20261004-4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script><script src="script.js?v=20261004-5"></script>
 </body>
 </html>
