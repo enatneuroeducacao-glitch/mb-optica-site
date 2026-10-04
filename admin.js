@@ -95,18 +95,18 @@ function openImageEditor(file,inputId){
  return new Promise((resolve,reject)=>{
   const target=imageTargets[inputId]||imageTargets.gImage, modal=$("#imageEditor"),stage=$("#imageEditorStage"),img=$("#imageEditorImage"),zoom=$("#imageEditorZoom");
   if(!modal||!stage||!img)return reject(new Error("Editor de imagem indisponível."));
-  const url=URL.createObjectURL(file); const image=new Image();
-  editorState={file,inputId,target,url,image,scale:1,x:0,y:0,drag:false,startX:0,startY:0,baseW:0,baseH:0,resolve,reject};
+  const url=URL.createObjectURL(file);
+  editorState={file,inputId,target,url,image:img,scale:1,x:0,y:0,drag:false,startX:0,startY:0,baseW:0,baseH:0,resolve,reject};
   stage.style.aspectRatio=String(target.ratio);
   $("#imageEditorTitle").textContent="Ajustar foto — "+target.label;
   $("#imageEditorHint").textContent="A área marcada é exatamente o formato que aparecerá no site. Arraste a foto, ajuste o zoom e clique em Aplicar enquadramento.";
-  image.onload=()=>{
-    const sw=stage.clientWidth,sh=stage.clientHeight,cover=Math.max(sw/image.naturalWidth,sh/image.naturalHeight);
-    editorState.baseW=image.naturalWidth*cover;editorState.baseH=image.naturalHeight*cover;editorState.scale=1;editorState.x=(sw-editorState.baseW)/2;editorState.y=(sh-editorState.baseH)/2;
-    img.src=url;zoom.value="1";applyEditorTransform();modal.classList.remove("hidden");modal.setAttribute("aria-hidden","false");
+  img.onload=()=>{
+    const sw=stage.clientWidth,sh=stage.clientHeight,cover=Math.max(sw/img.naturalWidth,sh/img.naturalHeight);
+    editorState.baseW=img.naturalWidth*cover;editorState.baseH=img.naturalHeight*cover;editorState.scale=1;editorState.x=(sw-editorState.baseW)/2;editorState.y=(sh-editorState.baseH)/2;
+    zoom.value="1";applyEditorTransform();modal.classList.remove("hidden");modal.setAttribute("aria-hidden","false");
   };
-  image.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("Não foi possível abrir a imagem."))};
-  image.src=url;
+  img.onerror=()=>{URL.revokeObjectURL(url);img.removeAttribute("src");reject(new Error("Não foi possível abrir a imagem no editor."))};
+  img.src=url;
  });
 }
 function applyEditorTransform(){
