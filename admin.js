@@ -3,23 +3,19 @@ const db=supabase.createClient(window.MB_SUPABASE.url,window.MB_SUPABASE.key);
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const ADMIN_EMAIL="becker.optica@gmail.com";
 
-const contentFields=[
+const homeFields=[
 ["topbar_text","Faixa superior"],["store_name","Nome da ótica"],["hero_eyebrow","Hero — etiqueta"],["hero_title","Hero — título"],["hero_subtitle","Hero — subtítulo"],["hero_note","Hero — observação"],
-["trust_1_title","Confiança 1 — título"],["trust_1_text","Confiança 1 — texto"],["trust_2_title","Confiança 2 — título"],["trust_2_text","Confiança 2 — texto"],["trust_3_title","Confiança 3 — título"],["trust_3_text","Confiança 3 — texto"],["trust_4_title","Confiança 4 — título"],["trust_4_text","Confiança 4 — texto"],
-["collection_eyebrow","Coleção — etiqueta"],["collection_title","Coleção — título"],["collection_text","Coleção — descrição"],["catalog_note","Coleção — observação"],
-["services_eyebrow","Serviços — etiqueta"],["services_title","Serviços — título"],["services_text","Serviços — descrição"],
-["experience_eyebrow","Experiência — etiqueta"],["experience_title","Experiência — título"],["experience_text","Experiência — descrição"],
-["gallery_eyebrow","Galeria — etiqueta"],["gallery_title","Galeria — título"],["gallery_text","Galeria — descrição"],
-["offer_eyebrow","Ofertas — etiqueta"],["offer_title","Ofertas — título"],["offer_text","Ofertas — texto"],
-["appointment_eyebrow","Atendimento — etiqueta"],["appointment_title","Atendimento — título"],["appointment_text","Atendimento — descrição"],
-["contact_eyebrow","Contato — etiqueta"],["contact_title","Contato — título"],["address","Endereço"],["hours","Horário"],["whatsapp","WhatsApp"],["phone","Telefone"],["email","E-mail"],["instagram","Instagram"],
-["footer_tagline","Rodapé — frase"],["footer_copyright","Rodapé — copyright"],["privacy_text","Privacidade / LGPD"],["cookies_text","Cookies"]
+["trust_1_title","Confiança 1 — título"],["trust_1_text","Confiança 1 — texto"],["trust_2_title","Confiança 2 — título"],["trust_2_text","Confiança 2 — texto"],["trust_3_title","Confiança 3 — título"],["trust_3_text","Confiança 3 — texto"],["trust_4_title","Confiança 4 — título"],["trust_4_text","Confiança 4 — texto"]
 ];
+const collectionFields=[["collection_eyebrow","Coleção — etiqueta"],["collection_title","Coleção — título"],["collection_text","Coleção — descrição"],["catalog_note","Coleção — observação"]];
+const servicesFields=[["services_eyebrow","Serviços — etiqueta"],["services_title","Serviços — título"],["services_text","Serviços — descrição"]];
+const experienceFields=[["experience_eyebrow","A Ótica — etiqueta"],["experience_title","A Ótica — título"],["experience_text","A Ótica — descrição"]];
 const historyFields=[["history_eyebrow","Etiqueta da seção"],["history_title","Título da seção"],["history_text","Texto da seção"],["history_note","Frase de destaque"]];
-const appearanceFields=[
-["logo_url","URL do logotipo","url"],["hero_image_url","URL da imagem principal","url"],["service_image_url","URL da imagem dos serviços","url"],["amorinha_image_url","URL da foto da Amorinha","url"],["map_url","URL do Google Maps","url"],
-["primary_color","Cor principal","color"],["cream_color","Cor de fundo","color"],["dark_color","Cor escura","color"],["muted_color","Cor de texto secundário","color"]
-];
+const galleryFields=[["gallery_eyebrow","Galeria — etiqueta"],["gallery_title","Galeria — título"],["gallery_text","Galeria — descrição"]];
+const offerFields=[["offer_eyebrow","Ofertas — etiqueta"],["offer_title","Ofertas — título"],["offer_text","Ofertas — texto"]];
+const appointmentFields=[["appointment_eyebrow","Atendimento — etiqueta"],["appointment_title","Atendimento — título"],["appointment_text","Atendimento — descrição"]];
+const contactFields=[["contact_eyebrow","Contato — etiqueta"],["contact_title","Contato — título"],["address","Endereço"],["hours","Horário"],["whatsapp","WhatsApp"],["phone","Telefone"],["email","E-mail"],["instagram","Instagram"],["map_url","URL do Google Maps","url"]];
+const appearanceFields=[["logo_url","URL do logotipo","url"],["hero_image_url","URL da imagem principal","url"],["service_image_url","URL da imagem dos serviços","url"],["amorinha_image_url","URL da foto da Amorinha","url"],["primary_color","Cor principal","color"],["cream_color","Cor de fundo","color"],["dark_color","Cor escura","color"],["muted_color","Cor de texto secundário","color"],["footer_tagline","Rodapé — frase"],["footer_copyright","Rodapé — copyright"],["privacy_text","Privacidade / LGPD"],["cookies_text","Cookies"]];
 
 document.addEventListener("DOMContentLoaded",async()=>{
  bindNav(); $("#loginForm").addEventListener("submit",login); $("#logout").addEventListener("click",logout);
@@ -128,8 +124,15 @@ async function getSettings(){const r=await db.from("site_settings").select("key,
 async function loadAll(){
  try{
   const s=await getSettings();
-  renderFields($("#contentFields"),contentFields,s);
+  renderFields($("#homeFields"),homeFields,s);
+  renderFields($("#collectionFields"),collectionFields,s);
+  renderFields($("#servicesFields"),servicesFields,s);
+  renderFields($("#experienceFields"),experienceFields,s);
   renderFields($("#historyFields"),historyFields,s);
+  renderFields($("#galleryFields"),galleryFields,s);
+  renderFields($("#offerFields"),offerFields,s);
+  renderFields($("#appointmentFields"),appointmentFields,s);
+  renderFields($("#contactFields"),contactFields,s);
   renderFields($("#appearanceFields"),appearanceFields,s);
   addUploadControls();
   bindImageEditor();
@@ -149,14 +152,21 @@ function initFormRichEditors(){
  });
 }
 
-function bindColorSync(){$$("#appearanceFields input[type=color]").forEach(i=>i.oninput=()=>{const t=$('[data-color-text="'+i.name+'"]');if(t)t.value=i.value});$$("#appearanceFields [data-color-text]").forEach(t=>t.oninput=()=>{const i=$('#appearanceFields input[name="'+t.dataset.colorText+'"]');if(/^#[0-9a-fA-F]{6}$/.test(t.value)&&i)i.value=t.value})}
+function bindColorSync(){$("#appearanceFields input[type=color]").forEach(i=>i.oninput=()=>{const t=$('[data-color-text="'+i.name+'"]');if(t)t.value=i.value});$$("#appearanceFields [data-color-text]").forEach(t=>t.oninput=()=>{const i=$('#appearanceFields input[name="'+t.dataset.colorText+'"]');if(/^#[0-9a-fA-F]{6}$/.test(t.value)&&i)i.value=t.value})}
 async function saveSettings(form,defs){
  const data={};for(const [k] of defs){const el=form.querySelector('[name="'+k+'"]');if(el)data[k]=el.value}
  const rows=Object.entries(data).map(([key,value])=>({key,value:String(value),updated_at:new Date().toISOString()}));
  const r=await db.from("site_settings").upsert(rows,{onConflict:"key"});if(r.error)throw r.error;alert("Alterações salvas no site.")
 }
-$("#contentForm").addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,contentFields)}catch(x){alert(x.message)}});
+$("#homeForm").addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,homeFields)}catch(x){alert(x.message)}});
+$("#collectionContentForm").addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,collectionFields)}catch(x){alert(x.message)}});
+$("#servicesContentForm").addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,servicesFields)}catch(x){alert(x.message)}});
+$("#experienceForm").addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,experienceFields)}catch(x){alert(x.message)}});
 $("#historyForm").addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,historyFields)}catch(x){alert(x.message)}});
+$("#galleryContentForm").addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,galleryFields)}catch(x){alert(x.message)}});
+$("#offerContentForm").addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,offerFields)}catch(x){alert(x.message)}});
+$("#appointmentFormCms").addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,appointmentFields)}catch(x){alert(x.message)}});
+$("#contactForm").addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,contactFields)}catch(x){alert(x.message)}});
 $("#appearanceForm").addEventListener("submit",async e=>{e.preventDefault();try{
  for(const id of ["logoFile","heroFile","serviceFile","amorinhaFile"]){
   const file=$("#"+id)?.files?.[0];
@@ -171,7 +181,7 @@ $("#appearanceForm").addEventListener("submit",async e=>{e.preventDefault();try{
   }
  }
  await saveSettings(e.target,appearanceFields);alert("Aparência salva.")
-}catch(x){alert(x.message)}});
+}});
 const editedImages=new Map();
 const imageTargets={
   gImage:{ratio:16/9,width:1600,height:900,label:"Galeria — 16:9"},
