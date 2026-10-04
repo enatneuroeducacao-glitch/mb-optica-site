@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded",()=>{
  $$(".filter").forEach(b=>b.classList.remove("active"));btn.classList.add("active");
  if(btn.dataset.filter==="todos"){filterProducts("todos");closeCollectionAlbum();return}
  filterProducts("todos");openCollectionAlbum(btn.dataset.filter);
-}));btn.classList.add("active");filterProducts(btn.dataset.filter)}));
+}));
  bindInterestButtons();
  $("#appointmentForm")?.addEventListener("submit",appointmentSubmit);
  $("#newsletterForm")?.addEventListener("submit",e=>{e.preventDefault();$("#newsletterMsg").textContent="Cadastro recebido. Em breve enviaremos novidades.";e.target.reset()});
