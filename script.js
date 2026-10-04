@@ -17,7 +17,7 @@ function appointmentSubmit(e){e.preventDefault();const name=$("#name").value.tri
 function openModal(id){document.getElementById(id)?.classList.add("open")}function closeModal(id){document.getElementById(id)?.classList.remove("open")}
 function showToast(message){const t=$("#toast");t.textContent=message;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),4200)}
 function setText(sel,value){const el=$(sel);if(el&&value!==undefined&&value!=="")el.textContent=value}
-function setTitle(sel,value){const el=$(sel);if(el&&value!==undefined&&value!=="")el.innerHTML=escapeCms(value).replace(/\n/g,"<br>")}
+function setTitle(sel,value){const el=$(sel);if(el&&value!==undefined&&value!=="")el.innerHTML=escapeCms(value).replace(/\\n/g,"<br>").replace(/\n/g,"<br>")}
 function setMany(sel,value){if(value===undefined||value==="")return;$(sel)?.forEach?$(sel).forEach(x=>x.textContent=value):null}
 function escapeCms(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
 function escapeCss(v){return String(v??"").replace(/['\\)]/g,"\\$&")}
@@ -30,6 +30,7 @@ async function loadCmsContent(){
   if(s.topbar_text)$$(".topbar").forEach(x=>x.textContent=s.topbar_text);
   if(s.logo_url)$$("img[alt*='Logo'],.brand img,.footer-brand img,.login-box img").forEach(x=>x.src=s.logo_url);
   if(s.hero_image_url){const hero=$(".hero-photo");if(hero)hero.src=s.hero_image_url}
+  const serviceImage=$("#serviceImage");if(serviceImage){serviceImage.src=s.service_image_url||"assets/service-dnp-reader.svg";}
   if(s.amorinha_image_url){const photo=$("#amorinhaPhoto");if(photo)photo.src=s.amorinha_image_url}
   setText(".hero .eyebrow",s.hero_eyebrow);setTitle(".hero h1",s.hero_title);setText(".hero-text",s.hero_subtitle);setText(".hero-note",s.hero_note);
   [[".trust-strip div:nth-child(1) strong","trust_1_title"],[".trust-strip div:nth-child(1) span","trust_1_text"],[".trust-strip div:nth-child(2) strong","trust_2_title"],[".trust-strip div:nth-child(2) span","trust_2_text"],[".trust-strip div:nth-child(3) strong","trust_3_title"],[".trust-strip div:nth-child(3) span","trust_3_text"],[".trust-strip div:nth-child(4) strong","trust_4_title"],[".trust-strip div:nth-child(4) span","trust_4_text"]].forEach(([q,k])=>setText(q,s[k]));
