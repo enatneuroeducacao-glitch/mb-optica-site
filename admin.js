@@ -346,7 +346,19 @@ async function removeCollection(id){
  const d=await db.from("collections").delete().eq("id",id);if(d.error){alert(d.error.message);return}
  await loadCollections();alert("Coleção excluída.")
 }
-$("#collectionForm").addEventListener("submit",async e=>{e.preventDefault();try{const name=$("#cName").value.trim();if(!name)throw new Error("Informe o nome da coleção.");const slug=slugify(name);const imageFile=$("#cImage").files[0];const image=imageFile?await upload(imageFile):"";const r=await db.from("collections").insert({name,slug,description:$("#cDescription").value.trim(),sort_order:Number($("#cSort").value)||0,image_url:image});if(r.error)throw r.error;e.target.reset();$("#cSort").value=60;await loadCollections();alert("Coleção criada com sucesso.")}catch(x){alert(x.message)}});
+$("#createCollectionBtn")?.addEventListener("click",async()=>{
+ try{
+  const name=prompt("Nome da nova coleção:");if(name===null)return;
+  const clean=name.trim();if(!clean){alert("Informe o nome da coleção.");return}
+  const description=prompt("Descrição da coleção (opcional):","")??"";
+  const sort=prompt("Ordem de exibição:","60");
+  const slug=slugify(clean);
+  const r=await db.from("collections").insert({name:clean,slug,description:description.trim(),sort_order:Number(sort)||60,image_url:""});
+  if(r.error)throw r.error;
+  await loadCollections();alert("Coleção criada com sucesso.");
+ }catch(x){alert(x.message)}
+});
+
 $("#productForm").addEventListener("submit",async e=>{e.preventDefault();try{const collectionId=$("#pCollection").value;if(!collectionId)throw new Error("Selecione uma coleção.");const image=await upload(await prepareUpload("pImage"));const description=$("#pDescriptionRich")?.value||$("#pDescription").value;const selected=$("#pCollection option:checked");const category=selected?.dataset.category||"outros";const r=await db.from("products").insert({name:$("#pName").value,category,collection_id:collectionId,price:$("#pPrice").value||null,description,image_url:image});if(r.error)throw r.error;e.target.reset();await loadList("products");await loadStats();await loadCollections();alert("Produto adicionado à coleção.")}catch(x){alert(x.message)}});
 $("#serviceForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload(await prepareUpload("sImage"));const description=$("#sDescriptionRich")?.value||$("#sDescription").value;const r=await db.from("services").insert({name:$("#sName").value,description,image_url:image});if(r.error)throw r.error;e.target.reset();await loadList("services");await loadStats();alert("Serviço adicionado.")}catch(x){alert(x.message)}});
 $("#galleryForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload(await prepareUpload("gImage"));const r=await db.from("gallery").insert({title:$("#gTitle").value,alt_text:$("#gAlt").value,image_url:image});if(r.error)throw r.error;e.target.reset();await loadList("gallery");await loadStats();alert("Foto adicionada.")}catch(x){alert(x.message)}});
