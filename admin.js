@@ -122,7 +122,7 @@ function renderFields(container,defs,settings){
 async function getSettings(){const r=await db.from("site_settings").select("key,value");if(r.error)throw r.error;return Object.fromEntries((r.data||[]).map(x=>[x.key,x.value]))}
 async function loadAll(){
  try{const s=await getSettings();renderFields($("#contentFields"),contentFields,s);renderFields($("#appearanceFields"),appearanceFields,s);bindColorSync();}catch(e){console.error(e)}
- await Promise.all([loadStats(),loadList("products"),loadList("services"),loadList("gallery"),loadList("offers")]);
+ await Promise.all([loadStats(),loadList("products"),loadList("services"),loadList("gallery"),loadList("offers"),loadCollections()]);
 }
 function initFormRichEditors(){
  [
@@ -247,6 +247,17 @@ async function prepareUpload(inputId){
 async function upload(file){const ext=(file.name.split(".").pop()||"jpg").toLowerCase();const path=Date.now()+"-"+crypto.randomUUID()+"."+ext;const r=await db.storage.from("site-assets").upload(path,file,{upsert:false});if(r.error)throw r.error;return db.storage.from("site-assets").getPublicUrl(path).data.publicUrl}
 function addUploadControls(){const box=$("#appearanceFields");box.insertAdjacentHTML("beforeend",'<div class="field"><label>Enviar logotipo</label><input id="logoFile" type="file" accept="image/*"></div><div class="field"><label>Enviar imagem principal</label><input id="heroFile" type="file" accept="image/*"></div><div class="field"><label>Enviar imagem da seção Serviços</label><input id="serviceFile" type="file" accept="image/*"></div><div class="field"><label>Enviar foto da Amorinha</label><input id="amorinhaFile" type="file" accept="image/*"></div>')}
 async function loadStats(){const ts=["products","services","gallery","offers"];const nums=await Promise.all(ts.map(async t=>(await db.from(t).select("*",{count:"exact",head:true})).count||0));$("#stats").innerHTML=ts.map((t,i)=>'<div><strong>'+nums[i]+'</strong><span>'+({products:"Produtos",services:"Serviços",gallery:"Fotos",offers:"Ofertas"}[t])+'</span></div>').join("")}
+async function loadCollections(){
+ const el=$("#collectionsTable");if(!el)return;
+ const r=await db.from("products").select("id,name,category,image_url,active").order("sort_order").order("created_at",{ascending:false});
+ if(r.error){el.innerHTML='<div class="empty">'+esc(r.error.message)+'</div>';return}
+ const groups={feminino:"Feminino",masculino:"Masculino",solar:"Solar",infantil:"Infantil",outros:"Outros"};
+ const products=(r.data||[]).filter(x=>x.active!==false);
+ el.innerHTML=Object.entries(groups).map(([key,label])=>{
+   const items=products.filter(x=>(x.category||"outros")===key);
+   return '<article class="collection-admin-card"><div class="collection-admin-head"><div><span class="eyebrow">'+esc(label)+'</span><h3>'+items.length+' modelo'+(items.length===1?"":"s")+'</h3></div><button class="btn small" onclick="showSection(\\'products\\')">Adicionar modelo</button></div><div class="collection-admin-thumbs">'+(items.length?items.slice(0,8).map(x=>x.image_url?'<img src="'+esc(x.image_url)+'" alt="'+esc(x.name||label)+'">':'<div class="collection-thumb-empty">MB</div>').join(""):'<div class="empty">Nenhum modelo cadastrado nesta coleção.</div>')+'</div></article>';
+ }).join("");
+}
 async function loadList(table){
  const r=await db.from(table).select("*").order("sort_order").order("created_at",{ascending:false});const el=$("#"+table+"Table");
  if(r.error){el.innerHTML='<div class="empty">'+esc(r.error.message)+'</div>';return}
@@ -313,9 +324,9 @@ async function editRow(table,id){
  if(table==="services"){const name=prompt("Nome:",x.name);if(name===null)return;const desc=await openRichPrompt("Editar descrição do serviço",x.description||"");if(desc===null)return;const u=await db.from(table).update({name,description:desc,updated_at:new Date().toISOString()}).eq("id",id);if(u.error)alert(u.error.message)}
  if(table==="gallery"){const title=prompt("Título:",x.title||"");if(title===null)return;const alt=prompt("Texto alternativo:",x.alt_text||"");const u=await db.from(table).update({title,alt_text:alt}).eq("id",id);if(u.error)alert(u.error.message)}
  if(table==="offers"){const title=prompt("Título:",x.title);if(title===null)return;const desc=await openRichPrompt("Editar descrição da oferta",x.description||"");if(desc===null)return;const price=prompt("Texto do preço:",x.price_text||"");const u=await db.from(table).update({title,description:desc,price_text:price}).eq("id",id);if(u.error)alert(u.error.message)}
- loadList(table)
+ loadList(table);if(table==="products")loadCollections()
 }
-async function removeRow(table,id){if(!confirm("Excluir este registro?"))return;const r=await db.from(table).delete().eq("id",id);if(r.error){alert(r.error.message);return}await loadList(table);await loadStats()}
+async function removeRow(table,id){if(!confirm("Excluir este registro?"))return;const r=await db.from(table).delete().eq("id",id);if(r.error){alert(r.error.message);return}await loadList(table);await loadStats();if(table==="products")await loadCollections()}
 
 $("#productForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload(await prepareUpload("pImage"));const description=$("#pDescriptionRich")?.value||$("#pDescription").value;const r=await db.from("products").insert({name:$("#pName").value,category:$("#pCategory").value,price:$("#pPrice").value||null,description,image_url:image});if(r.error)throw r.error;e.target.reset();await loadList("products");await loadStats();alert("Produto adicionado.")}catch(x){alert(x.message)}});
 $("#serviceForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload(await prepareUpload("sImage"));const description=$("#sDescriptionRich")?.value||$("#sDescription").value;const r=await db.from("services").insert({name:$("#sName").value,description,image_url:image});if(r.error)throw r.error;e.target.reset();await loadList("services");await loadStats();alert("Serviço adicionado.")}catch(x){alert(x.message)}});
