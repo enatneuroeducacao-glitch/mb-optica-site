@@ -80,6 +80,7 @@ async function loadCmsContent(){
   [[".trust-strip div:nth-child(1) strong","trust_1_title"],[".trust-strip div:nth-child(1) span","trust_1_text"],[".trust-strip div:nth-child(2) strong","trust_2_title"],[".trust-strip div:nth-child(2) span","trust_2_text"],[".trust-strip div:nth-child(3) strong","trust_3_title"],[".trust-strip div:nth-child(3) span","trust_3_text"],[".trust-strip div:nth-child(4) strong","trust_4_title"],[".trust-strip div:nth-child(4) span","trust_4_text"]].forEach(([q,k])=>setText(q,s[k]));
   setText("#colecao .eyebrow",s.collection_eyebrow);setTitle("#colecao h2",s.collection_title);setText("#colecao .section-heading>p",s.collection_text);setText(".catalog-note",s.catalog_note);
   setText("#servicos .eyebrow",s.services_eyebrow);setTitle("#servicos h2",s.services_title);setText("#servicos .split-copy>p:last-child",s.services_text);
+  setText("#historia .eyebrow",s.history_eyebrow);setTitle("#historia h2",s.history_title);setText("#historia .story-copy>p:not(.eyebrow)",s.history_text);setText("#historia .story-note",s.history_note);
   setText("#experiencia .eyebrow",s.experience_eyebrow);setTitle("#experiencia h2",s.experience_title);setText("#experiencia .section-heading>p:last-child",s.experience_text);
   setText("#galeria .eyebrow",s.gallery_eyebrow);setTitle("#galeria h2",s.gallery_title);setText("#galeria .section-heading>p",s.gallery_text);
   setText("#promocoes .eyebrow",s.offer_eyebrow);setTitle("#promocoes h2",s.offer_title);setText("#promocoes>div>p:last-child",s.offer_text);
