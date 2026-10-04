@@ -26,7 +26,8 @@ async function loadPublicCollections(client){
  const r=await client.from("collections").select("name,slug,active,sort_order").eq("active",true).order("sort_order").order("created_at");
  if(r.error)return;
  const filters=$(".filters");if(!filters)return;
- filters.innerHTML='<button class="filter active" data-filter="todos">Todos</button>'+(r.data||[]).map(x=>'<button class="filter" data-filter="'+escapeCms(x.slug)+'">'+escapeCms(x.name)+'</button>').join("");
+ const collections=(r.data||[]).filter(x=>x.slug!=="outros");
+ filters.innerHTML=collections.map((x,i)=>'<button class="filter'+(i===0?" active":"")+'" data-filter="'+escapeCms(x.slug)+'">'+escapeCms(x.name)+'</button>').join("");
  bindCollectionFilters();
 }
 function openCollectionAlbum(category){
