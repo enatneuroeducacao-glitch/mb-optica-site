@@ -87,10 +87,26 @@ async function loadList(table){
  if(r.error){el.innerHTML='<div class="empty">'+esc(r.error.message)+'</div>';return}
  const rows=r.data||[];if(!rows.length){el.innerHTML='<div class="empty">Nenhum registro cadastrado ainda.</div>';return}
  el.innerHTML='<div class="table-wrap"><table class="table"><thead><tr><th>Foto</th><th>Informação</th><th>Status</th><th>Ações</th></tr></thead><tbody>'+
- rows.map(x=>'<tr><td>'+(x.image_url?'<img class="thumb" src="'+esc(x.image_url)+'">':"—")+'</td><td><strong>'+esc(x.name||x.title||"")+'</strong><br><small>'+esc(x.description||x.price_text||x.category||"")+'</small></td><td><button class="pill '+(x.active===false?"off":"on")+'" onclick="toggleActive(\''+table+'\',\''+x.id+'\','+(x.active===false?'true':'false')+')">'+(x.active===false?"Oculto":"Publicado")+'</button></td><td><button class="btn small" onclick="editRow(\''+table+'\',\''+x.id+'\')">Editar</button> <button class="btn danger small" onclick="removeRow(\''+table+'\',\''+x.id+'\')">Excluir</button></td></tr>').join("")+
+ rows.map(x=>'<tr><td>'+(x.image_url?'<img class="thumb" src="'+esc(x.image_url)+'">':"—")+'</td><td><strong>'+esc(x.name||x.title||"")+'</strong><br><small>'+esc(x.description||x.price_text||x.category||"")+'</small></td><td><button class="pill '+(x.active===false?"off":"on")+'" onclick="toggleActive(\''+table+'\',\''+x.id+'\','+(x.active===false?'true':'false')+')">'+(x.active===false?"Oculto":"Publicado")+'</button></td><td><button class="btn small" onclick="editRow(\''+table+'\',\''+x.id+'\')">Editar</button> '+(x.image_url?'<button class="btn small" onclick="replaceImage(\''+table+'\',\''+x.id+'\')">Trocar foto</button>':"")+' <button class="btn danger small" onclick="removeRow(\''+table+'\',\''+x.id+'\')">Excluir</button></td></tr>').join("")+
  "</tbody></table></div>"
 }
 async function toggleActive(table,id,value){const r=await db.from(table).update({active:value,updated_at:new Date().toISOString()}).eq("id",id);if(r.error){alert(r.error.message);return}loadList(table)}
+async function replaceImage(table,id){
+ const input=document.createElement("input");
+ input.type="file";input.accept="image/png,image/jpeg,image/webp";
+ input.onchange=async()=>{
+  const file=input.files?.[0];if(!file)return;
+  if(file.size>5000000){alert("A imagem deve ter no máximo 5 MB.");return}
+  try{
+   const url=await upload(file);
+   const r=await db.from(table).update({image_url:url,updated_at:new Date().toISOString()}).eq("id",id);
+   if(r.error)throw r.error;
+   await loadList(table);
+   alert("Foto atualizada no site.");
+  }catch(e){alert(e.message||"Não foi possível trocar a foto.")}
+ };
+ input.click();
+}
 async function editRow(table,id){
  const r=await db.from(table).select("*").eq("id",id).single();if(r.error)return alert(r.error.message);const x=r.data;
  if(table==="products"){const name=prompt("Nome:",x.name);if(name===null)return;const desc=prompt("Descrição:",x.description||"");const cat=prompt("Categoria:",x.category||"outros");const price=prompt("Preço:",x.price??"");const u=await db.from(table).update({name,description:desc,category:cat,price:price||null,updated_at:new Date().toISOString()}).eq("id",id);if(u.error)alert(u.error.message)}
