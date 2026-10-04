@@ -47,6 +47,7 @@ async function login(e){e.preventDefault();setStatus("","");
  }catch(err){setStatus("Falha de conexão com o Supabase: "+(err?.message||err),"err")}
 }
 async function start(user){
+ initServiceRichEditor();
  const r=await db.from("admin_users").select("user_id").eq("user_id",user.id).maybeSingle();
  if(r.error||!r.data){setStatus("Usuário autenticado, mas não autorizado como administrador.","err");await db.auth.signOut();return}
  $("#loginView").classList.add("hidden");$("#appView").classList.remove("hidden");$("#userEmail").textContent=user.email;$("#securityEmail").textContent=user.email;loadAll()
@@ -55,19 +56,80 @@ async function logout(){await db.auth.signOut();location.reload()}
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function setStatus(m,k){const e=$("#loginStatus");e.textContent=m;e.className=m?"status "+k:""}
 
+function sanitizeRich(value){
+  const raw=String(value||"");
+  if(!raw)return "";
+  const box=document.createElement("div");
+  box.innerHTML=raw;
+  const allowed=new Set(["B","STRONG","I","EM","U","BR","P","DIV","SPAN","UL","OL","LI","A","H2","H3","BLOCKQUOTE"]);
+  box.querySelectorAll("*").forEach(el=>{
+    if(!allowed.has(el.tagName)){el.replaceWith(...el.childNodes);return}
+    [...el.attributes].forEach(a=>{
+      if(el.tagName==="A" && a.name==="href" && /^(https?:|mailto:)/i.test(a.value))return;
+      if(el.tagName==="SPAN" && a.name==="style" && /^\s*(color|background-color)\s*:\s*(#[0-9a-fA-F]{6}|rgb\\([^)]*\\))\s*;?\s*$/i.test(a.value))return;
+      el.removeAttribute(a.name);
+    });
+  });
+  return box.innerHTML;
+}
+function richToolbar(editor){
+  const colors=["#2b2721","#9b6a2f","#b24a3a","#315d8c","#47704b","#7b4f8a"];
+  return '<div class="rich-toolbar">'+
+    '<button type="button" data-cmd="bold" title="Negrito"><b>B</b></button>'+
+    '<button type="button" data-cmd="italic" title="Itálico"><i>I</i></button>'+
+    '<button type="button" data-cmd="underline" title="Sublinhado"><u>U</u></button>'+
+    '<span class="rich-sep"></span>'+
+    colors.map(c=>'<button type="button" class="rich-color" data-color="'+c+'" title="Cor do texto" style="--rich-color:'+c+'"></button>').join("")+
+    '<span class="rich-sep"></span>'+
+    '<button type="button" data-cmd="insertUnorderedList" title="Lista">☷</button>'+
+    '<button type="button" data-cmd="insertOrderedList" title="Lista numerada">1.</button>'+
+    '<button type="button" data-cmd="justifyLeft" title="Esquerda">≡</button>'+
+    '<button type="button" data-cmd="justifyCenter" title="Centralizar">≡</button>'+
+    '<button type="button" data-cmd="justifyRight" title="Direita">≡</button>'+
+    '<button type="button" data-cmd="removeFormat" title="Limpar formatação">Tx</button>'+
+    '</div>';
+}
+function createRichEditor({value="",name="",id="",label=""}={}){
+  const wrap=document.createElement("div");wrap.className="rich-editor";
+  wrap.innerHTML=richToolbar(null)+'<div class="rich-content" contenteditable="true" spellcheck="true"></div><input type="hidden" name="'+esc(name)+'" '+(id?'id="'+esc(id)+'"':'')+' value="">';
+  const content=wrap.querySelector(".rich-content"), hidden=wrap.querySelector('input[type="hidden"]');
+  content.innerHTML=sanitizeRich(value||"").replace(/\n/g,"<br>");
+  const sync=()=>{hidden.value=sanitizeRich(content.innerHTML)};
+  wrap.querySelectorAll("[data-cmd]").forEach(btn=>btn.addEventListener("mousedown",e=>{e.preventDefault();content.focus();document.execCommand(btn.dataset.cmd,false,null);sync()}));
+  wrap.querySelectorAll("[data-color]").forEach(btn=>btn.addEventListener("mousedown",e=>{e.preventDefault();content.focus();document.execCommand("foreColor",false,btn.dataset.color);sync()}));
+  content.addEventListener("input",sync);content.addEventListener("blur",sync);sync();
+  return wrap;
+}
+function mountRichField(container, key, label, value){
+  const field=document.createElement("div");field.className="field wide";
+  const lab=document.createElement("label");lab.textContent=label;field.appendChild(lab);
+  field.appendChild(createRichEditor({value,name:key}));
+  container.appendChild(field);
+}
 function renderFields(container,defs,settings){
- container.innerHTML=defs.map(([key,label,type])=>{
+ container.innerHTML="";
+ defs.forEach(([key,label,type])=>{
   const value=settings[key]||"";
-  if(type==="color")return '<div class="field"><label>'+label+'</label><div class="color-row"><input name="'+key+'" type="color" value="'+esc(/^#[0-9a-fA-F]{6}$/.test(value)?value:"#a97838")+'"><input data-color-text="'+key+'" value="'+esc(value)+'" placeholder="#a97838"></div></div>';
+  if(type==="color"){
+    container.insertAdjacentHTML("beforeend",'<div class="field"><label>'+label+'</label><div class="color-row"><input name="'+key+'" type="color" value="'+esc(/^#[0-9a-fA-F]{6}$/.test(value)?value:"#a97838")+'"><input data-color-text="'+key+'" value="'+esc(value)+'" placeholder="#a97838"></div></div>');
+    return;
+  }
   const long=label.includes("descrição")||label.includes("texto")||label.includes("título")||label.includes("observação")||label.includes("LGPD")||label.includes("Cookies")||key.endsWith("_text")||key.includes("subtitle")||key.includes("title");
-  return '<div class="field '+(long?"wide":"")+'"><label>'+label+'</label>'+(long?'<textarea name="'+key+'">'+esc(value)+'</textarea>':'<input name="'+key+'" type="'+(type||"text")+'" value="'+esc(value)+'">')+'</div>'
- }).join("");
+  if(long) mountRichField(container,key,label,value);
+  else container.insertAdjacentHTML("beforeend",'<div class="field"><label>'+label+'</label><input name="'+key+'" type="'+(type||"text")+'" value="'+esc(value)+'"></div>');
+ });
 }
 async function getSettings(){const r=await db.from("site_settings").select("key,value");if(r.error)throw r.error;return Object.fromEntries((r.data||[]).map(x=>[x.key,x.value]))}
 async function loadAll(){
  try{const s=await getSettings();renderFields($("#contentFields"),contentFields,s);renderFields($("#appearanceFields"),appearanceFields,s);bindColorSync();}catch(e){console.error(e)}
  await Promise.all([loadStats(),loadList("products"),loadList("services"),loadList("gallery"),loadList("offers")]);
 }
+function initServiceRichEditor(){
+ const old=$("#sDescription"); if(!old || $("#sDescriptionRich"))return;
+ const rich=createRichEditor({value:old.value,name:"sDescriptionRich",id:"sDescriptionRich"});
+ old.style.display="none"; old.parentNode.insertBefore(rich,old);
+}
+
 function bindColorSync(){$$("#appearanceFields input[type=color]").forEach(i=>i.oninput=()=>{const t=$('[data-color-text="'+i.name+'"]');if(t)t.value=i.value});$$("#appearanceFields [data-color-text]").forEach(t=>t.oninput=()=>{const i=$('#appearanceFields input[name="'+t.dataset.colorText+'"]');if(/^#[0-9a-fA-F]{6}$/.test(t.value)&&i)i.value=t.value})}
 async function saveSettings(form,defs){
  const data={};for(const [k] of defs){const el=form.querySelector('[name="'+k+'"]');if(el)data[k]=el.value}
@@ -228,10 +290,21 @@ async function replaceImage(table,id){
  };
  input.click();
 }
+function openRichPrompt(title,value){
+ return new Promise(resolve=>{
+  const overlay=document.createElement("div");overlay.className="rich-modal";
+  overlay.innerHTML='<div class="rich-modal-box"><div class="rich-modal-head"><h3>'+esc(title)+'</h3><button type="button" class="image-editor-close" data-cancel>×</button></div><div data-editor></div><div class="actions"><button type="button" class="btn" data-cancel>Cancelar</button><button type="button" class="btn primary" data-ok>Salvar</button></div></div>';
+  document.body.appendChild(overlay);
+  const editor=createRichEditor({value});overlay.querySelector("[data-editor]").appendChild(editor);
+  const close=()=>{overlay.remove();resolve(null)};
+  overlay.querySelectorAll("[data-cancel]").forEach(b=>b.onclick=close);
+  overlay.querySelector("[data-ok]").onclick=()=>{const v=editor.querySelector('input[type="hidden"]').value;overlay.remove();resolve(v)};
+ });
+}
 async function editRow(table,id){
  const r=await db.from(table).select("*").eq("id",id).single();if(r.error)return alert(r.error.message);const x=r.data;
  if(table==="products"){const name=prompt("Nome:",x.name);if(name===null)return;const desc=prompt("Descrição:",x.description||"");const cat=prompt("Categoria:",x.category||"outros");const price=prompt("Preço:",x.price??"");const u=await db.from(table).update({name,description:desc,category:cat,price:price||null,updated_at:new Date().toISOString()}).eq("id",id);if(u.error)alert(u.error.message)}
- if(table==="services"){const name=prompt("Nome:",x.name);if(name===null)return;const desc=prompt("Descrição:",x.description||"");const u=await db.from(table).update({name,description:desc,updated_at:new Date().toISOString()}).eq("id",id);if(u.error)alert(u.error.message)}
+ if(table==="services"){const name=prompt("Nome:",x.name);if(name===null)return;const desc=await openRichPrompt("Editar descrição do serviço",x.description||"");if(desc===null)return;const u=await db.from(table).update({name,description:desc,updated_at:new Date().toISOString()}).eq("id",id);if(u.error)alert(u.error.message)}
  if(table==="gallery"){const title=prompt("Título:",x.title||"");if(title===null)return;const alt=prompt("Texto alternativo:",x.alt_text||"");const u=await db.from(table).update({title,alt_text:alt}).eq("id",id);if(u.error)alert(u.error.message)}
  if(table==="offers"){const title=prompt("Título:",x.title);if(title===null)return;const desc=prompt("Descrição:",x.description||"");const price=prompt("Texto do preço:",x.price_text||"");const u=await db.from(table).update({title,description:desc,price_text:price}).eq("id",id);if(u.error)alert(u.error.message)}
  loadList(table)
@@ -239,7 +312,7 @@ async function editRow(table,id){
 async function removeRow(table,id){if(!confirm("Excluir este registro?"))return;const r=await db.from(table).delete().eq("id",id);if(r.error){alert(r.error.message);return}await loadList(table);await loadStats()}
 
 $("#productForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload(await prepareUpload("pImage"));const r=await db.from("products").insert({name:$("#pName").value,category:$("#pCategory").value,price:$("#pPrice").value||null,description:$("#pDescription").value,image_url:image});if(r.error)throw r.error;e.target.reset();await loadList("products");await loadStats();alert("Produto adicionado.")}catch(x){alert(x.message)}});
-$("#serviceForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload(await prepareUpload("sImage"));const r=await db.from("services").insert({name:$("#sName").value,description:$("#sDescription").value,image_url:image});if(r.error)throw r.error;e.target.reset();await loadList("services");await loadStats();alert("Serviço adicionado.")}catch(x){alert(x.message)}});
+$("#serviceForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload(await prepareUpload("sImage"));const description=$("#sDescriptionRich")?.value||$("#sDescription").value;const r=await db.from("services").insert({name:$("#sName").value,description,image_url:image});if(r.error)throw r.error;e.target.reset();await loadList("services");await loadStats();alert("Serviço adicionado.")}catch(x){alert(x.message)}});
 $("#galleryForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload(await prepareUpload("gImage"));const r=await db.from("gallery").insert({title:$("#gTitle").value,alt_text:$("#gAlt").value,image_url:image});if(r.error)throw r.error;e.target.reset();await loadList("gallery");await loadStats();alert("Foto adicionada.")}catch(x){alert(x.message)}});
 $("#offerForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload(await prepareUpload("oImage"));const r=await db.from("offers").insert({title:$("#oTitle").value,price_text:$("#oPrice").value,description:$("#oDescription").value,image_url:image,starts_at:$("#oStart").value||null,ends_at:$("#oEnd").value||null});if(r.error)throw r.error;e.target.reset();await loadList("offers");await loadStats();alert("Oferta adicionada.")}catch(x){alert(x.message)}});
 
