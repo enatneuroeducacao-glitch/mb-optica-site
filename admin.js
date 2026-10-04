@@ -178,7 +178,7 @@ $("#appearanceForm")?.addEventListener("submit",async e=>{e.preventDefault();try
   }
  }
  await saveSettings(e.target,appearanceFields);alert("Aparência salva.")
-}});
+ }catch(x){alert(x.message)}});
 const editedImages=new Map();
 const imageTargets={
   gImage:{ratio:16/9,width:1600,height:900,label:"Galeria — 16:9"},
