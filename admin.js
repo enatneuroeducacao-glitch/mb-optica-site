@@ -15,7 +15,7 @@ const galleryFields=[["gallery_eyebrow","Galeria — etiqueta"],["gallery_title"
 const offerFields=[["offer_eyebrow","Ofertas — etiqueta"],["offer_title","Ofertas — título"],["offer_text","Ofertas — texto"]];
 const appointmentFields=[["appointment_eyebrow","Atendimento — etiqueta"],["appointment_title","Atendimento — título"],["appointment_text","Atendimento — descrição"]];
 const contactFields=[["contact_eyebrow","Contato — etiqueta"],["contact_title","Contato — título"],["address","Endereço"],["hours","Horário"],["whatsapp","WhatsApp"],["phone","Telefone"],["email","E-mail"],["instagram","Instagram"],["map_url","URL do Google Maps","url"]];
-const appearanceFields=[["logo_url","URL do logotipo","url"],["hero_image_url","URL da imagem principal","url"],["service_image_url","URL da imagem dos serviços","url"],["amorinha_image_url","URL da foto da Amorinha","url"],["primary_color","Cor principal","color"],["cream_color","Cor de fundo","color"],["dark_color","Cor escura","color"],["muted_color","Cor de texto secundário","color"],["footer_tagline","Rodapé — frase"],["footer_copyright","Rodapé — copyright"],["privacy_text","Privacidade / LGPD"],["cookies_text","Cookies"]];
+const appearanceFields=[["logo_url","URL do logotipo","url"],["hero_image_url","URL da imagem principal","url"],["service_image_url","URL da imagem dos serviços","url"],["primary_color","Cor principal","color"],["cream_color","Cor de fundo","color"],["dark_color","Cor escura","color"],["muted_color","Cor de texto secundário","color"],["footer_tagline","Rodapé — frase"],["footer_copyright","Rodapé — copyright"],["privacy_text","Privacidade / LGPD"],["cookies_text","Cookies"]];
 
 document.addEventListener("DOMContentLoaded",async()=>{
  bindNav(); $("#loginForm").addEventListener("submit",login); $("#logout").addEventListener("click",logout);
@@ -159,18 +159,30 @@ $("#homeForm")?.addEventListener("submit",async e=>{e.preventDefault();try{await
 $("#collectionContentForm")?.addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,collectionFields)}catch(x){alert(x.message)}});
 $("#servicesContentForm")?.addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,servicesFields)}catch(x){alert(x.message)}});
 $("#experienceForm")?.addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,experienceFields)}catch(x){alert(x.message)}});
-$("#historyForm")?.addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,historyFields)}catch(x){alert(x.message)}});
+$("#historyForm")?.addEventListener("submit",async e=>{e.preventDefault();try{
+ const file=$("#historyImage")?.files?.[0];
+ if(file){
+  const edited=await prepareUpload("historyImage");
+  const url=await upload(edited);
+  const rr=await db.from("site_settings").upsert([{key:"amorinha_image_url",value:url,updated_at:new Date().toISOString()}],{onConflict:"key"});
+  if(rr.error)throw rr.error;
+  editedImages.delete("historyImage");
+  const preview=$("#historyImagePreview");if(preview)preview.src=url;
+ }
+ await saveSettings(e.target,historyFields);
+ alert("Nossa História salva.");
+}catch(x){alert(x.message)}});
 $("#galleryContentForm")?.addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,galleryFields)}catch(x){alert(x.message)}});
 $("#offerContentForm")?.addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,offerFields)}catch(x){alert(x.message)}});
 $("#appointmentFormCms")?.addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,appointmentFields)}catch(x){alert(x.message)}});
 $("#contactForm")?.addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,contactFields)}catch(x){alert(x.message)}});
 $("#appearanceForm")?.addEventListener("submit",async e=>{e.preventDefault();try{
- for(const id of ["logoFile","heroFile","serviceFile","amorinhaFile"]){
+ for(const id of ["logoFile","heroFile","serviceFile"]){
   const file=$("#"+id)?.files?.[0];
   if(file){
    const edited=await prepareUpload(id);
    const url=await upload(edited);
-   const key=id==="logoFile"?"logo_url":id==="heroFile"?"hero_image_url":id==="serviceFile"?"service_image_url":"amorinha_image_url";
+   const key=id==="logoFile"?"logo_url":id==="heroFile"?"hero_image_url":"service_image_url";
    const field=$("#appearanceFields [name='"+key+"']");if(field)field.value=url;
    const row={key,value:url,updated_at:new Date().toISOString()};
    const rr=await db.from("site_settings").upsert([row],{onConflict:"key"});if(rr.error)throw rr.error;
@@ -188,7 +200,7 @@ const imageTargets={
   logoFile:{ratio:1,width:1200,height:1200,label:"Logotipo — quadrado"},
   heroFile:{ratio:4/5,width:1600,height:2000,label:"Imagem principal — 4:5"},
   serviceFile:{ratio:4/3,width:1600,height:1200,label:"Serviços — 4:3"},
-  amorinhaFile:{ratio:4/5,width:1600,height:2000,label:"Amorinha — 4:5"}
+  historyImage:{ratio:4/5,width:1600,height:2000,label:"Nossa História — 4:5"}
 };
 let editorState=null;
 
@@ -282,8 +294,7 @@ function addUploadControls(){
  const maps=[
   ["logo_url","logoFile","Anexar logotipo"],
   ["hero_image_url","heroFile","Anexar imagem principal"],
-  ["service_image_url","serviceFile","Anexar imagem dos serviços"],
-  ["amorinha_image_url","amorinhaFile","Anexar foto da Amorinha"]
+  ["service_image_url","serviceFile","Anexar imagem dos serviços"]
  ];
  maps.forEach(([key,id,label])=>{
   const urlInput=box.querySelector('[name="'+key+'"]');if(!urlInput)return;
