@@ -9,7 +9,7 @@ const homeFields=[
 ];
 const collectionFields=[["collection_eyebrow","Coleção — etiqueta"],["collection_title","Coleção — título"],["collection_text","Coleção — descrição"],["catalog_note","Coleção — observação"]];
 const servicesFields=[["services_eyebrow","Serviços — etiqueta"],["services_title","Serviços — título"],["services_text","Serviços — descrição"]];
-const experienceFields=[["experience_eyebrow","A Ótica — etiqueta"],["experience_title","A Ótica — título"],["experience_text","A Ótica — descrição"],["experience_image_url","A Ótica — imagem","url"]];
+const experienceFields=[["experience_eyebrow","A Ótica — etiqueta"],["experience_title","A Ótica — título"],["experience_text","A Ótica — descrição"]];
 const historyFields=[["history_eyebrow","Etiqueta da seção"],["history_title","Título da seção"],["history_text","Texto da seção"],["history_note","Frase de destaque"]];
 const galleryFields=[["gallery_eyebrow","Galeria — etiqueta"],["gallery_title","Galeria — título"],["gallery_text","Galeria — descrição"]];
 const offerFields=[["offer_eyebrow","Ofertas — etiqueta"],["offer_title","Ofertas — título"],["offer_text","Ofertas — texto"]];
