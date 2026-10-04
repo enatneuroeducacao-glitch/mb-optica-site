@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Central Administrativa | Ótica Moni Becker</title><link rel="stylesheet" href="admin.css?v=20261004-3"></head><body>
+<title>Central Administrativa | Ótica Moni Becker</title><link rel="stylesheet" href="admin.css?v=20261004-4"></head><body>
 <div id="loginView" class="login"><div class="login-box">
 <img src="assets/logo.jpg" alt="Ótica Moni Becker"><p class="eyebrow">ÓTICA MONI BECKER</p><h1>Central Administrativa</h1>
 <p>Controle completo do site</p><form id="loginForm" novalidate>
@@ -51,11 +51,23 @@
 <div id="imageEditor" class="image-editor hidden" aria-hidden="true">
   <div class="image-editor-box">
     <div class="image-editor-head"><div><p class="eyebrow">EDITOR DE IMAGEM</p><h2 id="imageEditorTitle">Ajustar foto</h2></div><button type="button" id="imageEditorClose" class="image-editor-close">×</button></div>
-    <p id="imageEditorHint" class="image-editor-hint">Arraste a foto para posicionar. Use o zoom para enquadrar sem perder qualidade.</p>
+    <p id="imageEditorHint" class="image-editor-hint">Escolha o formato, arraste a foto para posicionar e ajuste o zoom. O enquadramento final será salvo exatamente no formato escolhido.</p>
+    <div class="image-editor-format">
+      <label for="imageEditorRatio">Formato da imagem</label>
+      <select id="imageEditorRatio">
+        <option value="16:9">16:9 — horizontal</option>
+        <option value="4:3">4:3 — horizontal</option>
+        <option value="3:2">3:2 — horizontal</option>
+        <option value="1:1">1:1 — quadrado</option>
+        <option value="4:5">4:5 — vertical</option>
+        <option value="9:16">9:16 — vertical</option>
+        <option value="original">Original — proporção da foto</option>
+      </select>
+    </div>
     <div class="image-editor-stage" id="imageEditorStage"><img id="imageEditorImage" alt="Pré-visualização da foto"></div>
     <div class="image-editor-controls"><label>Zoom <input id="imageEditorZoom" type="range" min="1" max="3" step=".01" value="1"></label><button type="button" id="imageEditorReset" class="btn secondary">Reenquadrar</button></div>
     <div class="image-editor-actions"><button type="button" id="imageEditorCancel" class="btn secondary">Cancelar</button><button type="button" id="imageEditorApply" class="btn primary">Aplicar enquadramento</button></div>
   </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js?v=20261003-4"></script><script src="admin.js?v=20261004-19"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js?v=20261003-4"></script><script src="admin.js?v=20261004-20"></script>
 </body></html>
