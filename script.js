@@ -4,11 +4,6 @@ document.addEventListener("DOMContentLoaded",()=>{
  const menuToggle=$(".menu-toggle"),nav=$(".nav");
  menuToggle?.addEventListener("click",()=>{const open=nav.classList.toggle("mobile-open");menuToggle.setAttribute("aria-expanded",String(open))});
  $$(".nav a").forEach(a=>a.addEventListener("click",()=>nav.classList.remove("mobile-open")));
- $$(".filter").forEach(btn=>btn.addEventListener("click",()=>{
- $$(".filter").forEach(b=>b.classList.remove("active"));btn.classList.add("active");
- if(btn.dataset.filter==="todos"){filterProducts("todos");closeCollectionAlbum();return}
- filterProducts(btn.dataset.filter);openCollectionAlbum(btn.dataset.filter);
-}));
  bindInterestButtons();
  $("#appointmentForm")?.addEventListener("submit",appointmentSubmit);
  $("#newsletterForm")?.addEventListener("submit",e=>{e.preventDefault();$("#newsletterMsg").textContent="Cadastro recebido. Em breve enviaremos novidades.";e.target.reset()});
@@ -16,17 +11,19 @@ document.addEventListener("DOMContentLoaded",()=>{
  loadCmsContent();
 });
 function bindCollectionFilters(){
- $$(".filter").forEach(btn=>btn.onclick=()=>{
-  $$(".filter").forEach(b=>b.classList.remove("active"));btn.classList.add("active");
-  if(btn.dataset.filter==="todos"){filterProducts("todos");closeCollectionAlbum();return}
-  filterProducts(btn.dataset.filter);openCollectionAlbum(btn.dataset.filter);
+ $(".filter").forEach(btn=>btn.onclick=()=>{
+  $(".filter").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  openCollectionAlbum(btn.dataset.filter);
  });
 }
 async function loadPublicCollections(client){
  const r=await client.from("collections").select("name,slug,active,sort_order").eq("active",true).order("sort_order").order("created_at");
  if(r.error)return;
  const filters=$(".filters");if(!filters)return;
- filters.innerHTML='<button class="filter active" data-filter="todos">Todos</button>'+(r.data||[]).map(x=>'<button class="filter" data-filter="'+escapeCms(x.slug)+'">'+escapeCms(x.name)+'</button>').join("");
+ const collections=(r.data||[]).filter(x=>x.slug!=="outros");
+ filters.innerHTML=collections.map((x,i)=>'<button class="filter album-link'+(i===0?" active":"")+'" type="button" data-filter="'+escapeCms(x.slug)+'" aria-label="Abrir álbum '+escapeCms(x.name)+'">'+escapeCms(x.name)+'</button>').join("");
+
  bindCollectionFilters();
 }
 function openCollectionAlbum(category){
@@ -42,7 +39,7 @@ function openCollectionAlbum(category){
 function closeCollectionAlbum(){const modal=$("#collectionAlbum");if(!modal)return;modal.classList.add("hidden");modal.setAttribute("aria-hidden","true");document.body.classList.remove("album-open")}
 document.addEventListener("click",e=>{if(e.target.matches("[data-close-album]"))closeCollectionAlbum()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeCollectionAlbum()});
-function filterProducts(filter){$$(".product-card").forEach(card=>{card.style.display=filter==="todos"||card.dataset.category===filter?"":"none"})}
+function filterProducts(filter){$(".product-card").forEach(card=>{card.style.display="none"})}
 function bindInterestButtons(){$$(".text-link").forEach(btn=>btn.addEventListener("click",()=>{const interest=$("#interest");if(interest)interest.value=btn.dataset.product;$("#agendamento")?.scrollIntoView({behavior:"smooth"});if($("#message"))$("#message").value="Tenho interesse no modelo "+btn.dataset.product+". Gostaria de saber se está disponível.";$("#name")?.focus()}))}
 function appointmentSubmit(e){e.preventDefault();const name=$("#name").value.trim(),phone=$("#phone").value.trim(),interest=$("#interest").value,message=$("#message").value.trim();const text="Olá, Ótica Moni Becker!%0A%0AMeu nome é "+encodeURIComponent(name)+".%0AWhatsApp: "+encodeURIComponent(phone)+"%0AInteresse: "+encodeURIComponent(interest)+"%0A"+encodeURIComponent(message);if(!WHATSAPP||WHATSAPP==="5547999999999"){showToast("O WhatsApp da loja ainda não está configurado.");return}window.open("https://wa.me/"+WHATSAPP+"?text="+text,"_blank","noopener")}
 function openModal(id){document.getElementById(id)?.classList.add("open")}function closeModal(id){document.getElementById(id)?.classList.remove("open")}
