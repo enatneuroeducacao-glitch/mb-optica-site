@@ -122,7 +122,7 @@ function renderFields(container,defs,settings){
 async function getSettings(){const r=await db.from("site_settings").select("key,value");if(r.error)throw r.error;return Object.fromEntries((r.data||[]).map(x=>[x.key,x.value]))}
 async function loadAll(){
  try{const s=await getSettings();renderFields($("#contentFields"),contentFields,s);renderFields($("#appearanceFields"),appearanceFields,s);bindColorSync();}catch(e){console.error(e)}
- await Promise.all([loadStats(),loadList("products"),loadList("services"),loadList("gallery"),loadList("offers"),loadCollections()]);
+ await Promise.all([loadStats(),loadList("products"),loadList("services"),loadList("gallery"),loadList("offers"),loadCollectionOptions(),loadCollections()]);
 }
 function initFormRichEditors(){
  [
@@ -247,16 +247,50 @@ async function prepareUpload(inputId){
 async function upload(file){const ext=(file.name.split(".").pop()||"jpg").toLowerCase();const path=Date.now()+"-"+crypto.randomUUID()+"."+ext;const r=await db.storage.from("site-assets").upload(path,file,{upsert:false});if(r.error)throw r.error;return db.storage.from("site-assets").getPublicUrl(path).data.publicUrl}
 function addUploadControls(){const box=$("#appearanceFields");box.insertAdjacentHTML("beforeend",'<div class="field"><label>Enviar logotipo</label><input id="logoFile" type="file" accept="image/*"></div><div class="field"><label>Enviar imagem principal</label><input id="heroFile" type="file" accept="image/*"></div><div class="field"><label>Enviar imagem da seção Serviços</label><input id="serviceFile" type="file" accept="image/*"></div><div class="field"><label>Enviar foto da Amorinha</label><input id="amorinhaFile" type="file" accept="image/*"></div>')}
 async function loadStats(){const ts=["products","services","gallery","offers"];const nums=await Promise.all(ts.map(async t=>(await db.from(t).select("*",{count:"exact",head:true})).count||0));$("#stats").innerHTML=ts.map((t,i)=>'<div><strong>'+nums[i]+'</strong><span>'+({products:"Produtos",services:"Serviços",gallery:"Fotos",offers:"Ofertas"}[t])+'</span></div>').join("")}
+async function getCollections(){
+ const r=await db.from("collections").select("id,name,slug,active,sort_order").order("sort_order").order("created_at");
+ if(r.error)throw r.error;
+ return (r.data||[]).filter(x=>x.active!==false);
+}
+async function loadCollectionOptions(){
+ const select=$("#pCategory");if(!select)return;
+ try{
+  const collections=await getCollections(),current=select.value;
+  select.innerHTML=collections.map(x=>'<option value="'+esc(x.slug)+'">'+esc(x.name)+'</option>').join("");
+  if(collections.some(x=>x.slug===current))select.value=current;
+ }catch(e){console.error(e)}
+}
+async function createCollection(){
+ const name=prompt("Nome da nova coleção:");
+ if(name===null)return;
+ const clean=name.trim();
+ if(!clean)return alert("Informe o nome da coleção.");
+ const slug=clean.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
+ if(!slug)return alert("Não foi possível gerar um identificador para esta coleção.");
+ try{
+  const existing=await getCollections();
+  if(existing.some(x=>x.slug===slug||x.name.trim().toLowerCase()===clean.toLowerCase()))return alert("Essa coleção já existe.");
+  const nextOrder=existing.reduce((m,x)=>Math.max(m,Number(x.sort_order)||0),0)+10;
+  const r=await db.from("collections").insert({name:clean,slug,sort_order:nextOrder}).select("id,name,slug").single();
+  if(r.error)throw r.error;
+  await loadCollectionOptions();
+  $("#pCategory").value=slug;
+  await loadCollections();
+  alert("Coleção criada com sucesso.");
+ }catch(e){alert(e.message||"Não foi possível criar a coleção.")}
+}
 async function loadCollections(){
  const el=$("#collectionsTable");if(!el)return;
- const r=await db.from("products").select("id,name,category,image_url,active").order("sort_order").order("created_at",{ascending:false});
- if(r.error){el.innerHTML='<div class="empty">'+esc(r.error.message)+'</div>';return}
- const groups={feminino:"Feminino",masculino:"Masculino",solar:"Solar",infantil:"Infantil",outros:"Outros"};
- const products=(r.data||[]).filter(x=>x.active!==false);
- el.innerHTML=Object.entries(groups).map(([key,label])=>{
-   const items=products.filter(x=>(x.category||"outros")===key);
-   return '<article class="collection-admin-card"><div class="collection-admin-head"><div><span class="eyebrow">'+esc(label)+'</span><h3>'+items.length+' modelo'+(items.length===1?"":"s")+'</h3></div><button class="btn small" onclick="showSection(&quot;products&quot;)">Adicionar modelo</button></div><div class="collection-admin-thumbs">'+(items.length?items.slice(0,8).map(x=>x.image_url?'<img src="'+esc(x.image_url)+'" alt="'+esc(x.name||label)+'">':'<div class="collection-thumb-empty">MB</div>').join(""):'<div class="empty">Nenhum modelo cadastrado nesta coleção.</div>')+'</div></article>';
- }).join("");
+ try{
+  const collections=await getCollections();
+  const r=await db.from("products").select("id,name,category,image_url,active").order("sort_order").order("created_at",{ascending:false});
+  if(r.error)throw r.error;
+  const products=(r.data||[]).filter(x=>x.active!==false);
+  el.innerHTML=collections.map(col=>{
+   const items=products.filter(x=>(x.category||"outros")===col.slug);
+   return '<article class="collection-admin-card"><div class="collection-admin-head"><div><span class="eyebrow">'+esc(col.name)+'</span><h3>'+items.length+' modelo'+(items.length===1?"":"s")+'</h3></div><button class="btn small" onclick="showSection(&quot;products&quot;)">Adicionar modelo</button></div><div class="collection-admin-thumbs">'+(items.length?items.slice(0,8).map(x=>x.image_url?'<img src="'+esc(x.image_url)+'" alt="'+esc(x.name||col.name)+'">':'<div class="collection-thumb-empty">MB</div>').join(""):'<div class="empty">Nenhum modelo cadastrado nesta coleção.</div>')+'</div></article>';
+  }).join("");
+ }catch(e){el.innerHTML='<div class="empty">'+esc(e.message||"Não foi possível carregar as coleções.")+'</div>'}
 }
 async function loadList(table){
  const r=await db.from(table).select("*").order("sort_order").order("created_at",{ascending:false});const el=$("#"+table+"Table");
@@ -328,6 +362,7 @@ async function editRow(table,id){
 }
 async function removeRow(table,id){if(!confirm("Excluir este registro?"))return;const r=await db.from(table).delete().eq("id",id);if(r.error){alert(r.error.message);return}await loadList(table);await loadStats();if(table==="products")await loadCollections()}
 
+$("#createCollectionBtn")?.addEventListener("click",createCollection);
 $("#productForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload(await prepareUpload("pImage"));const description=$("#pDescriptionRich")?.value||$("#pDescription").value;const r=await db.from("products").insert({name:$("#pName").value,category:$("#pCategory").value,price:$("#pPrice").value||null,description,image_url:image});if(r.error)throw r.error;e.target.reset();await loadList("products");await loadStats();alert("Produto adicionado.")}catch(x){alert(x.message)}});
 $("#serviceForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload(await prepareUpload("sImage"));const description=$("#sDescriptionRich")?.value||$("#sDescription").value;const r=await db.from("services").insert({name:$("#sName").value,description,image_url:image});if(r.error)throw r.error;e.target.reset();await loadList("services");await loadStats();alert("Serviço adicionado.")}catch(x){alert(x.message)}});
 $("#galleryForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload(await prepareUpload("gImage"));const r=await db.from("gallery").insert({title:$("#gTitle").value,alt_text:$("#gAlt").value,image_url:image});if(r.error)throw r.error;e.target.reset();await loadList("gallery");await loadStats();alert("Foto adicionada.")}catch(x){alert(x.message)}});
