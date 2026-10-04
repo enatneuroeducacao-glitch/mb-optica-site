@@ -79,6 +79,82 @@ $("#appearanceForm").addEventListener("submit",async e=>{e.preventDefault();try{
  for(const id of ["logoFile","heroFile","amorinhaFile"]){const f=$("#"+id)?.files?.[0];if(f){const url=await upload(f);const key=id==="logoFile"?"logo_url":id==="heroFile"?"hero_image_url":"amorinha_image_url";const field=$("#appearanceFields [name='"+key+"']");if(field)field.value=url;const row={key,value:url,updated_at:new Date().toISOString()};const rr=await db.from("site_settings").upsert([row],{onConflict:"key"});if(rr.error)throw rr.error}}
  await saveSettings(e.target,appearanceFields);alert("Aparência salva.")
 }catch(x){alert(x.message)}});
+const editedImages=new Map();
+const imageTargets={
+  gImage:{ratio:16/9,width:1600,height:900,label:"Galeria — 16:9"},
+  pImage:{ratio:4/3,width:1600,height:1200,label:"Produto — 4:3"},
+  sImage:{ratio:4/3,width:1600,height:1200,label:"Serviço — 4:3"},
+  oImage:{ratio:16/9,width:1600,height:900,label:"Oferta — 16:9"},
+  logoFile:{ratio:1,width:1200,height:1200,label:"Logotipo — quadrado"},
+  heroFile:{ratio:4/5,width:1600,height:2000,label:"Imagem principal — 4:5"},
+  amorinhaFile:{ratio:4/5,width:1600,height:2000,label:"Amorinha — 4:5"}
+};
+let editorState=null;
+
+function openImageEditor(file,inputId){
+ return new Promise((resolve,reject)=>{
+  const target=imageTargets[inputId]||imageTargets.gImage, modal=$("#imageEditor"),stage=$("#imageEditorStage"),img=$("#imageEditorImage"),zoom=$("#imageEditorZoom");
+  if(!modal||!stage||!img)return reject(new Error("Editor de imagem indisponível."));
+  const url=URL.createObjectURL(file); const image=new Image();
+  editorState={file,inputId,target,url,image,scale:1,x:0,y:0,drag:false,startX:0,startY:0,baseW:0,baseH:0,resolve,reject};
+  stage.style.aspectRatio=String(target.ratio);
+  $("#imageEditorTitle").textContent="Ajustar foto — "+target.label;
+  $("#imageEditorHint").textContent="A área marcada é exatamente o formato que aparecerá no site. Arraste a foto, ajuste o zoom e clique em Aplicar enquadramento.";
+  image.onload=()=>{
+    const sw=stage.clientWidth,sh=stage.clientHeight,cover=Math.max(sw/image.naturalWidth,sh/image.naturalHeight);
+    editorState.baseW=image.naturalWidth*cover;editorState.baseH=image.naturalHeight*cover;editorState.scale=1;editorState.x=(sw-editorState.baseW)/2;editorState.y=(sh-editorState.baseH)/2;
+    img.src=url;zoom.value="1";applyEditorTransform();modal.classList.remove("hidden");modal.setAttribute("aria-hidden","false");
+  };
+  image.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("Não foi possível abrir a imagem."))};
+  image.src=url;
+ });
+}
+function applyEditorTransform(){
+ const e=editorState;if(!e)return;const img=$("#imageEditorImage");
+ img.style.width=e.baseW+"px";img.style.height=e.baseH+"px";img.style.left=e.x+"px";img.style.top=e.y+"px";img.style.transform="scale("+e.scale+")";
+}
+function closeImageEditor(cancel=true){
+ const e=editorState;if(!e)return;$("#imageEditor").classList.add("hidden");$("#imageEditor").setAttribute("aria-hidden","true");if(cancel){editedImages.delete(e.inputId);const input=$("#"+e.inputId);if(input)input.value=""}URL.revokeObjectURL(e.url);const fn=cancel?e.reject:e.resolve;editorState=null;if(cancel)fn(new Error("Edição cancelada."));else fn();
+}
+async function applyImageEditor(){
+ const e=editorState;if(!e)return;const target=e.target,canvas=document.createElement("canvas");canvas.width=target.width;canvas.height=target.height;const ctx=canvas.getContext("2d"),stage=$("#imageEditorStage"),scaleOut=target.width/stage.clientWidth;
+ ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);
+ const sx=e.x*scaleOut,sy=e.y*scaleOut,sw=e.baseW*e.scale*scaleOut,sh=e.baseH*e.scale*scaleOut;
+ ctx.drawImage(e.image,sx,sy,sw,sh);
+ const blob=await new Promise(res=>canvas.toBlob(res,"image/jpeg",.94));
+ if(!blob)throw new Error("Não foi possível preparar a imagem.");
+ const safe=(e.file.name.replace(/\.[^.]+$/,"")||"imagem")+"-editada.jpg";
+ const edited=new File([blob],safe,{type:"image/jpeg",lastModified:Date.now()});
+ editedImages.set(e.inputId,edited);
+ const input=$("#"+e.inputId);if(input){const dt=new DataTransfer();dt.items.add(edited);input.files=dt.files}
+ const resolve=e.resolve;closeImageEditor(false);resolve(edited);
+}
+function bindImageEditor(){
+ Object.keys(imageTargets).forEach(id=>{
+  const input=$("#"+id);if(!input||input.dataset.editorBound)return;
+  input.dataset.editorBound="1";
+  input.addEventListener("change",async()=>{
+   const file=input.files?.[0];if(!file)return;
+   try{await openImageEditor(file,id)}catch(err){if(err.message!=="Edição cancelada.")alert(err.message)}
+  });
+ });
+ $("#imageEditorClose")?.addEventListener("click",()=>closeImageEditor(true));
+ $("#imageEditorCancel")?.addEventListener("click",()=>closeImageEditor(true));
+ $("#imageEditorApply")?.addEventListener("click",()=>applyImageEditor().catch(err=>alert(err.message)));
+ $("#imageEditorReset")?.addEventListener("click",()=>{if(!editorState)return;const e=editorState,stage=$("#imageEditorStage");e.scale=1;e.x=(stage.clientWidth-e.baseW)/2;e.y=(stage.clientHeight-e.baseH)/2;$("#imageEditorZoom").value="1";applyEditorTransform()});
+ $("#imageEditorZoom")?.addEventListener("input",e=>{if(editorState){editorState.scale=Number(e.target.value);applyEditorTransform()}});
+ const stage=$("#imageEditorStage");
+ stage?.addEventListener("pointerdown",e=>{if(!editorState)return;editorState.drag=true;editorState.startX=e.clientX-editorState.x;editorState.startY=e.clientY-editorState.y;stage.classList.add("dragging");stage.setPointerCapture(e.pointerId)});
+ stage?.addEventListener("pointermove",e=>{if(!editorState?.drag)return;editorState.x=e.clientX-editorState.startX;editorState.y=e.clientY-editorState.startY;applyEditorTransform()});
+ stage?.addEventListener("pointerup",()=>{if(editorState){editorState.drag=false;stage.classList.remove("dragging")}});
+ stage?.addEventListener("pointercancel",()=>{if(editorState){editorState.drag=false;stage.classList.remove("dragging")}});
+}
+async function prepareUpload(inputId){
+ const f=$("#"+inputId)?.files?.[0];if(!f)throw new Error("Selecione uma imagem.");
+ if(editedImages.has(inputId))return editedImages.get(inputId);
+ return f;
+}
+
 async function upload(file){const ext=(file.name.split(".").pop()||"jpg").toLowerCase();const path=Date.now()+"-"+crypto.randomUUID()+"."+ext;const r=await db.storage.from("site-assets").upload(path,file,{upsert:false});if(r.error)throw r.error;return db.storage.from("site-assets").getPublicUrl(path).data.publicUrl}
 function addUploadControls(){const box=$("#appearanceFields");box.insertAdjacentHTML("beforeend",'<div class="field"><label>Enviar logotipo</label><input id="logoFile" type="file" accept="image/*"></div><div class="field"><label>Enviar imagem principal</label><input id="heroFile" type="file" accept="image/*"></div><div class="field"><label>Enviar foto da Amorinha</label><input id="amorinhaFile" type="file" accept="image/*"></div>')}
 async function loadStats(){const ts=["products","services","gallery","offers"];const nums=await Promise.all(ts.map(async t=>(await db.from(t).select("*",{count:"exact",head:true})).count||0));$("#stats").innerHTML=ts.map((t,i)=>'<div><strong>'+nums[i]+'</strong><span>'+({products:"Produtos",services:"Serviços",gallery:"Fotos",offers:"Ofertas"}[t])+'</span></div>').join("")}
@@ -117,10 +193,10 @@ async function editRow(table,id){
 }
 async function removeRow(table,id){if(!confirm("Excluir este registro?"))return;const r=await db.from(table).delete().eq("id",id);if(r.error){alert(r.error.message);return}await loadList(table);await loadStats()}
 
-$("#productForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload($("#pImage").files[0]);const r=await db.from("products").insert({name:$("#pName").value,category:$("#pCategory").value,price:$("#pPrice").value||null,description:$("#pDescription").value,image_url:image});if(r.error)throw r.error;e.target.reset();await loadList("products");await loadStats();alert("Produto adicionado.")}catch(x){alert(x.message)}});
-$("#serviceForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload($("#sImage").files[0]);const r=await db.from("services").insert({name:$("#sName").value,description:$("#sDescription").value,image_url:image});if(r.error)throw r.error;e.target.reset();await loadList("services");await loadStats();alert("Serviço adicionado.")}catch(x){alert(x.message)}});
-$("#galleryForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload($("#gImage").files[0]);const r=await db.from("gallery").insert({title:$("#gTitle").value,alt_text:$("#gAlt").value,image_url:image});if(r.error)throw r.error;e.target.reset();await loadList("gallery");await loadStats();alert("Foto adicionada.")}catch(x){alert(x.message)}});
-$("#offerForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload($("#oImage").files[0]);const r=await db.from("offers").insert({title:$("#oTitle").value,price_text:$("#oPrice").value,description:$("#oDescription").value,image_url:image,starts_at:$("#oStart").value||null,ends_at:$("#oEnd").value||null});if(r.error)throw r.error;e.target.reset();await loadList("offers");await loadStats();alert("Oferta adicionada.")}catch(x){alert(x.message)}});
+$("#productForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload(await prepareUpload("pImage"));const r=await db.from("products").insert({name:$("#pName").value,category:$("#pCategory").value,price:$("#pPrice").value||null,description:$("#pDescription").value,image_url:image});if(r.error)throw r.error;e.target.reset();await loadList("products");await loadStats();alert("Produto adicionado.")}catch(x){alert(x.message)}});
+$("#serviceForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload(await prepareUpload("sImage"));const r=await db.from("services").insert({name:$("#sName").value,description:$("#sDescription").value,image_url:image});if(r.error)throw r.error;e.target.reset();await loadList("services");await loadStats();alert("Serviço adicionado.")}catch(x){alert(x.message)}});
+$("#galleryForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload(await prepareUpload("gImage"));const r=await db.from("gallery").insert({title:$("#gTitle").value,alt_text:$("#gAlt").value,image_url:image});if(r.error)throw r.error;e.target.reset();await loadList("gallery");await loadStats();alert("Foto adicionada.")}catch(x){alert(x.message)}});
+$("#offerForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload(await prepareUpload("oImage"));const r=await db.from("offers").insert({title:$("#oTitle").value,price_text:$("#oPrice").value,description:$("#oDescription").value,image_url:image,starts_at:$("#oStart").value||null,ends_at:$("#oEnd").value||null});if(r.error)throw r.error;e.target.reset();await loadList("offers");await loadStats();alert("Oferta adicionada.")}catch(x){alert(x.message)}});
 
 $("#passwordForm").addEventListener("submit",async e=>{e.preventDefault();const old=$("#currentPassword").value,newP=$("#newPassword").value,confirmP=$("#confirmPassword").value;
  if(newP.length<8)return securityMsg("A nova senha precisa ter pelo menos 8 caracteres.","err");if(newP!==confirmP)return securityMsg("A confirmação não confere.","err");
@@ -128,7 +204,7 @@ $("#passwordForm").addEventListener("submit",async e=>{e.preventDefault();const 
 });
 $("#resetPassword").addEventListener("click",async()=>{const email=$("#securityEmail").textContent;const r=await db.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});$("#resetStatus").textContent=r.error?r.error.message:"Link de recuperação enviado.";$("#resetStatus").className="status "+(r.error?"err":"ok")});
 function securityMsg(m,k){$("#securityStatus").textContent=m;$("#securityStatus").className="status "+k}
-setTimeout(()=>{if($("#appearanceFields"))addUploadControls()},100);
+setTimeout(()=>{if($("#appearanceFields")){addUploadControls();bindImageEditor()}},100);
 
 $( "#createAdminForm")?.addEventListener("submit",async e=>{e.preventDefault();
  const f=e.target, email=$("#newAdminEmail")?.value.trim().toLowerCase()||"", secret=$("#newAdminPassword")?.value||"", confirm=$("#newAdminPasswordConfirm")?.value||"", status=$("#createUserStatus");
