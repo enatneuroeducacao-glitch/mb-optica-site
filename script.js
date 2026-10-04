@@ -16,9 +16,26 @@ function bindInterestButtons(){$$(".text-link").forEach(btn=>btn.addEventListene
 function appointmentSubmit(e){e.preventDefault();const name=$("#name").value.trim(),phone=$("#phone").value.trim(),interest=$("#interest").value,message=$("#message").value.trim();const text="Olá, Ótica Moni Becker!%0A%0AMeu nome é "+encodeURIComponent(name)+".%0AWhatsApp: "+encodeURIComponent(phone)+"%0AInteresse: "+encodeURIComponent(interest)+"%0A"+encodeURIComponent(message);if(!WHATSAPP||WHATSAPP==="5547999999999"){showToast("O WhatsApp da loja ainda não está configurado.");return}window.open("https://wa.me/"+WHATSAPP+"?text="+text,"_blank","noopener")}
 function openModal(id){document.getElementById(id)?.classList.add("open")}function closeModal(id){document.getElementById(id)?.classList.remove("open")}
 function showToast(message){const t=$("#toast");t.textContent=message;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),4200)}
-function setText(sel,value){const el=$(sel);if(el&&value!==undefined&&value!=="")el.textContent=value}
-function setTitle(sel,value){const el=$(sel);if(el&&value!==undefined&&value!=="")el.innerHTML=escapeCms(value).replace(/\\n/g,"<br>").replace(/\n/g,"<br>")}
-function setMany(sel,value){if(value===undefined||value==="")return;$(sel)?.forEach?$(sel).forEach(x=>x.textContent=value):null}
+function sanitizeCms(value){
+ const raw=String(value??"");if(!raw)return "";
+ const box=document.createElement("div");box.innerHTML=raw;
+ const allowed=new Set(["B","STRONG","I","EM","U","BR","P","DIV","SPAN","UL","OL","LI","A","H2","H3","BLOCKQUOTE"]);
+ box.querySelectorAll("*").forEach(el=>{
+  if(!allowed.has(el.tagName)){el.replaceWith(...el.childNodes);return}
+  [...el.attributes].forEach(a=>{
+   if(el.tagName==="A"&&a.name==="href"&&/^(https?:|mailto:)/i.test(a.value))return;
+   if(el.tagName==="SPAN"&&a.name==="style"&&/^\\s*(color|background-color)\\s*:\\s*(#[0-9a-fA-F]{6}|rgb\\([^)]*\\))\\s*;?\\s*$/i.test(a.value))return;
+   el.removeAttribute(a.name);
+  });
+ });
+ const walker=document.createTreeWalker(box,NodeFilter.SHOW_TEXT);
+ const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
+ nodes.forEach(n=>{if(/\\n/.test(n.nodeValue)){const parts=n.nodeValue.split(/\\n/);const frag=document.createDocumentFragment();parts.forEach((p,i)=>{if(i)frag.appendChild(document.createElement("br"));frag.appendChild(document.createTextNode(p))});n.replaceWith(frag)}});
+ return box.innerHTML;
+}
+function setText(sel,value){const el=$(sel);if(el&&value!==undefined&&value!=="")el.innerHTML=sanitizeCms(value)}
+function setTitle(sel,value){const el=$(sel);if(el&&value!==undefined&&value!=="")el.innerHTML=sanitizeCms(value)}
+function setMany(sel,value){if(value===undefined||value==="")return;$(sel)?.forEach?$(sel).forEach(x=>x.innerHTML=sanitizeCms(value)):null}
 function escapeCms(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
 function escapeCss(v){return String(v??"").replace(/['\\)]/g,"\\$&")}
 
