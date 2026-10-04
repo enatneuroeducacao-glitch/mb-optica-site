@@ -76,3 +76,4 @@ body.album-open{overflow:hidden}
 .collection-admin-thumbs img,.collection-thumb-empty{width:100%;aspect-ratio:1/1;object-fit:cover;background:#eee8dc;display:grid;place-items:center;color:#9b6a2f;font-family:Georgia,serif}
 @media(max-width:900px){.collection-album-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.collection-admin-grid{grid-template-columns:1fr}}
 @media(max-width:600px){.collection-album{padding:10px}.collection-album-box{padding:18px}.collection-album-grid{grid-template-columns:1fr}.collection-album-grid .product-visual{height:230px}.collection-admin-thumbs{grid-template-columns:repeat(3,1fr)}}
+.filters:empty{display:none}.collection-showcase .product-info{padding-top:16px}.collection-showcase .collection-link{margin-top:8px;border:0;padding-left:0;padding-right:0;background:transparent}.collection-showcase .collection-link:hover{background:transparent}
