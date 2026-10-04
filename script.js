@@ -4,22 +4,22 @@ document.addEventListener("DOMContentLoaded",()=>{
  const menuToggle=$(".menu-toggle"),nav=$(".nav");
  menuToggle?.addEventListener("click",()=>{const open=nav.classList.toggle("mobile-open");menuToggle.setAttribute("aria-expanded",String(open))});
  $$(".nav a").forEach(a=>a.addEventListener("click",()=>nav.classList.remove("mobile-open")));
- $$(".filter").forEach(btn=>btn.addEventListener("click",()=>{
- $$(".filter").forEach(b=>b.classList.remove("active"));btn.classList.add("active");
- if(btn.dataset.filter==="todos"){filterProducts("todos");closeCollectionAlbum();return}
- filterProducts(btn.dataset.filter);openCollectionAlbum(btn.dataset.filter);
-}));
- bindInterestButtons();
+ bindCollectionFilters(); bindInterestButtons();
  $("#appointmentForm")?.addEventListener("submit",appointmentSubmit);
  $("#newsletterForm")?.addEventListener("submit",e=>{e.preventDefault();$("#newsletterMsg").textContent="Cadastro recebido. Em breve enviaremos novidades.";e.target.reset()});
  $$(".access-controls button").forEach(btn=>btn.addEventListener("click",()=>{const root=document.documentElement,current=parseFloat(getComputedStyle(root).getPropertyValue("--scale"))||1;if(btn.dataset.font==="up")root.style.setProperty("--scale",Math.min(current+.08,1.25));if(btn.dataset.font==="down")root.style.setProperty("--scale",Math.max(current-.08,.9));if(btn.dataset.font==="reset")root.style.setProperty("--scale",1)}));
  loadCmsContent();
 });
-function openCollectionAlbum(category){
+function bindCollectionFilters(){
+ const box=$(".filters");if(!box||box.dataset.bound==="1")return;box.dataset.bound="1";
+ box.addEventListener("click",e=>{const btn=e.target.closest(".filter");if(!btn)return;$$(".filter").forEach(b=>b.classList.remove("active"));btn.classList.add("active");const id=btn.dataset.collectionId||"";if(!id){filterProducts("todos");closeCollectionAlbum();return}filterProducts(id);openCollectionAlbum(id)});
+}
+function openCollectionAlbum(collectionId){
  const modal=$("#collectionAlbum"),grid=$("#collectionAlbumGrid"),title=$("#collectionAlbumTitle"),count=$("#collectionAlbumCount");if(!modal||!grid)return;
- const labels={feminino:"Feminino",masculino:"Masculino",solar:"Solar",infantil:"Infantil",outros:"Outros"};
- const cards=$(".product-card").filter(card=>card.dataset.category===category);
- title.textContent=labels[category]||category;
+ const btn=$$('.filter[data-collection-id="'+CSS.escape(collectionId)+'"]');
+ const label=btn?.textContent?.trim()||"Coleção";
+ const cards=$$(".product-card").filter(card=>card.dataset.collectionId===collectionId);
+ title.textContent=label;
  count.textContent=cards.length+" modelo"+(cards.length===1?"":"s")+" nesta coleção";
  grid.innerHTML=cards.length?cards.map(card=>card.outerHTML).join(""):'<p class="album-empty">Ainda não há modelos cadastrados nesta coleção.</p>';
  modal.classList.remove("hidden");modal.setAttribute("aria-hidden","false");document.body.classList.add("album-open");
@@ -28,7 +28,7 @@ function openCollectionAlbum(category){
 function closeCollectionAlbum(){const modal=$("#collectionAlbum");if(!modal)return;modal.classList.add("hidden");modal.setAttribute("aria-hidden","true");document.body.classList.remove("album-open")}
 document.addEventListener("click",e=>{if(e.target.matches("[data-close-album]"))closeCollectionAlbum()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeCollectionAlbum()});
-function filterProducts(filter){$$(".product-card").forEach(card=>{card.style.display=filter==="todos"||card.dataset.category===filter?"":"none"})}
+function filterProducts(filter){$(".product-card").forEach(card=>{card.style.display=filter==="todos"||card.dataset.collectionId===filter?"":"none"})}
 function bindInterestButtons(){$$(".text-link").forEach(btn=>btn.addEventListener("click",()=>{const interest=$("#interest");if(interest)interest.value=btn.dataset.product;$("#agendamento")?.scrollIntoView({behavior:"smooth"});if($("#message"))$("#message").value="Tenho interesse no modelo "+btn.dataset.product+". Gostaria de saber se está disponível.";$("#name")?.focus()}))}
 function appointmentSubmit(e){e.preventDefault();const name=$("#name").value.trim(),phone=$("#phone").value.trim(),interest=$("#interest").value,message=$("#message").value.trim();const text="Olá, Ótica Moni Becker!%0A%0AMeu nome é "+encodeURIComponent(name)+".%0AWhatsApp: "+encodeURIComponent(phone)+"%0AInteresse: "+encodeURIComponent(interest)+"%0A"+encodeURIComponent(message);if(!WHATSAPP||WHATSAPP==="5547999999999"){showToast("O WhatsApp da loja ainda não está configurado.");return}window.open("https://wa.me/"+WHATSAPP+"?text="+text,"_blank","noopener")}
 function openModal(id){document.getElementById(id)?.classList.add("open")}function closeModal(id){document.getElementById(id)?.classList.remove("open")}
@@ -82,8 +82,11 @@ async function loadCmsContent(){
   setText(".footer-brand p",s.footer_tagline);setText(".footer-bottom",s.footer_copyright?("© "+new Date().getFullYear()+" "+s.footer_copyright):"");
   const root=document.documentElement;if(s.primary_color)root.style.setProperty("--gold",s.primary_color);if(s.cream_color)root.style.setProperty("--cream",s.cream_color);if(s.dark_color)root.style.setProperty("--dark",s.dark_color);if(s.muted_color)root.style.setProperty("--muted",s.muted_color);
   if(s.whatsapp)WHATSAPP=s.whatsapp.replace(/\D/g,"");
+  const collections=(await client.from("collections").select("*").eq("active",true).order("sort_order").order("created_at",{ascending:false})).data||[];
   const products=(await client.from("products").select("*").eq("active",true).order("sort_order").order("created_at",{ascending:false})).data||[];
-  if(products.length){const grid=$(".product-grid");grid.innerHTML=products.map(p=>'<article class="product-card" data-category="'+escapeCms(p.category)+'"><div class="product-visual" style="'+(p.image_url?"background-image:url('"+escapeCss(p.image_url)+"');background-size:cover;background-position:center":"")+'"><span>MB</span></div><div class="product-info"><small>'+escapeCms((p.category||"outros").toUpperCase())+'</small><h3>'+escapeCms(p.name)+'</h3><div class="product-description">'+sanitizeCms(p.description||"")+'</div>'+(p.price!==null&&p.price!==undefined&&p.price!==""?'<strong class="product-price">R$ '+Number(p.price).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})+'</strong>':"")+'<button class="text-link" data-product="'+escapeCms(p.name)+'">Tenho interesse →</button></div></article>').join("");bindInterestButtons()}
+  const filters=$(".filters");
+  if(filters){filters.innerHTML='<button class="filter active" data-filter="todos">Todos</button>'+collections.map(col=>'<button class="filter" data-filter="'+escapeCms(col.id)+'" data-collection-id="'+escapeCms(col.id)+'">'+escapeCms(col.name)+'</button>').join("");bindCollectionFilters()}
+  if(products.length){const grid=$(".product-grid");grid.innerHTML=products.map(p=>'<article class="product-card" data-category="'+escapeCms(p.category||"outros")+'" data-collection-id="'+escapeCms(p.collection_id||"")+'"><div class="product-visual" style="'+(p.image_url?"background-image:url('"+escapeCss(p.image_url)+"');background-size:cover;background-position:center":"")+'"><span>MB</span></div><div class="product-info"><small>'+escapeCms((p.category||"outros").toUpperCase())+'</small><h3>'+escapeCms(p.name)+'</h3><div class="product-description">'+sanitizeCms(p.description||"")+'</div>'+(p.price!==null&&p.price!==undefined&&p.price!==""?'<strong class="product-price">R$ '+Number(p.price).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})+'</strong>':"")+'<button class="text-link" data-product="'+escapeCms(p.name)+'">Tenho interesse →</button></div></article>').join("");bindInterestButtons()}
   const servicesResult=await client.from("services").select("*").eq("active",true).order("sort_order").order("created_at",{ascending:false});const services=servicesResult.data||[];if(services.length){$(".service-list").innerHTML=services.map((x,i)=>'<div><span>'+String(i+1).padStart(2,"0")+'</span><div><h3>'+sanitizeCms(x.name||"")+'</h3><div class="service-desc">'+sanitizeCms(x.description||"")+'</div></div></div>').join("");if(services[0].image_url){const serviceImage=$("#serviceImage");if(serviceImage){serviceImage.src=services[0].image_url;serviceImage.alt=services[0].name||"Imagem dos serviços";serviceImage.style.backgroundImage="none"}}}
   const gallery=(await client.from("gallery").select("*").eq("active",true).order("sort_order").order("created_at",{ascending:false})).data||[];
   if(gallery.length){$(".gallery-grid").innerHTML=gallery.map(x=>'<figure class="gallery-tile"><img src="'+escapeCms(x.image_url)+'" alt="'+escapeCms(x.alt_text||x.title||"Ótica Moni Becker")+'" loading="lazy"><figcaption>'+escapeCms(x.title||"ÓTICA MONI BECKER")+'</figcaption></figure>').join("")}
