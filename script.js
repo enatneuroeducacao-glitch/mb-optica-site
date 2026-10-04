@@ -19,7 +19,7 @@ function showToast(message){const t=$("#toast");t.textContent=message;t.classLis
 function setText(sel,value){const el=$(sel);if(el&&value!==undefined&&value!=="")el.textContent=value}
 function setTitle(sel,value){const el=$(sel);if(el&&value!==undefined&&value!=="")el.innerHTML=escapeCms(value).replace(/\n/g,"<br>")}
 function setMany(sel,value){if(value===undefined||value==="")return;$(sel)?.forEach?$(sel).forEach(x=>x.textContent=value):null}
-function escapeCms(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",""":"&quot;","'":"&#39;"}[c]))}
+function escapeCms(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
 function escapeCss(v){return String(v??"").replace(/['\\)]/g,"\\$&")}
 
 async function loadCmsContent(){
