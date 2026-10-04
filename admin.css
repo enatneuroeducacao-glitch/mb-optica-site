@@ -12,3 +12,7 @@
 .rich-modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
 .rich-modal-head h3{margin:0;font-family:Georgia,serif;font-size:24px}
 .rich-modal .actions{justify-content:flex-end;margin-top:14px}
+
+.appearance-image-control{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px}
+.appearance-upload-btn{padding:9px 13px}
+.appearance-upload-note{font-size:.72rem;color:var(--muted,#746d63)}
