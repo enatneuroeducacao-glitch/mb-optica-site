@@ -16,8 +16,8 @@ document.addEventListener("DOMContentLoaded",()=>{
  loadCmsContent();
 });
 function bindCollectionFilters(){
- $(".filter").forEach(btn=>btn.onclick=()=>{
-  $(".filter").forEach(b=>b.classList.remove("active"));btn.classList.add("active");
+ $$(".filter").forEach(btn=>btn.onclick=()=>{
+  $$(".filter").forEach(b=>b.classList.remove("active"));btn.classList.add("active");
   if(btn.dataset.filter==="todos"){filterProducts("todos");closeCollectionAlbum();return}
   filterProducts(btn.dataset.filter);openCollectionAlbum(btn.dataset.filter);
  });
@@ -31,7 +31,7 @@ async function loadPublicCollections(client){
 }
 function openCollectionAlbum(category){
  const modal=$("#collectionAlbum"),grid=$("#collectionAlbumGrid"),title=$("#collectionAlbumTitle"),count=$("#collectionAlbumCount");if(!modal||!grid)return;
- const filter=$(".filter").find(btn=>btn.dataset.filter===category);
+ const filter=$$(".filter").find(btn=>btn.dataset.filter===category);
  const cards=$(".product-card").filter(card=>card.dataset.category===category);
  title.textContent=filter?.textContent?.trim()||category;
  count.textContent=cards.length+" modelo"+(cards.length===1?"":"s")+" nesta coleção";
