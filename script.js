@@ -1,4 +1,4 @@
-let WHATSAPP="5547999999999";const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+let WHATSAPP="5547999999999";let PUBLIC_PRODUCTS=[];const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 document.addEventListener("DOMContentLoaded",()=>{
  $("#year").textContent=new Date().getFullYear();
  const menuToggle=$(".menu-toggle"),nav=$(".nav");
@@ -22,19 +22,20 @@ async function loadPublicCollections(client){
  if(r.error)return;
  const filters=$(".filters");if(!filters)return;
  const collections=(r.data||[]).filter(x=>x.slug!=="outros");
- filters.innerHTML=collections.map((x,i)=>'<button class="filter album-link'+(i===0?" active":"")+'" type="button" data-filter="'+escapeCms(x.slug)+'" aria-label="Abrir álbum '+escapeCms(x.name)+'">'+escapeCms(x.name)+'</button>').join("");
+ filters.innerHTML=collections.map(x=>'<button class="filter album-link" type="button" data-filter="'+escapeCms(x.slug)+'" aria-label="Abrir álbum '+escapeCms(x.name)+'">'+escapeCms(x.name)+'</button>').join("");
 
  bindCollectionFilters();
 }
 function openCollectionAlbum(category){
  const modal=$("#collectionAlbum"),grid=$("#collectionAlbumGrid"),title=$("#collectionAlbumTitle"),count=$("#collectionAlbumCount");if(!modal||!grid)return;
  const filter=$$(".filter").find(btn=>btn.dataset.filter===category);
- const cards=$(".product-card").filter(card=>card.dataset.category===category);
- title.textContent=filter?.textContent?.trim()||category;
- count.textContent=cards.length+" modelo"+(cards.length===1?"":"s")+" nesta coleção";
- grid.innerHTML=cards.length?cards.map(card=>card.outerHTML).join(""):'<p class="album-empty">Ainda não há modelos cadastrados nesta coleção.</p>';
+ const name=filter?.textContent?.trim()||category;
+ const products=PUBLIC_PRODUCTS.filter(p=>String(p.category||"").toLowerCase()===String(category).toLowerCase());
+ title.textContent=name;
+ count.textContent=products.length+" modelo"+(products.length===1?"":"s")+" nesta coleção";
+ grid.innerHTML=products.length?products.map(p=>'<article class="product-card"><div class="product-visual">'+(p.image_url?'<img src="'+escapeCms(p.image_url)+'" alt="'+escapeCms(p.name||"Produto")+'" loading="lazy">':'<span>MB</span>')+'</div><div class="product-info"><small>'+escapeCms((p.category||"").toUpperCase())+'</small><h3>'+escapeCms(p.name||"Produto")+'</h3><div class="product-description">'+sanitizeCms(p.description||"")+'</div>'+(p.price!==null&&p.price!==undefined&&p.price!==""?'<strong class="product-price">R$ '+Number(p.price).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})+'</strong>':"")+'<button class="text-link" data-product="'+escapeCms(p.name||"Produto")+'">Tenho interesse →</button></div></article>').join(""):'<p class="album-empty">Ainda não há modelos cadastrados nesta coleção.</p>';
  modal.classList.remove("hidden");modal.setAttribute("aria-hidden","false");document.body.classList.add("album-open");
- $("#collectionAlbumGrid .text-link").forEach(btn=>btn.addEventListener("click",()=>{const interest=$("#interest");if(interest)interest.value=btn.dataset.product;closeCollectionAlbum();$("#agendamento")?.scrollIntoView({behavior:"smooth"});if($("#message"))$("#message").value="Tenho interesse no modelo "+btn.dataset.product+". Gostaria de saber se está disponível.";$("#name")?.focus()}));
+ $$("#collectionAlbumGrid .text-link").forEach(btn=>btn.addEventListener("click",()=>{const interest=$("#interest");if(interest)interest.value=btn.dataset.product;closeCollectionAlbum();$("#agendamento")?.scrollIntoView({behavior:"smooth"});if($("#message"))$("#message").value="Tenho interesse no modelo "+btn.dataset.product+". Gostaria de saber se está disponível.";$("#name")?.focus()}));
 }
 function closeCollectionAlbum(){const modal=$("#collectionAlbum");if(!modal)return;modal.classList.add("hidden");modal.setAttribute("aria-hidden","true");document.body.classList.remove("album-open")}
 document.addEventListener("click",e=>{if(e.target.matches("[data-close-album]"))closeCollectionAlbum()});
@@ -95,6 +96,7 @@ async function loadCmsContent(){
   if(s.whatsapp)WHATSAPP=s.whatsapp.replace(/\D/g,"");
   await loadPublicCollections(client);
   const products=(await client.from("products").select("*").eq("active",true).order("sort_order").order("created_at",{ascending:false})).data||[];
+  PUBLIC_PRODUCTS=products;
   if(products.length){const grid=$(".product-grid");grid.innerHTML=products.map(p=>'<article class="product-card" data-category="'+escapeCms(p.category)+'"><div class="product-visual">'+(p.image_url?'<img src="'+escapeCms(p.image_url)+'" alt="'+escapeCms(p.name||"Produto")+'" loading="lazy">':'<span>MB</span>')+'</div><div class="product-info"><small>'+escapeCms((p.category||"outros").toUpperCase())+'</small><h3>'+escapeCms(p.name)+'</h3><div class="product-description">'+sanitizeCms(p.description||"")+'</div>'+(p.price!==null&&p.price!==undefined&&p.price!==""?'<strong class="product-price">R$ '+Number(p.price).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})+'</strong>':"")+'<button class="text-link" data-product="'+escapeCms(p.name)+'">Tenho interesse →</button></div></article>').join("");bindInterestButtons()}
   const servicesResult=await client.from("services").select("*").eq("active",true).order("sort_order").order("created_at",{ascending:false});const services=servicesResult.data||[];if(services.length){$(".service-list").innerHTML=services.map((x,i)=>'<div><span>'+String(i+1).padStart(2,"0")+'</span><div><h3>'+sanitizeCms(x.name||"")+'</h3><div class="service-desc">'+sanitizeCms(x.description||"")+'</div></div></div>').join("");if(services[0].image_url){const serviceImage=$("#serviceImage");if(serviceImage){serviceImage.src=services[0].image_url;serviceImage.alt=services[0].name||"Imagem dos serviços";serviceImage.style.backgroundImage="none"}}}
   const gallery=(await client.from("gallery").select("*").eq("active",true).order("sort_order").order("created_at",{ascending:false})).data||[];
