@@ -249,13 +249,22 @@ function addUploadControls(){const box=$("#appearanceFields");box.insertAdjacent
 async function loadStats(){const ts=["products","services","gallery","offers"];const nums=await Promise.all(ts.map(async t=>(await db.from(t).select("*",{count:"exact",head:true})).count||0));$("#stats").innerHTML=ts.map((t,i)=>'<div><strong>'+nums[i]+'</strong><span>'+({products:"Produtos",services:"Serviços",gallery:"Fotos",offers:"Ofertas"}[t])+'</span></div>').join("")}
 async function loadCollections(){
  const el=$("#collectionsTable");if(!el)return;
- const r=await db.from("products").select("id,name,category,image_url,active").order("sort_order").order("created_at",{ascending:false});
- if(r.error){el.innerHTML='<div class="empty">'+esc(r.error.message)+'</div>';return}
- const groups={feminino:"Feminino",masculino:"Masculino",solar:"Solar",infantil:"Infantil",outros:"Outros"};
- const products=(r.data||[]).filter(x=>x.active!==false);
- el.innerHTML=Object.entries(groups).map(([key,label])=>{
-   const items=products.filter(x=>(x.category||"outros")===key);
-   return '<article class="collection-admin-card"><div class="collection-admin-head"><div><span class="eyebrow">'+esc(label)+'</span><h3>'+items.length+' modelo'+(items.length===1?"":"s")+'</h3></div><button class="btn small" onclick="showSection(&quot;products&quot;)">Adicionar modelo</button></div><div class="collection-admin-thumbs">'+(items.length?items.slice(0,8).map(x=>x.image_url?'<img src="'+esc(x.image_url)+'" alt="'+esc(x.name||label)+'">':'<div class="collection-thumb-empty">MB</div>').join(""):'<div class="empty">Nenhum modelo cadastrado nesta coleção.</div>')+'</div></article>';
+ const [cr,pr]=await Promise.all([
+   db.from("collections").select("*").order("sort_order").order("created_at",{ascending:false}),
+   db.from("products").select("id,name,category,collection_id,image_url,active").order("sort_order").order("created_at",{ascending:false})
+ ]);
+ if(cr.error){el.innerHTML='<div class="empty">'+esc(cr.error.message)+'</div>';return}
+ if(pr.error){el.innerHTML='<div class="empty">'+esc(pr.error.message)+'</div>';return}
+ const collections=cr.data||[],products=(pr.data||[]).filter(x=>x.active!==false);
+ const sel=$("#pCollection");
+ if(sel){
+   const current=sel.value;
+   sel.innerHTML='<option value="">Selecione a coleção</option>'+collections.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.name)+'</option>').join("");
+   if(current)sel.value=current;
+ }
+ el.innerHTML=collections.map(col=>{
+   const items=products.filter(x=>x.collection_id===col.id);
+   return '<article class="collection-admin-card"><div class="collection-admin-head">'+(col.image_url?'<img class="collection-admin-cover" src="'+esc(col.image_url)+'" alt="'+esc(col.name)+'">':"")+'<div><span class="eyebrow">'+esc(col.name)+'</span><h3>'+items.length+' modelo'+(items.length===1?"":"s")+'</h3><small>'+esc(col.description||"")+'</small></div><div class="collection-admin-actions"><button class="btn small" onclick="showSection(&quot;products&quot;);setTimeout(()=>{const s=document.getElementById(&quot;pCollection&quot;);if(s)s.value=&quot;'+esc(col.id)+'&quot;},0)">Adicionar modelo</button><button class="btn danger small" onclick="removeCollection(&quot;'+esc(col.id)+'&quot;)">Excluir</button></div></div><div class="collection-admin-thumbs">'+(items.length?items.slice(0,8).map(x=>x.image_url?'<img src="'+esc(x.image_url)+'" alt="'+esc(x.name||col.name)+'">':'<div class="collection-thumb-empty">MB</div>').join(""):'<div class="empty">Nenhum modelo cadastrado nesta coleção.</div>')+'</div></article>';
  }).join("");
 }
 async function loadList(table){
@@ -328,7 +337,17 @@ async function editRow(table,id){
 }
 async function removeRow(table,id){if(!confirm("Excluir este registro?"))return;const r=await db.from(table).delete().eq("id",id);if(r.error){alert(r.error.message);return}await loadList(table);await loadStats();if(table==="products")await loadCollections()}
 
-$("#productForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload(await prepareUpload("pImage"));const description=$("#pDescriptionRich")?.value||$("#pDescription").value;const r=await db.from("products").insert({name:$("#pName").value,category:$("#pCategory").value,price:$("#pPrice").value||null,description,image_url:image});if(r.error)throw r.error;e.target.reset();await loadList("products");await loadStats();alert("Produto adicionado.")}catch(x){alert(x.message)}});
+function slugify(v){return String(v||"").normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,80)}
+async function removeCollection(id){
+ const r=await db.from("products").select("id",{count:"exact",head:true}).eq("collection_id",id);
+ if(r.error){alert(r.error.message);return}
+ if((r.count||0)>0){alert("Esta coleção ainda possui modelos vinculados. Mova ou exclua os modelos antes de excluir a coleção.");return}
+ if(!confirm("Excluir esta coleção?"))return;
+ const d=await db.from("collections").delete().eq("id",id);if(d.error){alert(d.error.message);return}
+ await loadCollections();alert("Coleção excluída.")
+}
+$("#collectionForm").addEventListener("submit",async e=>{e.preventDefault();try{const name=$("#cName").value.trim();if(!name)throw new Error("Informe o nome da coleção.");const slug=slugify(name);const imageFile=$("#cImage").files[0];const image=imageFile?await upload(imageFile):"";const r=await db.from("collections").insert({name,slug,description:$("#cDescription").value.trim(),sort_order:Number($("#cSort").value)||0,image_url:image});if(r.error)throw r.error;e.target.reset();$("#cSort").value=60;await loadCollections();alert("Coleção criada com sucesso.")}catch(x){alert(x.message)}});
+$("#productForm").addEventListener("submit",async e=>{e.preventDefault();try{const collectionId=$("#pCollection").value;if(!collectionId)throw new Error("Selecione uma coleção.");const image=await upload(await prepareUpload("pImage"));const description=$("#pDescriptionRich")?.value||$("#pDescription").value;const r=await db.from("products").insert({name:$("#pName").value,category:$("#pCategory").value,collection_id:collectionId,price:$("#pPrice").value||null,description,image_url:image});if(r.error)throw r.error;e.target.reset();await loadList("products");await loadStats();await loadCollections();alert("Produto adicionado à coleção.")}catch(x){alert(x.message)}});
 $("#serviceForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload(await prepareUpload("sImage"));const description=$("#sDescriptionRich")?.value||$("#sDescription").value;const r=await db.from("services").insert({name:$("#sName").value,description,image_url:image});if(r.error)throw r.error;e.target.reset();await loadList("services");await loadStats();alert("Serviço adicionado.")}catch(x){alert(x.message)}});
 $("#galleryForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload(await prepareUpload("gImage"));const r=await db.from("gallery").insert({title:$("#gTitle").value,alt_text:$("#gAlt").value,image_url:image});if(r.error)throw r.error;e.target.reset();await loadList("gallery");await loadStats();alert("Foto adicionada.")}catch(x){alert(x.message)}});
 $("#offerForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload(await prepareUpload("oImage"));const description=$("#oDescriptionRich")?.value||$("#oDescription").value;const r=await db.from("offers").insert({title:$("#oTitle").value,price_text:$("#oPrice").value,description,image_url:image,starts_at:$("#oStart").value||null,ends_at:$("#oEnd").value||null});if(r.error)throw r.error;e.target.reset();await loadList("offers");await loadStats();alert("Oferta adicionada.")}catch(x){alert(x.message)}});
