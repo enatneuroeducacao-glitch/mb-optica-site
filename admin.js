@@ -9,7 +9,7 @@ const homeFields=[
 ];
 const collectionFields=[["collection_eyebrow","Coleção — etiqueta"],["collection_title","Coleção — título"],["collection_text","Coleção — descrição"],["catalog_note","Coleção — observação"]];
 const servicesFields=[["services_eyebrow","Serviços — etiqueta"],["services_title","Serviços — título"],["services_text","Serviços — descrição"]];
-const experienceFields=[["experience_eyebrow","A Ótica — etiqueta"],["experience_title","A Ótica — título"],["experience_text","A Ótica — descrição"]];
+const experienceFields=[["experience_eyebrow","A Ótica — etiqueta"],["experience_title","A Ótica — título"],["experience_text","A Ótica — descrição"],["experience_image_url","A Ótica — imagem","url"]];
 const historyFields=[["history_eyebrow","Etiqueta da seção"],["history_title","Título da seção"],["history_text","Texto da seção"],["history_note","Frase de destaque"]];
 const galleryFields=[["gallery_eyebrow","Galeria — etiqueta"],["gallery_title","Galeria — título"],["gallery_text","Galeria — descrição"]];
 const offerFields=[["offer_eyebrow","Ofertas — etiqueta"],["offer_title","Ofertas — título"],["offer_text","Ofertas — texto"]];
@@ -126,6 +126,7 @@ async function loadAll(){
   renderFields($("#servicesFields"),servicesFields,s);
   renderFields($("#experienceFields"),experienceFields,s);
   renderFields($("#historyFields"),historyFields,s);
+  const experiencePreview=$("#experienceImagePreview");if(experiencePreview)experiencePreview.src=s.experience_image_url||"";
   const historyPreview=$("#historyImagePreview");if(historyPreview)historyPreview.src=s.amorinha_image_url||"assets/amorinha.jpg";
   renderFields($("#galleryFields"),galleryFields,s);
   renderFields($("#offerFields"),offerFields,s);
@@ -159,7 +160,17 @@ async function saveSettings(form,defs){
 $("#homeForm")?.addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,homeFields)}catch(x){alert(x.message)}});
 $("#collectionContentForm")?.addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,collectionFields)}catch(x){alert(x.message)}});
 $("#servicesContentForm")?.addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,servicesFields)}catch(x){alert(x.message)}});
-$("#experienceForm")?.addEventListener("submit",async e=>{e.preventDefault();try{await saveSettings(e.target,experienceFields)}catch(x){alert(x.message)}});
+$("#experienceForm")?.addEventListener("submit",async e=>{e.preventDefault();try{
+ const file=$("#experienceImage")?.files?.[0];
+ if(file){
+  const edited=await prepareUpload("experienceImage");const url=await upload(edited);
+  const rr=await db.from("site_settings").upsert([{key:"experience_image_url",value:url,updated_at:new Date().toISOString()}],{onConflict:"key"});
+  if(rr.error)throw rr.error;editedImages.delete("experienceImage");
+  const field=$("#experienceFields [name='experience_image_url']");if(field)field.value=url;
+  const preview=$("#experienceImagePreview");if(preview)preview.src=url;
+ }
+ await saveSettings(e.target,experienceFields);alert("A Ótica salva.");
+}catch(x){alert(x.message)}});
 $("#historyForm")?.addEventListener("submit",async e=>{e.preventDefault();try{
  const file=$("#historyImage")?.files?.[0];
  if(file){
@@ -201,7 +212,8 @@ const imageTargets={
   logoFile:{ratio:1,width:1200,height:1200,label:"Logotipo — quadrado"},
   heroFile:{ratio:4/5,width:1600,height:2000,label:"Imagem principal — 4:5"},
   serviceFile:{ratio:4/3,width:1600,height:1200,label:"Serviços — 4:3"},
-  historyImage:{ratio:4/5,width:1600,height:2000,label:"Nossa História — 4:5"}
+  historyImage:{ratio:4/5,width:1600,height:2000,label:"Nossa História — 4:5"},
+  experienceImage:{ratio:16/9,width:1600,height:900,label:"A Ótica — 16:9"}
 };
 let editorState=null;
 
@@ -263,6 +275,7 @@ async function applyImageEditor(){
  const resolve=e.resolve;closeImageEditor(false);resolve(edited);
 }
 function bindImageEditor(){
+ const experienceInput=$("#experienceImage"),experienceAttach=$("#experienceImageAttach");if(experienceInput&&experienceAttach&&!experienceAttach.dataset.bound){experienceAttach.dataset.bound="1";experienceAttach.addEventListener("click",()=>experienceInput.click())}
  const historyInput=$("#historyImage");const historyAttach=$("#historyImageAttach");if(historyInput&&historyAttach&&!historyAttach.dataset.bound){historyAttach.dataset.bound="1";historyAttach.addEventListener("click",()=>historyInput.click())}
  Object.keys(imageTargets).forEach(id=>{
   const input=$("#"+id);if(!input||input.dataset.editorBound)return;
