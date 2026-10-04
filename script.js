@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded",()=>{
  $$(".filter").forEach(btn=>btn.addEventListener("click",()=>{
  $$(".filter").forEach(b=>b.classList.remove("active"));btn.classList.add("active");
  if(btn.dataset.filter==="todos"){filterProducts("todos");closeCollectionAlbum();return}
- filterProducts("todos");openCollectionAlbum(btn.dataset.filter);
+ filterProducts(btn.dataset.filter);openCollectionAlbum(btn.dataset.filter);
 }));
  bindInterestButtons();
  $("#appointmentForm")?.addEventListener("submit",appointmentSubmit);
