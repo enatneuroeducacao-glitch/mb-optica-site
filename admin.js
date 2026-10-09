@@ -432,9 +432,47 @@ function openRichPrompt(title,value){
   overlay.querySelector("[data-ok]").onclick=()=>{const v=editor.querySelector('input[type="hidden"]').value;overlay.remove();resolve(v)};
  });
 }
+async function editProductRow(id){
+ const result=await db.from("products").select("*").eq("id",id).single();
+ if(result.error)return alert(result.error.message);
+ const product=result.data;
+ let collections=[];
+ try{collections=await getCollections()}catch(e){return alert("Não foi possível carregar as coleções: "+e.message)}
+ const linked=Boolean(product.source_product_id);
+ const overlay=document.createElement("div");
+ overlay.className="rich-modal product-edit-modal";
+ overlay.innerHTML='<div class="rich-modal-box"><div class="rich-modal-head"><div><p class="eyebrow">CATÁLOGO DO SITE</p><h3>Editar produto</h3></div><button type="button" class="image-editor-close" data-close aria-label="Fechar">×</button></div><form id="productEditForm"><div class="form-grid"><div class="field wide"><label for="editProductName">Nome do produto</label><input id="editProductName" required maxlength="180"></div><div class="field"><label for="editProductCategory">Coleção</label><select id="editProductCategory" required></select></div><div class="field"><label for="editProductPrice">Preço (R$)</label><input id="editProductPrice" type="number" min="0" step="0.01"></div><div class="field wide"><label for="editProductDescription">Descrição exibida no site</label><textarea id="editProductDescription" rows="4"></textarea></div></div><details class="product-publish-options" open><summary>Opções de publicação no site</summary><div class="form-grid product-publish-grid"><div class="field"><label for="editProductOrder">Ordem de exibição</label><input id="editProductOrder" type="number" step="1" placeholder="0"></div><div class="field"><label>Visibilidade no site</label><label class="product-active-toggle"><input id="editProductActive" type="checkbox"> Produto publicado e visível</label></div><div class="field wide"><label for="editProductStock">Quantidade em estoque</label><input id="editProductStock" type="number" min="0" step="1" inputmode="numeric"><small class="muted" id="editProductStockHelp"></small></div></div></details><div class="actions"><button type="button" class="btn secondary" data-close>Cancelar</button><button type="submit" class="btn primary">Salvar alterações</button></div><p class="muted" id="editProductStatus" role="status"></p></form></div>';
+ document.body.appendChild(overlay);
+ const close=()=>overlay.remove();
+ overlay.querySelectorAll("[data-close]").forEach(b=>b.addEventListener("click",close));
+ overlay.addEventListener("click",e=>{if(e.target===overlay)close()});
+ const category=overlay.querySelector("#editProductCategory");
+ category.innerHTML=collections.map(c=>'<option value="'+esc(c.slug)+'">'+esc(c.name)+'</option>').join("");
+ category.value=product.category||"outros";
+ if(!collections.some(c=>c.slug===category.value)){category.insertAdjacentHTML("beforeend",'<option value="'+esc(product.category||"outros")+'">'+esc(product.category||"Outros")+'</option>');category.value=product.category||"outros"}
+ overlay.querySelector("#editProductName").value=product.name||"";
+ overlay.querySelector("#editProductPrice").value=product.price??"";
+ overlay.querySelector("#editProductDescription").value=product.description||"";
+ overlay.querySelector("#editProductOrder").value=product.sort_order??0;
+ overlay.querySelector("#editProductActive").checked=product.active!==false;
+ const stockInput=overlay.querySelector("#editProductStock"),stockHelp=overlay.querySelector("#editProductStockHelp");
+ stockInput.value=Number(product.stock)||0;
+ if(linked){stockInput.disabled=true;stockHelp.textContent="Estoque sincronizado com o MB Gestão. Para alterar o saldo, use o sistema de gestão."}
+ else {stockInput.required=Boolean(product.stock_controlled);stockHelp.textContent="O saldo informado controla se o site exibirá Disponível ou Esgotado."}
+ overlay.querySelector("#productEditForm").addEventListener("submit",async e=>{
+  e.preventDefault();const status=overlay.querySelector("#editProductStatus"),submit=overlay.querySelector('button[type="submit"]');
+  const payload={name:overlay.querySelector("#editProductName").value.trim(),category:category.value,price:overlay.querySelector("#editProductPrice").value===""?null:Number(overlay.querySelector("#editProductPrice").value),description:overlay.querySelector("#editProductDescription").value,sort_order:Number(overlay.querySelector("#editProductOrder").value)||0,active:overlay.querySelector("#editProductActive").checked,updated_at:new Date().toISOString()};
+  if(!payload.name){status.textContent="Informe o nome do produto.";return}
+  if(payload.price!==null&&(!Number.isFinite(payload.price)||payload.price<0)){status.textContent="Informe um preço válido.";return}
+  if(!linked){const stock=Number(stockInput.value);if(!Number.isInteger(stock)||stock<0){status.textContent="Informe uma quantidade inteira de estoque igual ou superior a zero.";return}payload.stock=stock;payload.stock_controlled=true}
+  submit.disabled=true;status.textContent="Salvando...";
+  try{const update=await db.from("products").update(payload).eq("id",id);if(update.error)throw update.error;close();await loadList("products");await loadCollections();await loadStats();alert("Produto atualizado. As opções de publicação foram salvas.");}
+  catch(err){status.textContent=err.message||"Não foi possível salvar.";submit.disabled=false}
+ });
+}
 async function editRow(table,id){
+ if(table==="products"){return editProductRow(id)}
  const r=await db.from(table).select("*").eq("id",id).single();if(r.error)return alert(r.error.message);const x=r.data;
- if(table==="products"){const name=prompt("Nome:",x.name);if(name===null)return;const desc=await openRichPrompt("Editar descrição do produto",x.description||"");if(desc===null)return;const cat=prompt("Categoria:",x.category||"outros");const price=prompt("Preço:",x.price??"");const u=await db.from(table).update({name,description:desc,category:cat,price:price||null,updated_at:new Date().toISOString()}).eq("id",id);if(u.error)alert(u.error.message)}
  if(table==="services"){const name=prompt("Nome:",x.name);if(name===null)return;const desc=await openRichPrompt("Editar descrição do serviço",x.description||"");if(desc===null)return;const u=await db.from(table).update({name,description:desc,updated_at:new Date().toISOString()}).eq("id",id);if(u.error)alert(u.error.message)}
  if(table==="gallery"){const title=prompt("Título:",x.title||"");if(title===null)return;const alt=prompt("Texto alternativo:",x.alt_text||"");const u=await db.from(table).update({title,alt_text:alt}).eq("id",id);if(u.error)alert(u.error.message)}
  if(table==="offers"){const title=prompt("Título:",x.title);if(title===null)return;const desc=await openRichPrompt("Editar descrição da oferta",x.description||"");if(desc===null)return;const price=prompt("Texto do preço:",x.price_text||"");const u=await db.from(table).update({title,description:desc,price_text:price}).eq("id",id);if(u.error)alert(u.error.message)}
@@ -505,3 +543,5 @@ async function editSystemUser(id){const u=systemUsersCache.find(x=>x.user_id===i
 async function deleteSystemUser(id){const u=systemUsersCache.find(x=>x.user_id===id);if(!u)return;if(!confirm("Excluir o usuário "+u.email+"?"))return;try{await systemUserApi({action:"delete",id});alert("Usuário excluído.");loadSystemUsers()}catch(e){alert(e.message)}}
 $("#createSystemUserForm")?.addEventListener("submit",async e=>{e.preventDefault();const name=$("#systemUserName").value.trim(),email=$("#systemUserEmail").value.trim().toLowerCase(),password=$("#systemUserPassword").value,status=$("#systemUserStatus");if(!name)return statusMsg(status,"Informe o nome.","err");if(!email)return statusMsg(status,"Informe o e-mail.","err");if(password.length<8)return statusMsg(status,"A senha precisa ter pelo menos 8 caracteres.","err");statusMsg(status,"Cadastrando...","ok");try{await systemUserApi({action:"create",name,email,password});e.target.reset();statusMsg(status,"Usuário não administrador criado com sucesso.","ok");loadSystemUsers()}catch(err){statusMsg(status,err.message,"err")}})
 function statusMsg(el,msg,kind){el.textContent=msg;el.className="status "+kind}
+
+/* Editor de produto e opções de publicação em painel suspenso. */
