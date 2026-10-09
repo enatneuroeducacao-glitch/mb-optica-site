@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Central Administrativa | Ótica Moni Becker</title><link rel="stylesheet" href="admin.css?v=20261009-48"></head><body>
+<title>Central Administrativa | Ótica Moni Becker</title><link rel="stylesheet" href="admin.css?v=20261009-49"></head><body>
 <div id="loginView" class="login"><div class="login-box">
 <img src="assets/logo.jpg" alt="Ótica Moni Becker"><p class="eyebrow">ÓTICA MONI BECKER</p><h1>Central Administrativa</h1>
 <p>Controle completo do site</p><form id="loginForm" novalidate>
@@ -43,6 +43,7 @@
 <div class="field"><label>Nome</label><input id="pName" required></div>
 <div class="field"><label>Coleção</label><div style="display:flex;gap:8px;align-items:center"><select id="pCategory" style="flex:1"></select><button id="createCollectionBtn" class="btn primary" type="button">Criar coleção</button></div></div>
 <div class="field"><label>Preço</label><input id="pPrice" type="number" step="0.01"></div>
+<div class="field"><label>Quantidade inicial em estoque *</label><input id="pStock" type="number" min="1" step="1" required inputmode="numeric" placeholder="Ex.: 5"><small class="muted">Informe quantas unidades estão disponíveis para venda.</small></div>
 <div class="field wide"><label>Descrição</label><textarea id="pDescription"></textarea></div>
 <div class="field wide"><label>Foto</label><input id="pImage" type="file" accept="image/*"></div>
 </div><div class="actions"><button class="btn primary">Adicionar modelo</button></div></form></div>
@@ -112,5 +113,5 @@
     <div class="image-editor-actions"><button type="button" id="imageEditorCancel" class="btn secondary">Cancelar</button><button type="button" id="imageEditorApply" class="btn primary">Aplicar enquadramento</button></div>
   </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js?v=20261003-4"></script><script src="admin.js?v=20261009-47"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js?v=20261003-4"></script><script src="admin.js?v=20261009-49"></script>
 </body></html>
