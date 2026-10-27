@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#9b6a2f">
+  <meta name="description" content="Universidade MB — cursos práticos de óptica, leitura de receitas, DNP, lentes, armações e atendimento ao cliente.">
+  <title>Universidade MB | Óptica e Atendimento</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script defer src="./app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#inicio"><span class="brand-mark">MB</span><span><strong>Universidade MB</strong><small>Óptica • Atendimento • Aprendizagem</small></span></a>
+    <div class="top-actions"><span class="status-pill">Centro de aprendizagem</span><a class="back-link" href="https://gestao.mboptica.com.br/">Voltar ao MB Gestão ↗</a></div>
+  </header>
+  <main id="inicio">
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow">FORMAÇÃO PRÁTICA PARA A ROTINA DA ÓPTICA</span>
+        <h1>Conhecimento que melhora o atendimento e a experiência visual.</h1>
+        <p>Aprenda no seu ritmo, consulte guias rápidos e teste seus conhecimentos em situações do dia a dia da óptica.</p>
+        <div class="hero-actions"><a class="button primary" href="#cursos">Explorar cursos</a><button class="button secondary" id="continueLearning">Continuar aprendendo</button></div>
+        <div class="hero-stats"><div><strong>6</strong><span>trilhas iniciais</span></div><div><strong>Guias</strong><span>para consulta rápida</span></div><div><strong>Quiz</strong><span>para praticar</span></div></div>
+      </div>
+      <div class="hero-panel"><div class="panel-orbit orbit-one"></div><div class="panel-orbit orbit-two"></div><div class="lens-illustration"><span>MB</span></div><div class="floating-card"><span class="floating-icon">✓</span><div><strong>Aprender • Praticar • Aplicar</strong><small>Conteúdo organizado por tema</small></div></div></div>
+    </section>
+    <section class="progress-section">
+      <div><span class="eyebrow">SEU PROGRESSO</span><h2>Uma etapa de cada vez</h2><p>Seu progresso fica salvo neste navegador.</p></div>
+      <div class="progress-box"><div class="progress-label"><strong id="progressText">0 de 6 cursos iniciados</strong><span id="progressPercent">0%</span></div><div class="progress-track"><span id="progressBar"></span></div></div>
+    </section>
+    <section id="cursos" class="courses-section">
+      <div class="section-heading"><div><span class="eyebrow">TRILHAS DE APRENDIZAGEM</span><h2>Escolha um tema para começar</h2><p>Conteúdo introdutório e educativo. Confirme medidas, receita e indicação com o profissional responsável sempre que necessário.</p></div><label class="search-box"><span>⌕</span><input id="courseSearch" type="search" placeholder="Buscar curso ou assunto" aria-label="Buscar curso ou assunto"></label></div>
+      <div id="courseGrid" class="course-grid"></div>
+    </section>
+    <section id="lesson" class="lesson-section" hidden>
+      <div class="lesson-header"><button class="text-button" id="backToCourses">← Todos os cursos</button><span id="lessonMeta" class="eyebrow"></span></div>
+      <div class="lesson-layout"><article class="lesson-content"><h2 id="lessonTitle"></h2><p id="lessonIntro" class="lesson-intro"></p><div id="lessonBody"></div><div class="lesson-footer"><button class="button secondary" id="markComplete">Marcar curso como concluído ✓</button><span id="completionStatus"></span></div></article><aside class="lesson-aside"><strong>Nesta trilha</strong><ol id="lessonOutline"></ol><div class="tip-box"><strong>Importante</strong><p>Este material apoia o treinamento da equipe. Não substitui prescrição, avaliação clínica, medição profissional nem orientação técnica do fabricante.</p></div></aside></div>
+    </section>
+    <section class="quick-reference">
+      <div class="section-heading"><div><span class="eyebrow">CONSULTA RÁPIDA</span><h2>Conceitos essenciais</h2><p>Relembre os termos mais comuns na rotina de atendimento.</p></div></div>
+      <div class="reference-grid">
+        <article><span class="reference-symbol">OD</span><h3>Olho direito</h3><p>Abreviação usada em receitas para identificar o olho direito.</p></article>
+        <article><span class="reference-symbol">OE</span><h3>Olho esquerdo</h3><p>Abreviação usada em receitas para identificar o olho esquerdo.</p></article>
+        <article><span class="reference-symbol">DNP</span><h3>Distância naso-pupilar</h3><p>Medida de referência para posicionar corretamente os centros ópticos conforme o procedimento e a lente.</p></article>
+        <article><span class="reference-symbol">ADD</span><h3>Adição</h3><p>Valor adicional para visão de perto, comum em prescrições para lentes multifocais ou de leitura.</p></article>
+      </div>
+    </section>
+    <section class="quiz-section" id="quiz">
+      <div class="quiz-card"><div><span class="eyebrow">PRATIQUE O QUE APRENDEU</span><h2>Desafio rápido</h2><p>Responda às questões introdutórias e confira a explicação de cada resposta.</p><div id="quizArea"></div></div><div class="quiz-aside"><div class="quiz-badge">?</div><strong>Aprendizagem contínua</strong><p>Errar faz parte do processo. Use as explicações para revisar os conceitos.</p></div></div>
+    </section>
+    <footer><a class="brand footer-brand" href="#inicio"><span class="brand-mark">MB</span><span><strong>Universidade MB</strong><small>Óptica • Atendimento • Aprendizagem</small></span></a><p>Conteúdo educacional interno. Revisar periodicamente conforme procedimentos da óptica, especificações dos fabricantes e orientações profissionais.</p></footer>
+  </main>
+</body>
+</html>
