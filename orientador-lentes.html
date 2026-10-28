@@ -66,28 +66,54 @@
 <div class="field"><label for="fitPreference">Preferência de encaixe</label><select id="fitPreference"><option value="regular">Conforto regular</option><option value="loose">Mais folgado</option><option value="snug">Mais firme</option></select></div>
 <div class="field"><label for="currentFrameWidth">Largura total de uma armação que já serve (mm)</label><input id="currentFrameWidth" type="number" min="110" max="170" step="1" placeholder="Opcional"><small>Se houver um óculos confortável, meça a frente inteira, de ponta a ponta.</small></div>
 </div><div class="notice"><strong>Como medir:</strong> fique em frente ao espelho, mantenha a cabeça reta e use uma fita flexível ou peça ajuda. Não use a circunferência da cabeça como único critério. Se as medidas forem aproximadas, a recomendação terá menor precisão.</div></section>
-<section class="panel"><h2>6. Campo visual da lente multifocal</h2><p class="sub">Veja como costuma ser distribuída a visão em uma lente progressiva: longe na parte superior, intermediário pelo corredor central e perto na parte inferior. Nas laterais podem existir áreas de astigmatismo indesejado e distorção periférica. O desenho exato varia por fabricante, modelo, receita e montagem.</p>
+<section class="panel"><h2>6. Campo visual da lente multifocal</h2><p class="sub">Veja uma representação frontal de óculos multifocais. A área central colorida representa, de forma didática, o corredor de visão útil; as regiões laterais representam áreas de possível distorção periférica. Ajuste o controle para comparar um corredor visual mais fechado ou mais aberto.</p>
 <div class="fields" style="align-items:start">
 <div>
-<svg class="face-svg" viewBox="0 0 300 340" role="img" aria-label="Diagrama esquemático de lente progressiva com zonas de longe, corredor intermediário, perto e distorção periférica">
-<defs><linearGradient id="lensBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#e9f0e7"/><stop offset="100%" stop-color="#cddcc9"/></linearGradient></defs>
-<path d="M57 20 Q150 5 243 20 L230 286 Q150 330 70 286 Z" fill="url(#lensBg)" stroke="#7b8e78" stroke-width="2"/>
-<path d="M65 28 Q92 35 102 80 L98 250 Q82 278 72 276 Z" fill="#d6b3a0" opacity=".85"/>
-<path d="M235 28 Q208 35 198 80 L202 250 Q218 278 228 276 Z" fill="#d6b3a0" opacity=".85"/>
-<path d="M102 36 Q150 24 198 36 L190 100 Q150 112 110 100 Z" fill="#9ab7d3" opacity=".95"/>
-<path d="M110 100 Q150 112 190 100 L178 214 Q150 229 122 214 Z" fill="#a8cdb7" stroke="#5f9278" stroke-dasharray="4 3"/>
-<path d="M122 214 Q150 229 178 214 L174 273 Q150 285 126 273 Z" fill="#e6c889" opacity=".98"/>
-<g font-family="Arial,sans-serif" fill="#25352b" text-anchor="middle"><text x="150" y="63" font-size="13" font-weight="bold">LONGE</text><text x="150" y="151" font-size="12" font-weight="bold">INTERMEDIÁRIO</text><text x="150" y="251" font-size="13" font-weight="bold">PERTO</text><text x="83" y="145" font-size="9" transform="rotate(-83 83 145)">DISTORÇÃO</text><text x="217" y="145" font-size="9" transform="rotate(83 217 145)">DISTORÇÃO</text></g>
-<path d="M150 80 L150 215" stroke="#426d57" stroke-width="2" stroke-dasharray="4 4"/><path d="M144 207 L150 218 L156 207" fill="none" stroke="#426d57" stroke-width="2"/>
+<svg id="progressiveGlasses" class="face-svg" viewBox="0 0 360 210" role="img" aria-label="Óculos com lentes multifocais mostrando zonas de longe, corredor intermediário, perto e distorção lateral">
+<defs>
+<clipPath id="leftLensClip"><path d="M25 42 Q70 30 151 43 L146 139 Q136 176 92 179 Q47 176 35 139 Z"/></clipPath>
+<clipPath id="rightLensClip"><path d="M209 43 Q290 30 335 42 L325 139 Q313 176 268 179 Q224 176 214 139 Z"/></clipPath>
+<linearGradient id="glassesLensBg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#e4edf4"/><stop offset="100%" stop-color="#e5eee4"/></linearGradient>
+</defs>
+<g fill="url(#glassesLensBg)" stroke="#66513c" stroke-width="5" stroke-linejoin="round">
+<path d="M25 42 Q70 30 151 43 L146 139 Q136 176 92 179 Q47 176 35 139 Z"/>
+<path d="M209 43 Q290 30 335 42 L325 139 Q313 176 268 179 Q224 176 214 139 Z"/>
+<path d="M151 53 Q180 42 209 53" fill="none" stroke-width="6"/>
+<path d="M25 45 L8 35 M335 45 L352 35" fill="none" stroke-width="5"/>
+</g>
+<g clip-path="url(#leftLensClip)">
+<rect x="20" y="35" width="140" height="150" fill="#d8e5ee"/>
+<path id="leftDistortionL" d="M25 42 L60 42 L58 160 L35 139 Z" fill="#d7ad9a" opacity=".95"/>
+<path id="leftDistortionR" d="M116 42 L151 43 L146 139 L125 160 Z" fill="#d7ad9a" opacity=".95"/>
+<path d="M35 46 Q90 35 145 46 L140 78 Q90 89 40 78 Z" fill="#9ab7d3"/>
+<path id="leftCorridor" d="M58 78 Q90 88 122 78 L116 135 Q90 145 64 135 Z" fill="#9fc7ad" stroke="#5f9278" stroke-width="1.5"/>
+<path d="M64 135 Q90 145 116 135 L112 169 Q90 178 68 169 Z" fill="#e6c889"/>
+</g>
+<g clip-path="url(#rightLensClip)">
+<rect x="204" y="35" width="140" height="150" fill="#d8e5ee"/>
+<path id="rightDistortionL" d="M209 43 L244 42 L242 160 L214 139 Z" fill="#d7ad9a" opacity=".95"/>
+<path id="rightDistortionR" d="M300 42 L335 42 L325 139 L304 160 Z" fill="#d7ad9a" opacity=".95"/>
+<path d="M219 46 Q272 35 325 46 L320 78 Q272 89 224 78 Z" fill="#9ab7d3"/>
+<path id="rightCorridor" d="M240 78 Q272 88 304 78 L298 135 Q272 145 246 135 Z" fill="#9fc7ad" stroke="#5f9278" stroke-width="1.5"/>
+<path d="M246 135 Q272 145 298 135 L294 169 Q272 178 250 169 Z" fill="#e6c889"/>
+</g>
+<g fill="#25352b" font-family="Arial,sans-serif" text-anchor="middle" font-size="10" font-weight="bold">
+<text x="90" y="63">LONGE</text><text x="272" y="63">LONGE</text>
+<text x="90" y="112" font-size="9">INTERMEDIÁRIO</text><text x="272" y="112" font-size="9">INTERMEDIÁRIO</text>
+<text x="90" y="157">PERTO</text><text x="272" y="157">PERTO</text>
+</g>
 </svg>
-<p class="sub" style="margin-top:8px">Esquema didático, não mapa real de uma marca ou modelo de lente.</p>
+<p class="sub" style="margin-top:8px">Ilustração conceitual. Não representa medidas clínicas nem o desenho real de uma marca específica.</p>
 </div>
 <div>
-<div class="field"><label for="progressivePreference">Prioridade de campo visual</label><select id="progressivePreference"><option value="balanced">Equilíbrio entre longe, intermediário e perto</option><option value="distance">Maior prioridade para visão de longe</option><option value="computer">Maior prioridade para computador/intermediário</option><option value="near">Maior prioridade para leitura/perto</option><option value="compact">Armação pequena ou altura limitada</option></select></div>
+<div class="field"><label for="corridorWidth">Largura do corredor visual: <strong id="corridorLabel">Médio</strong></label><input id="corridorWidth" type="range" min="1" max="5" step="1" value="3"><div style="display:flex;justify-content:space-between;font-size:12px;color:#786b5b"><span>Mais fechado</span><span>Mais aberto</span></div></div>
+<div class="notice" id="corridorAdvice">Corredor visual médio: uma representação de equilíbrio entre campo central útil e áreas laterais de distorção.</div>
+<div class="field" style="margin-top:14px"><label for="progressivePreference">Prioridade de campo visual</label><select id="progressivePreference"><option value="balanced">Equilíbrio entre longe, intermediário e perto</option><option value="distance">Maior prioridade para visão de longe</option><option value="computer">Maior prioridade para computador/intermediário</option><option value="near">Maior prioridade para leitura/perto</option><option value="compact">Armação pequena ou altura limitada</option></select></div>
 <div class="notice" id="progressiveAdvice">A escolha do desenho deve considerar a rotina, a receita, a altura de montagem, a armação e as medidas individuais.</div>
 <div class="field" style="margin-top:14px"><label for="progressiveExperience">Experiência com multifocais</label><select id="progressiveExperience"><option value="first">Será meu primeiro multifocal</option><option value="used">Já uso multifocal e estou adaptado</option><option value="change">Já uso, mas tenho dificuldade de adaptação</option></select></div>
-<div class="notice">As zonas periféricas de distorção não podem ser eliminadas totalmente em lentes progressivas convencionais. O desenho da lente distribui essas áreas de formas diferentes. Em caso de dificuldade de adaptação, a avaliação deve ser feita com o óptico/oftalmologista e o laboratório.</div>
-</div></div></section>\n<div class="actions"><button class="btn" id="updateBtn" type="button">Atualizar orientação</button><button class="btn secondary" id="resetBtn" type="button">Limpar dados</button><button class="btn secondary" id="printBtn" type="button">Imprimir resumo</button></div>
+<div class="notice">Um corredor mais aberto pode facilitar o acesso às zonas intermediária e de perto, mas a distribuição real depende do desenho da lente, da adição, da armação e da montagem. Não escolha uma lente apenas por esta ilustração.</div>
+</div></div></section>
+<div class="actions"><button class="btn" id="updateBtn" type="button">Atualizar orientação</button><button class="btn secondary" id="resetBtn" type="button">Limpar dados</button><button class="btn secondary" id="printBtn" type="button">Imprimir resumo</button></div>
 </div>
 <aside class="result" aria-live="polite"><div class="result-head"><p class="eyebrow">RESUMO PERSONALIZADO</p><h2>Suas orientações</h2></div><div class="result-body">
 <div class="result-item"><strong>Tipo de lente</strong><p id="rLens">Visão simples: uma distância principal de foco, conforme receita e uso.</p></div>
@@ -104,6 +130,7 @@
 <footer class="footer-note">© <span id="year"></span> Ótica Moni Becker • Orientador de lentes e armações</footer>
 <script>
 const $=id=>document.getElementById(id);
+const corridorAdvice={1:"Corredor mais fechado: a área central útil é representada como estreita e as áreas laterais de distorção ocupam maior proporção visual.",2:"Corredor relativamente fechado: a área central está mais restrita nesta representação.",3:"Corredor visual médio: uma representação de equilíbrio entre campo central útil e áreas laterais de distorção.",4:"Corredor relativamente aberto: a área central útil é representada como mais ampla, com menos espaço lateral para as zonas de distorção.",5:"Corredor mais aberto: a área central útil é representada como ampla. Isso não garante o mesmo resultado em uma lente real."};
 const progressiveAdvice={balanced:"Prioridade equilibrada: converse sobre um desenho que distribua o uso entre longe, intermediário e perto. A largura útil depende do projeto da lente e das medidas de montagem.",distance:"Prioridade para longe: informe ao profissional quanto tempo passa olhando para longe. O desenho pode equilibrar essa necessidade com as demais distâncias.",computer:"Prioridade para intermediário: descreva a distância da tela e a postura de trabalho. Uma lente ocupacional pode ser discutida, mas não substitui necessariamente a visão de longe.",near:"Prioridade para perto: informe a distância de leitura e as tarefas habituais. Confirme se multifocal progressiva ou outra solução atende melhor à rotina.",compact:"Armação pequena/altura limitada: nem todo desenho progressivo é compatível. É necessário conferir altura mínima de montagem e recomendações específicas do fabricante."};
 const faceAdvice={oval:"Muitos formatos podem funcionar. Compare proporção, largura, ponte, ajuste e conforto.",round:"Armações angulares ou retangulares podem criar contraste visual. A largura correta e o conforto são prioritários.",square:"Armações arredondadas ou ovais podem suavizar visualmente as linhas. Faça a prova para conferir proporção.",heart:"Experimente armações leves ou equilibradas, observando a largura da testa e das maçãs do rosto.",long:"Armações com maior altura vertical podem ajudar a equilibrar proporções. Confira o ajuste e o tamanho.",triangle:"Compare modelos que equilibrem visualmente a parte superior e inferior do rosto."};
 const lensAdvice={single:"Visão simples: costuma atender uma distância principal (longe ou perto). Confirme a finalidade e a receita.",bifocal:"Bifocal: oferece zonas distintas para longe e perto, geralmente com divisão visível. Avalie preferência e adaptação.",progressive:"Multifocal/progressiva: pode atender longe, intermediário e perto com transição. Requer medidas precisas e adaptação."};
@@ -112,14 +139,14 @@ $("rAr").textContent=$("ar").checked?"AR selecionado: pode reduzir reflexos na s
 $("rBlue").textContent=$("blue").checked?"Filtro azul selecionado: explique o benefício esperado com cautela; não é automaticamente necessário apenas por uso de telas.":"Filtro azul não selecionado. A receita, por si só, não indica necessidade.";
 $("rPhoto").textContent=$("photo").checked?"Fotocromática selecionada: escurece conforme exposição à luz; desempenho no carro e tempo de clareamento variam por tecnologia.":"Fotocromática não selecionada." + ($("sun").checked?" Óculos solar separado selecionado como alternativa para exposição intensa.":" Pergunte se prefere escurecimento externo ou solar separado.");
 const face=$("face").value;$("rFace").textContent=face?faceAdvice[face]:"Selecione o formato do rosto para receber uma referência estética.";
-const pref=$("progressivePreference").value;const exp=$("progressiveExperience").value;$("rOpening").textContent=progressiveAdvice[pref]+(exp==="first"?" Como primeiro multifocal, é importante receber orientação de uso e tempo de adaptação.":exp==="change"?" Como há dificuldade de adaptação, revisar medidas, ajuste da armação e desenho da lente é importante.":" A experiência prévia ajuda a discutir o desenho mais adequado, mas não substitui as medidas.");$("progressiveAdvice").textContent=progressiveAdvice[pref];
+const cw=Number($("corridorWidth").value);const labels={1:"Muito fechado",2:"Fechado",3:"Médio",4:"Aberto",5:"Muito aberto"};$("corridorLabel").textContent=labels[cw];$("corridorAdvice").textContent=corridorAdvice[cw];const widths={1:14,2:19,3:24,4:29,5:34};const w=widths[cw];$("leftCorridor").setAttribute("d",`M90 ${78-w/2} Q90 ${88-w/2} ${90+w} ${78-w/2} L${90+w-6} 135 Q90 145 ${90-w+6} 135 Z`);$("rightCorridor").setAttribute("d",`M272 ${78-w/2} Q272 ${88-w/2} ${272+w} ${78-w/2} L${272+w-6} 135 Q272 145 ${272-w+6} 135 Z`);const side=35-w/2;$("leftDistortionL").setAttribute("opacity",String(Math.min(.98,.45+cw*.1)));$("leftDistortionR").setAttribute("opacity",String(Math.min(.98,.45+cw*.1)));$("rightDistortionL").setAttribute("opacity",String(Math.min(.98,.45+cw*.1)));$("rightDistortionR").setAttribute("opacity",String(Math.min(.98,.45+cw*.1)));const pref=$("progressivePreference").value;const exp=$("progressiveExperience").value;$("progressiveAdvice").textContent=progressiveAdvice[pref]+(exp==="first"?" Como primeiro multifocal, é importante receber orientação de uso e tempo de adaptação.":exp==="change"?" Como há dificuldade de adaptação, revisar medidas, ajuste da armação e desenho da lente é importante.":" A experiência prévia ajuda a discutir o desenho mais adequado, mas não substitui as medidas.");$("rOpening").textContent=corridorAdvice[cw]+" "+progressiveAdvice[pref]+(exp==="first"?" Primeiro multifocal: receba orientação de uso e adaptação.":exp==="change"?" Dificuldade de adaptação: revise medidas, ajuste e desenho com o profissional.":" A experiência prévia ajuda a orientar a conversa, mas não substitui medidas.");
 const fw=Number($("faceWidth").value), hw=Number($("headWidth").value), current=Number($("currentFrameWidth").value), fit=$("fitPreference").value;let rec="Informe a largura do rosto para receber uma faixa inicial de tamanho.";if(fw>0){let base=fw+(fit==="loose"?8:fit==="snug"?2:5);let low=Math.round(base-3),high=Math.round(base+3);let label=base<125?"pequena":base<=135?"pequena a média":base<=145?"média":base<=155?"média a grande":"grande";rec="Estimativa inicial: frente de armação na faixa aproximada de "+low+"–"+high+" mm ("+label+"), a confirmar pela prova. ";if(hw>0){const diff=hw-fw;rec+="Diferença entre largura da cabeça e do rosto informada: "+Math.round(diff)+" mm; use como referência de conforto das hastes, não como medida definitiva. ";}if(current>0){rec+="Você informou uma armação confortável de "+current+" mm; priorize modelos de largura total próxima a essa medida, ajustando conforme encaixe. ";}if(fit==="loose")rec+="Preferência por encaixe mais folgado: verifique se as hastes não escorregam. ";if(fit==="snug")rec+="Preferência por encaixe mais firme: confirme que as hastes não pressionem as têmporas. ";rec+="A largura total da armação não é a mesma coisa que a largura de uma lente. A numeração A-ponte-haste impressa na armação e a avaliação presencial ajudam a confirmar o tamanho.";}$("rMeasure").textContent=rec;
 document.querySelectorAll("[data-face-card]").forEach(card=>card.classList.toggle("selected",card.dataset.faceCard===face));
 }
 $("updateBtn").addEventListener("click",update);
 $("resetBtn").addEventListener("click",()=>{document.querySelectorAll("input").forEach(el=>{if(el.type==="radio")el.checked=el.value==="single";else if(el.type==="checkbox")el.checked=false;else el.value=""});document.querySelectorAll("select").forEach(el=>el.selectedIndex=0);$("progressivePreference").value="balanced";$("progressiveExperience").value="first";update()});
 $("printBtn").addEventListener("click",()=>{update();window.print()});
-$("progressivePreference").addEventListener("change",update);$("progressiveExperience").addEventListener("change",update);
+$("corridorWidth").addEventListener("input",update);$("progressivePreference").addEventListener("change",update);$("progressiveExperience").addEventListener("change",update);
 $("face").addEventListener("change",update);document.querySelectorAll('input[name="lens"],input[type="checkbox"]').forEach(el=>el.addEventListener("change",update));
 $("year").textContent=new Date().getFullYear();update();
 </script>
