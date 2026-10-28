@@ -20,6 +20,21 @@
 <div class="topbar">ATENDIMENTO PERSONALIZADO • ÓTICA MONI BECKER</div>
 <header class="header"><a class="brand" href="index.html">MONI BECKER</a><a href="index.html">← Voltar ao site</a></header>
 <section class="hero"><p class="eyebrow">ORIENTADOR MB ÓPTICA</p><h1>Encontre opções que combinam<br><em>com sua rotina e seu estilo.</em></h1><p>Preencha os dados disponíveis e explore orientações iniciais sobre tratamentos, tipo de lente, armações e campo de visão. A recomendação final deve ser conferida por um profissional.</p></section>
+<section class="wrap" style="padding-bottom:0">
+  <div class="panel" id="quoteRequest" style="border:2px solid var(--gold);background:linear-gradient(120deg,#fff,#f7f0e5)">
+    <p class="eyebrow">BENEFÍCIO EXCLUSIVO MB ÓPTICA</p>
+    <h2>Receba seu orçamento gratuito</h2>
+    <p class="sub">Informe seu nome e WhatsApp. Vamos preparar uma mensagem com suas preferências e o resumo do orientador para você enviar à equipe da MB Óptica pelo WhatsApp. O orçamento e a promoção serão confirmados pela loja.</p>
+    <div class="fields">
+      <div class="field"><label for="quoteName">Seu nome</label><input id="quoteName" type="text" maxlength="100" autocomplete="name" placeholder="Como podemos chamar você?"></div>
+      <div class="field"><label for="quotePhone">Seu WhatsApp com DDD</label><input id="quotePhone" type="tel" maxlength="20" autocomplete="tel" placeholder="Ex.: (47) 99999-9999"></div>
+    </div>
+    <label class="choice" style="margin-top:14px"><input id="quoteConsent" type="checkbox"><span><strong>Autorizo o contato pelo WhatsApp</strong><span>Concordo em compartilhar os dados preenchidos e o resumo das minhas preferências para receber atendimento e orçamento da MB Óptica.</span></span></label>
+    <label class="choice" style="margin-top:8px"><input id="promoConsent" type="checkbox"><span><strong>Quero receber a promoção exclusiva</strong><span>Opcional. Autorizo receber informações sobre a promoção e ofertas da MB Óptica pelo WhatsApp. Posso pedir para parar quando quiser.</span></span></label>
+    <button class="btn" id="quoteBtn" type="button" style="margin-top:16px">Preparar solicitação no WhatsApp</button>
+    <p id="quoteStatus" class="notice" role="status">Ao continuar, o WhatsApp será aberto com uma mensagem pronta para você revisar e enviar. Nada é enviado automaticamente pelo site.</p>
+  </div>
+</section>
 <main class="wrap">
 <div class="progress"><span class="step-pill active">1. Receita e rotina</span><span class="step-pill active">2. Tratamentos</span><span class="step-pill active">3. Armação e visão</span></div>
 <div class="layout">
@@ -148,6 +163,18 @@ $("resetBtn").addEventListener("click",()=>{document.querySelectorAll("input").f
 $("printBtn").addEventListener("click",()=>{update();window.print()});
 $("corridorWidth").addEventListener("input",update);$("progressivePreference").addEventListener("change",update);$("progressiveExperience").addEventListener("change",update);
 $("face").addEventListener("change",update);document.querySelectorAll('input[name="lens"],input[type="checkbox"]').forEach(el=>el.addEventListener("change",update));
+function collectQuoteSummary(){update();const read=id=>$(id)?.value?.trim()||"Não informado";const checked=name=>document.querySelector('input[name="'+name+'"]:checked')?.value||"Não informado";const checks=[["Antirreflexo","ar"],["Filtro azul","blue"],["Fotocromática","photo"],["Óculos solar separado","sun"]].map(([label,id])=>label+": "+($(id).checked?"Sim":"Não")).join("\\n");return [
+"RESUMO DO ORIENTADOR MB ÓPTICA",
+"Tipo de lente: "+($( "rLens").textContent||"Não informado"),
+"Preferência de campo visual: "+($( "progressivePreference").selectedOptions[0]?.textContent||"Não informado"),
+"Corredor visual ilustrativo: "+($( "corridorLabel").textContent||"Não informado"),
+"Preferência de tratamento: "+checks,
+"Formato do rosto: "+($( "face").selectedOptions[0]?.textContent||"Não informado"),
+"Medidas informadas: rosto "+read("faceWidth")+" mm; cabeça "+read("headWidth")+" mm; armação atual "+read("currentFrameWidth")+" mm",
+"Orientação de armação: "+($( "rMeasure").textContent||"Não informado"),
+"Orientação multifocal: "+($( "rOpening").textContent||"Não informado")
+].join("\\n");}
+$("quoteBtn").addEventListener("click",()=>{const name=$("quoteName").value.trim();const phone=$("quotePhone").value.trim();if(!name||!phone){$("quoteStatus").textContent="Preencha seu nome e número de WhatsApp com DDD.";return;}if(!$("quoteConsent").checked){$("quoteStatus").textContent="Marque a autorização de contato para preparar a solicitação de orçamento.";return;}const destination="5547999999999";if(destination==="5547999999999"){$("quoteStatus").textContent="O formulário está pronto, mas o número comercial da MB Óptica ainda precisa ser configurado no site antes de abrir a conversa. Nenhum dado foi enviado.";return;}const summary=collectQuoteSummary();const promotion=$("promoConsent").checked?"Sim, quero receber a promoção exclusiva.":"Não autorizei mensagens promocionais.";const message="Olá, MB Óptica! Gostaria de solicitar um orçamento gratuito.\\n\\nNome: "+name+"\\nMeu WhatsApp: "+phone+"\\n\\n"+summary+"\\n\\nPromoções: "+promotion+"\\n\\nPor favor, entrem em contato para confirmar o orçamento e a promoção disponível.";window.open("https://wa.me/"+destination+"?text="+encodeURIComponent(message),"_blank","noopener");$("quoteStatus").textContent="Mensagem preparada. Revise os dados no WhatsApp e toque em enviar para concluir a solicitação.";});
 $("year").textContent=new Date().getFullYear();update();
 </script>
 </body></html>
