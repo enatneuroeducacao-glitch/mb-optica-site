@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded",()=>{
  bindInterestButtons();
  setupFloatingWhatsApp();
  $("#appointmentForm")?.addEventListener("submit",appointmentSubmit);
+ $("#heroExamForm")?.addEventListener("submit",heroExamSubmit);
  $("#newsletterForm")?.addEventListener("submit",e=>{e.preventDefault();$("#newsletterMsg").textContent="Cadastro recebido. Em breve enviaremos novidades.";e.target.reset()});
  $$(".access-controls button").forEach(btn=>btn.addEventListener("click",()=>{const root=document.documentElement,current=parseFloat(getComputedStyle(root).getPropertyValue("--scale"))||1;if(btn.dataset.font==="up")root.style.setProperty("--scale",Math.min(current+.08,1.25));if(btn.dataset.font==="down")root.style.setProperty("--scale",Math.max(current-.08,.9));if(btn.dataset.font==="reset")root.style.setProperty("--scale",1)}));
  loadCmsContent();
@@ -60,6 +61,47 @@ function setupFloatingWhatsApp(){
   if(!WHATSAPP){e.preventDefault();showToast("O WhatsApp comercial ainda não está configurado na área administrativa.");}
  });
 }
+
+function heroExamSubmit(e){
+ e.preventDefault();
+ const status=$("#heroExamStatus");
+ const name=$("#heroExamName").value.trim();
+ const phone=$("#heroExamPhone").value.trim();
+ const examType=$("#heroExamType").value;
+ const date=$("#heroExamDate").value;
+ const period=$("#heroExamPeriod").value;
+ if(!WHATSAPP){
+  if(status)status.textContent="O WhatsApp comercial ainda não está configurado. Tente novamente mais tarde ou use a seção Contato.";
+  showToast("O WhatsApp comercial ainda não está configurado na área administrativa.");
+  return;
+ }
+ const lines=[
+  "Olá, Ótica Moni Becker!",
+  "Gostaria de consultar agendamento de exame de visão.",
+  "",
+  "Nome: "+name,
+  "Telefone/WhatsApp: "+phone,
+  "Tipo de atendimento: "+examType,
+  "Poderiam informar o valor do exame e as próximas datas e horários disponíveis?"
+ ];
+ if(date)lines.push("Minha melhor data: "+new Date(date+"T12:00:00").toLocaleDateString("pt-BR"));
+ if(period&&period!=="Qualquer período")lines.push("Período preferido: "+period);
+ lines.push("Por favor, confirmem as opções disponíveis antes de considerar o agendamento confirmado.");
+ const url="https://wa.me/"+WHATSAPP+"?text="+encodeURIComponent(lines.join("\n"));
+ const opened=window.open(url,"_blank");
+ if(opened){
+  try{opened.opener=null}catch(_){}
+  if(status)status.textContent="Pedido preparado no WhatsApp. Revise e envie a mensagem para consultar valores e disponibilidade.";
+ }else if(status){
+  status.textContent="O navegador bloqueou a nova aba. ";
+  const link=document.createElement("a");
+  link.href=url;link.target="_blank";link.rel="noopener noreferrer";
+  link.textContent="Clique aqui para abrir o WhatsApp";
+  link.className="appointment-fallback-link";
+  status.appendChild(link);
+ }
+}
+
 function appointmentSubmit(e){
  e.preventDefault();
  const status=$("#appointmentStatus");
