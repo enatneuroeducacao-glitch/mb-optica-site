@@ -1,10 +1,11 @@
-let WHATSAPP="5547999999999";let PUBLIC_PRODUCTS=[];let PUBLIC_COLLECTIONS=[];const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+let WHATSAPP="";let PUBLIC_PRODUCTS=[];let PUBLIC_COLLECTIONS=[];const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 document.addEventListener("DOMContentLoaded",()=>{
  $("#year").textContent=new Date().getFullYear();
  const menuToggle=$(".menu-toggle"),nav=$(".nav");
  menuToggle?.addEventListener("click",()=>{const open=nav.classList.toggle("mobile-open");menuToggle.setAttribute("aria-expanded",String(open))});
  $$(".nav a").forEach(a=>a.addEventListener("click",()=>nav.classList.remove("mobile-open")));
  bindInterestButtons();
+ setupFloatingWhatsApp();
  $("#appointmentForm")?.addEventListener("submit",appointmentSubmit);
  $("#newsletterForm")?.addEventListener("submit",e=>{e.preventDefault();$("#newsletterMsg").textContent="Cadastro recebido. Em breve enviaremos novidades.";e.target.reset()});
  $$(".access-controls button").forEach(btn=>btn.addEventListener("click",()=>{const root=document.documentElement,current=parseFloat(getComputedStyle(root).getPropertyValue("--scale"))||1;if(btn.dataset.font==="up")root.style.setProperty("--scale",Math.min(current+.08,1.25));if(btn.dataset.font==="down")root.style.setProperty("--scale",Math.max(current-.08,.9));if(btn.dataset.font==="reset")root.style.setProperty("--scale",1)}));
@@ -33,14 +34,54 @@ function openCollectionAlbum(category){
  count.textContent=products.length+" modelo"+(products.length===1?"":"s")+" nesta coleção";
  grid.innerHTML=products.length?products.map(p=>'<article class="product-card"><div class="product-visual">'+(p.image_url?'<img src="'+escapeCms(p.image_url)+'" alt="'+escapeCms(p.name||"Produto")+'" loading="lazy">':'<span>MB</span>')+'</div><div class="product-info"><small>'+escapeCms((p.category||"").toUpperCase())+'</small><h3>'+escapeCms(p.name||"Produto")+'</h3><div class="product-description">'+sanitizeCms(p.description||"")+'</div>'+(p.price!==null&&p.price!==undefined&&p.price!==""?'<strong class="product-price">R$ '+Number(p.price).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})+'</strong>':"")+(p.stock_controlled?(Number(p.stock||0)>0?'<small class="product-availability">Disponível</small>':'<small class="product-availability">Esgotado</small>'):"")+'<button class="text-link" data-product="'+escapeCms(p.name||"Produto")+'">Tenho interesse →</button></div></article>').join(""):'<p class="album-empty">Ainda não há modelos cadastrados nesta coleção.</p>';
  modal.classList.remove("hidden");modal.setAttribute("aria-hidden","false");document.body.classList.add("album-open");
- $$("#collectionAlbumGrid .text-link").forEach(btn=>btn.addEventListener("click",()=>{const interest=$("#interest");if(interest)interest.value=btn.dataset.product;closeCollectionAlbum();$("#agendamento")?.scrollIntoView({behavior:"smooth"});if($("#message"))$("#message").value="Tenho interesse no modelo "+btn.dataset.product+". Gostaria de saber se está disponível.";$("#name")?.focus()}));
+ $$("#collectionAlbumGrid .text-link").forEach(btn=>btn.addEventListener("click",()=>{const interest=$("#interest");if(interest)interest.value=Array.from(interest.options).some(option=>option.value===btn.dataset.product)?btn.dataset.product:"Outro";closeCollectionAlbum();$("#agendamento")?.scrollIntoView({behavior:"smooth"});if($("#message"))$("#message").value="Tenho interesse no modelo "+btn.dataset.product+". Gostaria de saber se está disponível.";$("#name")?.focus()}));
 }
 function closeCollectionAlbum(){const modal=$("#collectionAlbum");if(!modal)return;modal.classList.add("hidden");modal.setAttribute("aria-hidden","true");document.body.classList.remove("album-open")}
 document.addEventListener("click",e=>{if(e.target.matches("[data-close-album]"))closeCollectionAlbum()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeCollectionAlbum()});
 function filterProducts(filter){$$(".product-card").forEach(card=>{card.style.display=filter==="todos"||card.dataset.category===filter?"":"none"})}
-function bindInterestButtons(){$$(".text-link").forEach(btn=>btn.addEventListener("click",()=>{const interest=$("#interest");if(interest)interest.value=btn.dataset.product;$("#agendamento")?.scrollIntoView({behavior:"smooth"});if($("#message"))$("#message").value="Tenho interesse no modelo "+btn.dataset.product+". Gostaria de saber se está disponível.";$("#name")?.focus()}))}
-function appointmentSubmit(e){e.preventDefault();const name=$("#name").value.trim(),phone=$("#phone").value.trim(),interest=$("#interest").value,message=$("#message").value.trim();const text="Olá, Ótica Moni Becker!%0A%0AMeu nome é "+encodeURIComponent(name)+".%0AWhatsApp: "+encodeURIComponent(phone)+"%0AInteresse: "+encodeURIComponent(interest)+"%0A"+encodeURIComponent(message);if(!WHATSAPP||WHATSAPP==="5547999999999"){showToast("O WhatsApp da loja ainda não está configurado.");return}window.open("https://wa.me/"+WHATSAPP+"?text="+text,"_blank","noopener")}
+function bindInterestButtons(){$$(".text-link").forEach(btn=>btn.addEventListener("click",()=>{const interest=$("#interest");if(interest)interest.value=Array.from(interest.options).some(option=>option.value===btn.dataset.product)?btn.dataset.product:"Outro";$("#agendamento")?.scrollIntoView({behavior:"smooth"});if($("#message"))$("#message").value="Tenho interesse no modelo "+btn.dataset.product+". Gostaria de saber se está disponível.";$("#name")?.focus()}))}
+function normalizeWhatsapp(value){
+ const digits=String(value||"").replace(/\D/g,"");
+ if(!digits)return "";
+ const normalized=digits.startsWith("55")?digits:(digits.length===10||digits.length===11?"55"+digits:digits);
+ return normalized.length>=12&&normalized.length<=13?normalized:"";
+}
+function setupFloatingWhatsApp(){
+ const button=$("#floatingWhatsapp");
+ if(!button)return;
+ const sync=()=>{
+  const ready=Boolean(WHATSAPP);
+  button.hidden=!ready;
+  if(ready)button.href="https://wa.me/"+WHATSAPP+"?text="+encodeURIComponent("Olá, Ótica Moni Becker! Gostaria de informações sobre os produtos e atendimentos.");
+ };
+ sync();
+ button.addEventListener("click",e=>{
+  if(!WHATSAPP){e.preventDefault();showToast("O WhatsApp comercial ainda não está configurado na área administrativa.");}
+ });
+}
+function appointmentSubmit(e){
+ e.preventDefault();
+ const status=$("#appointmentStatus");
+ const name=$("#name").value.trim(),phone=$("#phone").value.trim(),interest=$("#interest").value,message=$("#message").value.trim();
+ const date=$("#preferredDate")?.value||"",time=$("#preferredTime")?.value||"";
+ if(!WHATSAPP){showToast("O WhatsApp comercial ainda não está configurado na área administrativa.");if(status)status.textContent="Não foi possível abrir o WhatsApp. Entre em contato pelos dados exibidos na seção Contato.";return}
+ const lines=["Olá, Ótica Moni Becker!","Gostaria de solicitar um atendimento.","","Nome: "+name,"Meu WhatsApp: "+phone,"Interesse: "+interest];
+ if(date)lines.push("Dia preferido: "+new Date(date+"T12:00:00").toLocaleDateString("pt-BR"));
+ if(time)lines.push("Horário preferido: "+time);
+ if(message)lines.push("Mensagem: "+message);
+ const url="https://wa.me/"+WHATSAPP+"?text="+encodeURIComponent(lines.join("\n"));
+ const opened=window.open(url,"_blank");
+ if(opened){
+  try{opened.opener=null}catch(_){}
+  if(status)status.textContent="O WhatsApp foi aberto com sua mensagem. Revise e envie o pedido por lá. O agendamento só estará confirmado após a resposta da loja.";
+ }else{
+  if(status){
+   status.textContent="Seu navegador bloqueou a nova aba. ";
+   const link=document.createElement("a");link.href=url;link.target="_blank";link.rel="noopener noreferrer";link.textContent="Clique aqui para abrir o WhatsApp";link.className="appointment-fallback-link";status.appendChild(link);
+  }
+ }
+}
 function openModal(id){document.getElementById(id)?.classList.add("open")}function closeModal(id){document.getElementById(id)?.classList.remove("open")}
 function showToast(message){const t=$("#toast");t.textContent=message;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),4200)}
 function sanitizeCms(value){
@@ -92,7 +133,8 @@ async function loadCmsContent(){
   if(s.cookies_text){const m=$("#cookieModal .modal-box p:nth-of-type(2)");if(m)m.textContent=s.cookies_text}
   setText(".footer-brand p",s.footer_tagline);setText(".footer-bottom",s.footer_copyright?("© "+new Date().getFullYear()+" "+s.footer_copyright):"");
   const root=document.documentElement;if(s.primary_color)root.style.setProperty("--gold",s.primary_color);if(s.cream_color)root.style.setProperty("--cream",s.cream_color);if(s.dark_color)root.style.setProperty("--dark",s.dark_color);if(s.muted_color)root.style.setProperty("--muted",s.muted_color);
-  if(s.whatsapp)WHATSAPP=s.whatsapp.replace(/\D/g,"");
+  if(s.whatsapp)WHATSAPP=normalizeWhatsapp(s.whatsapp);
+  setupFloatingWhatsApp();
   await loadPublicCollections(client);
   const collections=await loadPublicCollections(client);
   const products=(await client.from("products").select("*").eq("active",true).order("sort_order").order("created_at",{ascending:false})).data||[];

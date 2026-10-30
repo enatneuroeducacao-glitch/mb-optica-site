@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20261004-47">
+  <link rel="stylesheet" href="styles.css?v=20261030-49">
   <style>
     .hero-photo-wrap{position:relative;min-height:550px;display:flex;align-items:center;justify-content:center;padding:40px 5vw;overflow:hidden}
     .hero-photo-wrap::before{content:"";position:absolute;width:430px;height:430px;border-radius:50%;background:radial-gradient(circle,#ead0a3,#bb8a4a);opacity:.34;right:10%;top:10%}
@@ -195,9 +195,12 @@
               <option>Armações</option><option>Lentes</option><option>Óculos solares</option><option>Infantil</option><option>Ajuste/manutenção</option><option>Agendamento de exame — Oftalmologista</option><option>Agendamento de exame — Optometrista</option><option>Outro</option>
             </select>
           </label>
-          <label>Mensagem<textarea id="message" rows="3" placeholder="Conte brevemente o que você procura."></textarea></label>
-          <button class="btn btn-gold" type="submit">Solicitar atendimento</button>
-          <small class="form-note">O número do WhatsApp deve ser configurado no arquivo <code>script.js</code>.</small>
+          <label>Dia preferido<input id="preferredDate" type="date" aria-describedby="scheduleNote"></label>
+          <label>Horário preferido<input id="preferredTime" type="time"></label>
+          <label class="appointment-message-field">Mensagem<textarea id="message" rows="3" placeholder="Conte brevemente o que você procura."></textarea></label>
+          <button class="btn btn-gold" type="submit">Continuar pelo WhatsApp</button>
+          <p class="appointment-status" id="appointmentStatus" role="status" aria-live="polite"></p>
+          <small class="form-note" id="scheduleNote">O dia e o horário são preferências; o atendimento só fica confirmado após retorno da loja.</small>
         </form>
       </div>
     </section>
@@ -268,7 +271,8 @@
     <div class="modal-box"><button class="close" onclick="closeModal('cookieModal')" aria-label="Fechar">×</button><p class="eyebrow">COOKIES</p><h2 id="cookieTitle">Uso de cookies</h2><p>O site-base não utiliza cookies de publicidade ou rastreamento. Caso sejam adicionadas ferramentas de analytics, anúncios ou integrações de terceiros, o aviso deverá ser atualizado.</p><button class="btn btn-dark" onclick="closeModal('cookieModal')">Fechar</button></div>
   </div>
 
+  <a class="floating-whatsapp" id="floatingWhatsapp" href="#contato" aria-label="Falar com a Ótica Moni Becker pelo WhatsApp" hidden><span aria-hidden="true">☏</span><span>WhatsApp</span></a>
   <div class="toast" id="toast" role="status"></div>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script><script src="script.js?v=20261009-48"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script><script src="script.js?v=20261030-49"></script>
 </body>
 </html>
