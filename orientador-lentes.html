@@ -129,7 +129,7 @@
 <div class="field" style="margin-top:14px"><label for="progressiveExperience">Experiência com multifocais</label><select id="progressiveExperience"><option value="first">Será meu primeiro multifocal</option><option value="used">Já uso multifocal e estou adaptado</option><option value="change">Já uso, mas tenho dificuldade de adaptação</option></select></div>
 <div class="notice">Um corredor mais aberto pode facilitar o acesso às zonas intermediária e de perto, mas a distribuição real depende do desenho da lente, da adição, da armação e da montagem. Não escolha uma lente apenas por esta ilustração.</div>
 </div></div></section>
-<div class="actions"><button class="btn" id="updateBtn" type="button">Atualizar orientação</button><button class="btn secondary" id="resetBtn" type="button">Limpar dados</button><button class="btn secondary" id="printBtn" type="button">Imprimir resumo</button><button class="btn" id="sendSummaryBtn" type="button">Enviar resumo para o WhatsApp da ótica (opcional)</button><button class="btn" id="sendPdfWhatsAppBtn" type="button">Gerar PDF e preparar WhatsApp</button></div><p id="summaryWhatsAppStatus" class="notice" role="status" aria-live="polite">Opcional: autorize o compartilhamento no quadro de orçamento para preparar uma mensagem com seu resumo. O WhatsApp abrirá para você revisar e enviar.</p><p id="pdfWhatsAppStatus" class="notice" role="status" aria-live="polite">O PDF será baixado para seu dispositivo. Depois, anexe o arquivo à conversa do WhatsApp antes de enviar.</p>
+<div class="actions"><button class="btn" id="updateBtn" type="button">Atualizar orientação</button><button class="btn secondary" id="resetBtn" type="button">Limpar dados</button><button class="btn secondary" id="printBtn" type="button">Imprimir resumo</button><button class="btn" id="sendSummaryBtn" type="button">Enviar resumo para o WhatsApp da ótica (opcional)</button></div><p id="summaryWhatsAppStatus" class="notice" role="status" aria-live="polite">Opcional: autorize o compartilhamento no quadro de orçamento para preparar uma mensagem com seu resumo. O WhatsApp abrirá para você revisar e enviar.</p>
 </div>
 <aside class="result" aria-live="polite"><div class="result-head"><p class="eyebrow">RESUMO PERSONALIZADO</p><h2>Suas orientações</h2></div><div class="result-body">
 <div class="result-item"><strong>Tipo de lente</strong><p id="rLens">Visão simples: uma distância principal de foco, conforme receita e uso.</p></div>
@@ -286,66 +286,7 @@ $("sendSummaryBtn").addEventListener("click",()=>{
     window.location.href=whatsappUrl;
   }
 });
-$("sendPdfWhatsAppBtn").addEventListener("click",async()=>{
-  const status=$("pdfWhatsAppStatus");
-  const destination="5547997052840";
-  const authorizedContact=$("quoteConsent").checked;
-  const name=$("quoteName").value.trim();
-  const phone=$("quotePhone").value.trim();
-  if((name||phone)&&!authorizedContact){
-    status.textContent="Para incluir nome ou telefone no PDF, marque primeiro a autorização de contato no quadro de orçamento. Você também pode continuar sem esses dados.";
-    return;
-  }
-  const summary=collectQuoteSummary();
-  const whatsappMessage="Olá, MB Óptica! Estou enviando o PDF do meu Orientador de Lentes para solicitar um orçamento conforme as preferências registradas. Vou anexar o arquivo PDF a esta conversa. Por favor, avaliem as informações e me orientem sobre as opções adequadas.";
-  const whatsappUrl="https://wa.me/"+destination+"?text="+encodeURIComponent(whatsappMessage);
-  const whatsappWindow=window.open("about:blank","_blank");
-  const loadPdfLibrary=()=>new Promise((resolve,reject)=>{
-    if(window.html2pdf){resolve();return;}
-    const script=document.createElement("script");
-    script.src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";
-    script.onload=resolve;
-    script.onerror=()=>reject(new Error("Não foi possível carregar o gerador de PDF."));
-    document.head.appendChild(script);
-  });
-  const escapeHtml=text=>String(text==null?"":text).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
-  try{
-    status.textContent="Preparando seu PDF. Aguarde...";
-    await loadPdfLibrary();
-    const lines=summary.split("\n").map(line=>line.trim()).filter(Boolean);
-    const body=lines.map(line=>{
-      const clean=line.replace(/\\*/g,"").replace(/^━+$/,"");
-      if(!clean)return "";
-      if(/^👓|^📋|^🔎|^🙂|^👁️/.test(clean)||/^MB ÓPTICA \|/.test(clean)){
-        return '<h2>'+escapeHtml(clean)+'</h2>';
-      }
-      if(/^• /.test(clean)){
-        const parts=clean.slice(2).split(":");
-        return '<p class="item"><strong>'+escapeHtml(parts.shift())+(parts.length?":":"")+'</strong> '+escapeHtml(parts.join(":").trim())+'</p>';
-      }
-      if(/^Solicito|^Observação:/.test(clean)){
-        return '<p class="note">'+escapeHtml(clean)+'</p>';
-      }
-      return '<p>'+escapeHtml(clean)+'</p>';
-    }).join("");
-    const report=document.createElement("div");
-    report.style.cssText="position:fixed;left:-10000px;top:0;width:760px;background:#fff;";
-    report.innerHTML='<div class="pdf-report" style="font-family:Arial,sans-serif;color:#29251f;padding:28px 34px;font-size:12px;line-height:1.4"><header style="display:flex;align-items:center;gap:16px;border-bottom:3px solid #a97838;padding-bottom:12px;margin-bottom:16px"><img src="https://www.mboptica.com.br/assets/logo.jpg?v=20261028" style="width:78px;height:78px;object-fit:contain" alt="Logo Moni Becker"><div><div style="font-size:10px;letter-spacing:2px;color:#a97838;font-weight:bold">ÓTICA MONI BECKER</div><h1 style="font: bold 25px Georgia,serif;margin:4px 0">Resumo do Orientador de Lentes</h1><p style="margin:0;color:#716b61">Solicitação de orçamento personalizada · '+escapeHtml(new Date().toLocaleString("pt-BR"))+'</p></div></header><div class="pdf-content">'+body+'</div><div style="margin-top:18px;padding:10px;background:#f4f0e7;border-left:3px solid #a97838;font-size:10px">Este relatório é informativo e comercial. Não substitui receita, avaliação óptica, medidas de centragem, conferência de montagem ou orientação de profissional habilitado.</div><footer style="margin-top:12px;padding-top:8px;border-top:1px solid #ded6c7;color:#716b61;font-size:9px">MB Óptica · Moni Becker · www.mboptica.com.br</footer></div><style>.pdf-content h2{font-size:13px;color:#805623;border-bottom:1px solid #ded6c7;padding:7px 0 4px;margin:10px 0 5px;break-after:avoid}.pdf-content p{margin:3px 0;overflow-wrap:anywhere}.pdf-content .item{padding-left:10px}.pdf-content .note{background:#fbf7ef;padding:7px;margin-top:8px}</style>';
-    document.body.appendChild(report);
-    const img=report.querySelector("img");
-    if(img&&!img.complete)await new Promise(resolve=>{img.onload=resolve;img.onerror=resolve;setTimeout(resolve,1500);});
-    await window.html2pdf().set({margin:[8,8,8,8],filename:"MB-Optica-Resumo-Orientador-Lentes.pdf",image:{type:"jpeg",quality:0.96},html2canvas:{scale:1.6,useCORS:true,backgroundColor:"#ffffff"},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"},pagebreak:{mode:["css","legacy"]}}).from(report.querySelector(".pdf-report")).save();
-    report.remove();
-    if(whatsappWindow&&!whatsappWindow.closed){whatsappWindow.location.href=whatsappUrl;}
-    else{window.open(whatsappUrl,"_blank");}
-    status.textContent="PDF gerado e baixado. O WhatsApp foi preparado com uma mensagem: agora anexe o arquivo MB-Optica-Resumo-Orientador-Lentes.pdf à conversa e toque em enviar.";
-  }catch(error){
-    if(whatsappWindow&&!whatsappWindow.closed)whatsappWindow.close();
-    status.textContent="Não foi possível gerar o PDF automaticamente. Use “Imprimir resumo” e escolha “Salvar como PDF”; depois, anexe o arquivo manualmente no WhatsApp.";
-    console.error(error);
-  }
-});
-$("quoteBtn").addEventListener("click",()=>{const name=$("quoteName").value.trim();const phone=$("quotePhone").value.trim();if(!name||!phone){$("quoteStatus").textContent="Preencha seu nome e número de WhatsApp com DDD.";return;}if(!$("quoteConsent").checked){$("quoteStatus").textContent="Marque a autorização de contato para preparar a solicitação de orçamento.";return;}const destination="5547997052840";const summary=collectQuoteSummary();const promotion=$("promoConsent").checked?"Sim, quero receber a promoção exclusiva.":"Não autorizei mensagens promocionais.";const message="Olá, MB Óptica! Gostaria de solicitar um orçamento gratuito.\n\nNome: "+name+"\nMeu WhatsApp: "+phone+"\n\n"+summary+"\n\nPromoções: "+promotion+"\n\nPor favor, entrem em contato para confirmar o orçamento e a promoção disponível.";window.open("https://wa.me/"+destination+"?text="+encodeURIComponent(message),"_blank","noopener");$("quoteStatus").textContent="Mensagem preparada. Revise os dados no WhatsApp e toque em enviar para concluir a solicitação.";});
+extContent="Marque a autorização de contato para preparar a solicitação de orçamento.";return;}const destination="5547997052840";const summary=collectQuoteSummary();const promotion=$("promoConsent").checked?"Sim, quero receber a promoção exclusiva.":"Não autorizei mensagens promocionais.";const message="Olá, MB Óptica! Gostaria de solicitar um orçamento gratuito.\n\nNome: "+name+"\nMeu WhatsApp: "+phone+"\n\n"+summary+"\n\nPromoções: "+promotion+"\n\nPor favor, entrem em contato para confirmar o orçamento e a promoção disponível.";window.open("https://wa.me/"+destination+"?text="+encodeURIComponent(message),"_blank","noopener");$("quoteStatus").textContent="Mensagem preparada. Revise os dados no WhatsApp e toque em enviar para concluir a solicitação.";});
 $("year").textContent=new Date().getFullYear();update();
 </script>
 </body></html>
