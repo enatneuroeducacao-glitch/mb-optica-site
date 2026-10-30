@@ -26,6 +26,9 @@
     .hero-exam-form .btn{width:100%;margin-top:6px;padding:12px 10px;font-size:.6rem;letter-spacing:.07em}
     .hero-exam-status{margin:0;font-size:.68rem;line-height:1.45;color:#386848}
     .hero-exam-status:empty{display:none}
+    .hero-exam-consent{display:flex;align-items:flex-start;gap:7px;margin-top:5px;font-size:.65rem;line-height:1.45;color:var(--muted)}
+    .hero-exam-consent input{width:auto;margin:2px 0 0;flex:0 0 auto}
+    .exam-form-honeypot{position:absolute!important;left:-10000px!important;top:auto!important;width:1px!important;height:1px!important;overflow:hidden!important}
     .hero-exam-note{display:block;margin-top:9px;font-size:.57rem;line-height:1.45;color:#82796d}
     @media(max-width:1200px){.hero-photo-wrap{grid-template-columns:minmax(0,.8fr) minmax(250px,1.2fr);gap:12px;padding-right:18px}.hero-photo{height:470px}.hero-exam-card{padding:18px 15px}}
     @media(max-width:900px){.hero-photo-wrap{min-height:0;padding:30px 6vw 42px;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);align-items:center}.hero-photo{width:100%;height:460px}.hero-photo-wrap::before{width:330px;height:330px;right:2%;top:8%}}
@@ -75,6 +78,7 @@
           <h2 id="heroExamTitle">Quer agendar um exame?</h2>
           <p class="hero-exam-intro">Consulte valores e peça as próximas datas e horários disponíveis para atendimento optométrico ou oftalmológico.</p>
           <form id="heroExamForm" class="hero-exam-form">
+            <div class="exam-form-honeypot" aria-hidden="true"><label for="heroExamWebsite">Não preencha este campo</label><input id="heroExamWebsite" name="website" tabindex="-1" autocomplete="off"></div>
             <label for="heroExamName">Seu nome</label>
             <input id="heroExamName" name="name" autocomplete="name" required placeholder="Nome completo">
             <label for="heroExamPhone">Telefone / WhatsApp</label>
@@ -89,10 +93,11 @@
               <div><label for="heroExamDate">Melhor data (opcional)</label><input id="heroExamDate" name="date" type="date"></div>
               <div><label for="heroExamPeriod">Período</label><select id="heroExamPeriod" name="period"><option value="Qualquer período">Qualquer</option><option value="Manhã">Manhã</option><option value="Tarde">Tarde</option></select></div>
             </div>
+            <label class="hero-exam-consent"><input id="heroExamConsent" type="checkbox" required> <span>Autorizo o uso dos meus dados para responder a esta solicitação.</span></label>
             <button class="btn btn-gold" type="submit">Consultar valores e horários</button>
             <p id="heroExamStatus" class="hero-exam-status" role="status" aria-live="polite"></p>
           </form>
-          <small class="hero-exam-note">A solicitação será enviada pelo WhatsApp. A ótica confirmará valores, disponibilidade e agendamento após retorno.</small>
+          <small class="hero-exam-note">Seus dados serão usados para responder à solicitação. O agendamento só será confirmado após o retorno da ótica.</small>
         </aside>
       </div>
     </section>
@@ -310,6 +315,6 @@
 
   <a class="floating-whatsapp" id="floatingWhatsapp" href="#contato" aria-label="Falar com a Ótica Moni Becker pelo WhatsApp" hidden><span aria-hidden="true">☏</span><span>WhatsApp</span></a>
   <div class="toast" id="toast" role="status"></div>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script><script src="script.js?v=20261030-49"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script><script src="script.js?v=20261030-51"></script>
 </body>
 </html>

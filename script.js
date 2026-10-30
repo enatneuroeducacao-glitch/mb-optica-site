@@ -62,44 +62,56 @@ function setupFloatingWhatsApp(){
  });
 }
 
-function heroExamSubmit(e){
+async function heroExamSubmit(e){
  e.preventDefault();
+ const form=$("#heroExamForm");
  const status=$("#heroExamStatus");
+ const button=form?.querySelector('button[type="submit"]');
+ if(!form||!status||!button)return false;
  const name=$("#heroExamName").value.trim();
  const phone=$("#heroExamPhone").value.trim();
  const examType=$("#heroExamType").value;
  const date=$("#heroExamDate").value;
  const period=$("#heroExamPeriod").value;
- if(!WHATSAPP){
-  if(status)status.textContent="O WhatsApp comercial ainda não está configurado. Tente novamente mais tarde ou use a seção Contato.";
-  showToast("O WhatsApp comercial ainda não está configurado na área administrativa.");
-  return;
+ const consent=$("#heroExamConsent")?.checked===true;
+ const website=$("#heroExamWebsite")?.value||"";
+ const apiUrl="https://emnnwizogqxrdsnjpwze.supabase.co/functions/v1/submit-exam-request";
+ const publicKey=window.MB_SUPABASE?.key;
+ if(!publicKey){
+  status.textContent="Não foi possível conectar ao serviço de agendamento. Tente novamente mais tarde.";
+  return false;
  }
- const lines=[
-  "Olá, Ótica Moni Becker!",
-  "Gostaria de consultar agendamento de exame de visão.",
-  "",
-  "Nome: "+name,
-  "Telefone/WhatsApp: "+phone,
-  "Tipo de atendimento: "+examType,
-  "Poderiam informar o valor do exame e as próximas datas e horários disponíveis?"
- ];
- if(date)lines.push("Minha melhor data: "+new Date(date+"T12:00:00").toLocaleDateString("pt-BR"));
- if(period&&period!=="Qualquer período")lines.push("Período preferido: "+period);
- lines.push("Por favor, confirmem as opções disponíveis antes de considerar o agendamento confirmado.");
- const url="https://wa.me/"+WHATSAPP+"?text="+encodeURIComponent(lines.join("\n"));
- const opened=window.open(url,"_blank");
- if(opened){
-  try{opened.opener=null}catch(_){}
-  if(status)status.textContent="Pedido preparado no WhatsApp. Revise e envie a mensagem para consultar valores e disponibilidade.";
- }else if(status){
-  status.textContent="O navegador bloqueou a nova aba. ";
-  const link=document.createElement("a");
-  link.href=url;link.target="_blank";link.rel="noopener noreferrer";
-  link.textContent="Clique aqui para abrir o WhatsApp";
-  link.className="appointment-fallback-link";
-  status.appendChild(link);
+ button.disabled=true;
+ button.dataset.originalText=button.textContent;
+ button.textContent="Enviando solicitação...";
+ status.textContent="Estamos registrando sua solicitação. Aguarde.";
+ try{
+  const response=await fetch(apiUrl,{
+   method:"POST",
+   headers:{"Content-Type":"application/json","apikey":publicKey},
+   body:JSON.stringify({full_name:name,phone,exam_type:examType,preferred_date:date||null,preferred_period:period,consent,website})
+  });
+  const result=await response.json().catch(()=>({}));
+  if(!response.ok||!result.ok){
+   status.textContent=result.error||"Não foi possível registrar a solicitação. Confira os dados e tente novamente.";
+   return false;
+  }
+  status.textContent=result.message||"Solicitação processada.";
+  if(result.notification_sent===true){
+   status.style.color="#237044";
+   form.reset();
+  }else{
+   status.style.color="#9A5B18";
+  }
+ }catch(error){
+  console.error("Falha ao enviar solicitação de exame:",error);
+  status.textContent="Não conseguimos conectar ao serviço agora. Nenhuma confirmação de envio foi emitida; tente novamente ou utilize o WhatsApp da loja.";
+  status.style.color="#9A5B18";
+ }finally{
+  button.disabled=false;
+  button.textContent=button.dataset.originalText||"Consultar valores e horários";
  }
+ return false;
 }
 
 function appointmentSubmit(e){
