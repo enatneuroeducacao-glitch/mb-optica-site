@@ -129,7 +129,7 @@
 <div class="field" style="margin-top:14px"><label for="progressiveExperience">Experiência com multifocais</label><select id="progressiveExperience"><option value="first">Será meu primeiro multifocal</option><option value="used">Já uso multifocal e estou adaptado</option><option value="change">Já uso, mas tenho dificuldade de adaptação</option></select></div>
 <div class="notice">Um corredor mais aberto pode facilitar o acesso às zonas intermediária e de perto, mas a distribuição real depende do desenho da lente, da adição, da armação e da montagem. Não escolha uma lente apenas por esta ilustração.</div>
 </div></div></section>
-<div class="actions"><button class="btn" id="updateBtn" type="button">Atualizar orientação</button><button class="btn secondary" id="resetBtn" type="button">Limpar dados</button><button class="btn secondary" id="printBtn" type="button">Imprimir resumo</button></div>
+<div class="actions"><button class="btn" id="updateBtn" type="button">Atualizar orientação</button><button class="btn secondary" id="resetBtn" type="button">Limpar dados</button><button class="btn secondary" id="printBtn" type="button">Imprimir resumo</button><button class="btn" id="sendSummaryBtn" type="button">Enviar resumo para o WhatsApp da ótica (opcional)</button></div><p id="summaryWhatsAppStatus" class="notice" role="status" aria-live="polite">Opcional: autorize o compartilhamento no quadro de orçamento para preparar uma mensagem com seu resumo. O WhatsApp abrirá para você revisar e enviar.</p>
 </div>
 <aside class="result" aria-live="polite"><div class="result-head"><p class="eyebrow">RESUMO PERSONALIZADO</p><h2>Suas orientações</h2></div><div class="result-body">
 <div class="result-item"><strong>Tipo de lente</strong><p id="rLens">Visão simples: uma distância principal de foco, conforme receita e uso.</p></div>
@@ -217,6 +217,20 @@ function collectQuoteSummary(){update();const read=id=>$(id)?.value?.trim()||"N�
 "Orientação de armação: "+($( "rMeasure").textContent||"Não informado"),
 "Orientação multifocal: "+($( "rOpening").textContent||"Não informado")
 ].join("\n");}
+$("sendSummaryBtn").addEventListener("click",()=>{
+  const status=$("summaryWhatsAppStatus");
+  if(!$("quoteConsent").checked){
+    status.textContent="Para compartilhar seu resumo, marque primeiro “Autorizo o contato pelo WhatsApp” no quadro de orçamento. Nada será enviado sem sua autorização.";
+    $("quoteRequest").scrollIntoView({behavior:"smooth",block:"center"});
+    return;
+  }
+  const destination="5547997052840";
+  const name=$("quoteName").value.trim();
+  const phone=$("quotePhone").value.trim();
+  const message="Olá, MB Óptica! Gostaria de compartilhar meu resumo do Orientador de Lentes para receber atendimento.\n\n"+(name?"Nome: "+name+"\n":"")+(phone?"Meu WhatsApp: "+phone+"\n":"")+"\n"+collectQuoteSummary()+"\n\nPor favor, entrem em contato para conversar sobre as opções. Estou ciente de que as orientações são iniciais e devem ser conferidas pela equipe da ótica.";
+  window.open("https://wa.me/"+destination+"?text="+encodeURIComponent(message),"_blank","noopener");
+  status.textContent="Mensagem preparada no WhatsApp. Revise o resumo e toque em enviar para concluir o compartilhamento.";
+});
 $("quoteBtn").addEventListener("click",()=>{const name=$("quoteName").value.trim();const phone=$("quotePhone").value.trim();if(!name||!phone){$("quoteStatus").textContent="Preencha seu nome e número de WhatsApp com DDD.";return;}if(!$("quoteConsent").checked){$("quoteStatus").textContent="Marque a autorização de contato para preparar a solicitação de orçamento.";return;}const destination="5547997052840";const summary=collectQuoteSummary();const promotion=$("promoConsent").checked?"Sim, quero receber a promoção exclusiva.":"Não autorizei mensagens promocionais.";const message="Olá, MB Óptica! Gostaria de solicitar um orçamento gratuito.\n\nNome: "+name+"\nMeu WhatsApp: "+phone+"\n\n"+summary+"\n\nPromoções: "+promotion+"\n\nPor favor, entrem em contato para confirmar o orçamento e a promoção disponível.";window.open("https://wa.me/"+destination+"?text="+encodeURIComponent(message),"_blank","noopener");$("quoteStatus").textContent="Mensagem preparada. Revise os dados no WhatsApp e toque em enviar para concluir a solicitação.";});
 $("year").textContent=new Date().getFullYear();update();
 </script>
