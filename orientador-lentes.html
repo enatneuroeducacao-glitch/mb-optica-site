@@ -259,12 +259,28 @@ $("sendSummaryBtn").addEventListener("click",()=>{
   const authorizedContact=$("quoteConsent").checked;
   const name=$("quoteName").value.trim();
   const phone=$("quotePhone").value.trim();
-  const personalData=authorizedContact?((name?"Nome: "+name+"\n":"")+(phone?"WhatsApp para contato: "+phone+"\n":"")):"";
-  const message="Olá, MB Óptica! Estou enviando meu resumo do Orientador de Lentes para conversar com a equipe.\n\n"+personalData+collectQuoteSummary()+"\n\nPor favor, avaliem estas preferências e me orientem sobre as opções. Entendo que a orientação é inicial e deve ser confirmada por um profissional.";
+  const contactBlock=authorizedContact
+    ? (name ? "👤 *IDENTIFICAÇÃO*\\nNome: "+name+"\\n" : "") + (phone ? "WhatsApp para contato: "+phone+"\\n" : "")
+    : "";
+  const message=[
+    "Olá, equipe da *MB Óptica — Moni Becker*!",
+    "",
+    "Gostaria de solicitar um orçamento com base nas minhas preferências registradas no Orientador de Lentes.",
+    "",
+    contactBlock ? contactBlock.trimEnd() : "",
+    collectQuoteSummary(),
+    "",
+    "📩 *SOLICITAÇÃO*",
+    "Por favor, avaliem as informações e me orientem sobre as opções adequadas e o orçamento.",
+    "",
+    "ℹ️ Este resumo é informativo e não substitui a conferência da receita, as medidas ópticas nem a orientação de um profissional habilitado."
+  ].filter(Boolean).join("\\n");
   const whatsappUrl="https://wa.me/"+destination+"?text="+encodeURIComponent(message);
-  const opened=window.open(whatsappUrl,"_blank");
+  const opened=window.open(whatsappUrl,"_blank","noopener");
   if(opened){
-    status.textContent=authorizedContact?"Resumo preparado no WhatsApp com os dados de contato autorizados. Revise e toque em enviar.":"Resumo preparado no WhatsApp sem incluir nome ou telefone. Revise e toque em enviar.";
+    status.textContent=authorizedContact
+      ? "Resumo organizado preparado no WhatsApp, incluindo os dados de contato autorizados. Confira a mensagem e toque em enviar."
+      : "Resumo organizado preparado no WhatsApp sem incluir nome ou telefone. Confira a mensagem e toque em enviar.";
   }else{
     status.textContent="O navegador bloqueou a abertura do WhatsApp. Permita pop-ups para este site e tente novamente.";
     window.location.href=whatsappUrl;
