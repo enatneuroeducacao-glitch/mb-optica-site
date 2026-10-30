@@ -219,17 +219,20 @@ function collectQuoteSummary(){update();const read=id=>$(id)?.value?.trim()||"N�
 ].join("\n");}
 $("sendSummaryBtn").addEventListener("click",()=>{
   const status=$("summaryWhatsAppStatus");
-  if(!$("quoteConsent").checked){
-    status.textContent="Para compartilhar seu resumo, marque primeiro “Autorizo o contato pelo WhatsApp” no quadro de orçamento. Nada será enviado sem sua autorização.";
-    $("quoteRequest").scrollIntoView({behavior:"smooth",block:"center"});
-    return;
-  }
   const destination="5547997052840";
+  const authorizedContact=$("quoteConsent").checked;
   const name=$("quoteName").value.trim();
   const phone=$("quotePhone").value.trim();
-  const message="Olá, MB Óptica! Gostaria de compartilhar meu resumo do Orientador de Lentes para receber atendimento.\n\n"+(name?"Nome: "+name+"\n":"")+(phone?"Meu WhatsApp: "+phone+"\n":"")+"\n"+collectQuoteSummary()+"\n\nPor favor, entrem em contato para conversar sobre as opções. Estou ciente de que as orientações são iniciais e devem ser conferidas pela equipe da ótica.";
-  window.open("https://wa.me/"+destination+"?text="+encodeURIComponent(message),"_blank","noopener");
-  status.textContent="Mensagem preparada no WhatsApp. Revise o resumo e toque em enviar para concluir o compartilhamento.";
+  const personalData=authorizedContact?((name?"Nome: "+name+"\n":"")+(phone?"WhatsApp para contato: "+phone+"\n":"")):"";
+  const message="Olá, MB Óptica! Estou enviando meu resumo do Orientador de Lentes para conversar com a equipe.\n\n"+personalData+collectQuoteSummary()+"\n\nPor favor, avaliem estas preferências e me orientem sobre as opções. Entendo que a orientação é inicial e deve ser confirmada por um profissional.";
+  const whatsappUrl="https://wa.me/"+destination+"?text="+encodeURIComponent(message);
+  const opened=window.open(whatsappUrl,"_blank");
+  if(opened){
+    status.textContent=authorizedContact?"Resumo preparado no WhatsApp com os dados de contato autorizados. Revise e toque em enviar.":"Resumo preparado no WhatsApp sem incluir nome ou telefone. Revise e toque em enviar.";
+  }else{
+    status.textContent="O navegador bloqueou a abertura do WhatsApp. Permita pop-ups para este site e tente novamente.";
+    window.location.href=whatsappUrl;
+  }
 });
 $("quoteBtn").addEventListener("click",()=>{const name=$("quoteName").value.trim();const phone=$("quotePhone").value.trim();if(!name||!phone){$("quoteStatus").textContent="Preencha seu nome e número de WhatsApp com DDD.";return;}if(!$("quoteConsent").checked){$("quoteStatus").textContent="Marque a autorização de contato para preparar a solicitação de orçamento.";return;}const destination="5547997052840";const summary=collectQuoteSummary();const promotion=$("promoConsent").checked?"Sim, quero receber a promoção exclusiva.":"Não autorizei mensagens promocionais.";const message="Olá, MB Óptica! Gostaria de solicitar um orçamento gratuito.\n\nNome: "+name+"\nMeu WhatsApp: "+phone+"\n\n"+summary+"\n\nPromoções: "+promotion+"\n\nPor favor, entrem em contato para confirmar o orçamento e a promoção disponível.";window.open("https://wa.me/"+destination+"?text="+encodeURIComponent(message),"_blank","noopener");$("quoteStatus").textContent="Mensagem preparada. Revise os dados no WhatsApp e toque em enviar para concluir a solicitação.";});
 $("year").textContent=new Date().getFullYear();update();
