@@ -95,7 +95,7 @@ function heroExamSubmit(e){
   "",
   "Enviei esta solicitação pelo site da ótica."
  ];
- const url="https://wa.me/"+WHATSAPP+"?text="+encodeURIComponent(lines.join("\\n"));
+ const url="https://wa.me/"+WHATSAPP+"?text="+encodeURIComponent(lines.join("\n"));
  const opened=window.open(url,"_blank");
  if(opened){
   try{opened.opener=null}catch(_){}
