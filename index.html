@@ -74,7 +74,7 @@
           <p class="eyebrow">CUIDE DA SUA VISÃO</p>
           <h2 id="heroExamTitle">Quer agendar um exame?</h2>
           <p class="hero-exam-intro">Consulte valores e peça as próximas datas e horários disponíveis para atendimento optométrico ou oftalmológico.</p>
-          <form id="heroExamForm" class="hero-exam-form">
+          <form id="heroExamForm" class="hero-exam-form" method="dialog" onsubmit="return heroExamSubmit(event)">
             <label for="heroExamName">Seu nome</label>
             <input id="heroExamName" name="name" autocomplete="name" required placeholder="Nome completo">
             <label for="heroExamPhone">Telefone / WhatsApp</label>
@@ -92,7 +92,7 @@
             <button class="btn btn-gold" type="submit">Consultar valores e horários</button>
             <p id="heroExamStatus" class="hero-exam-status" role="status" aria-live="polite"></p>
           </form>
-          <small class="hero-exam-note">A solicitação será enviada pelo WhatsApp. A ótica confirmará valores, disponibilidade e agendamento após retorno.</small>
+          <small class="hero-exam-note">O WhatsApp abrirá com sua solicitação preenchida. Para concluir o envio, toque em Enviar no WhatsApp. A ótica confirmará valores, disponibilidade e agendamento após retorno.</small>
         </aside>
       </div>
     </section>
@@ -310,6 +310,6 @@
 
   <a class="floating-whatsapp" id="floatingWhatsapp" href="#contato" aria-label="Falar com a Ótica Moni Becker pelo WhatsApp" hidden><span aria-hidden="true">☏</span><span>WhatsApp</span></a>
   <div class="toast" id="toast" role="status"></div>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script><script src="script.js?v=20261030-49"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script><script src="script.js?v=20261030-50"></script>
 </body>
 </html>
