@@ -1,7 +1,30 @@
 window.__MB_ADMIN_LOADED=true;
 const db=supabase.createClient(window.MB_SUPABASE.url,window.MB_SUPABASE.key);
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+
 const ADMIN_EMAIL="becker.optica@gmail.com";
+
+/* Notificação discreta da Central Administrativa, sem bloquear a navegação. */
+function showAdminNotice(message,type="success"){
+ let notice=document.getElementById("adminNotice");
+ if(!notice){
+  notice=document.createElement("div");
+  notice.id="adminNotice";
+  notice.className="admin-notice";
+  notice.setAttribute("role","status");
+  notice.setAttribute("aria-live","polite");
+  notice.innerHTML='<span class="admin-notice-icon" aria-hidden="true"></span><span class="admin-notice-copy"></span><button type="button" class="admin-notice-close" aria-label="Fechar notificação">×</button>';
+  document.body.appendChild(notice);
+  notice.querySelector(".admin-notice-close").addEventListener("click",()=>notice.classList.remove("is-visible"));
+ }
+ notice.classList.toggle("is-error",type==="error");
+ notice.querySelector(".admin-notice-icon").textContent=type==="error"?"!":"✓";
+ notice.querySelector(".admin-notice-copy").textContent=message;
+ notice.classList.remove("is-visible");
+ requestAnimationFrame(()=>notice.classList.add("is-visible"));
+ clearTimeout(notice._hideTimer);
+ notice._hideTimer=setTimeout(()=>notice.classList.remove("is-visible"),5000);
+}
 
 const homeFields=[
 ["topbar_text","Faixa superior"],["store_name","Nome da ótica"],["hero_eyebrow","Hero — etiqueta"],["hero_title","Hero — título"],["hero_subtitle","Hero — subtítulo"],["hero_note","Hero — observação"],
@@ -466,7 +489,7 @@ async function editProductRow(id){
   if(payload.price!==null&&(!Number.isFinite(payload.price)||payload.price<0)){status.textContent="Informe um preço válido.";return}
   if(!linked){const stock=Number(stockInput.value);if(!Number.isInteger(stock)||stock<0){status.textContent="Informe uma quantidade inteira de estoque igual ou superior a zero.";return}payload.stock=stock;payload.stock_controlled=true}
   submit.disabled=true;status.textContent="Salvando...";
-  try{const update=await db.from("products").update(payload).eq("id",id);if(update.error)throw update.error;close();await loadList("products");await loadCollections();await loadStats();alert("Produto atualizado. As opções de publicação foram salvas.");}
+  try{const update=await db.from("products").update(payload).eq("id",id);if(update.error)throw update.error;close();await loadList("products");await loadCollections();await loadStats();showAdminNotice("Produto atualizado. As opções de publicação foram salvas.");}
   catch(err){status.textContent=err.message||"Não foi possível salvar.";submit.disabled=false}
  });
 }

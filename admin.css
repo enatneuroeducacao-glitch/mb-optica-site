@@ -33,3 +33,16 @@
 @media(max-width:600px){.collection-admin-thumbs{grid-template-columns:repeat(3,minmax(0,1fr))}.collection-admin-thumbs img,.collection-admin-thumbs .collection-thumb-empty{height:76px}main{padding:18px}}
 
 .product-edit-modal{z-index:5200;overflow:auto}.product-edit-modal .rich-modal-box{width:min(760px,100%)}.product-edit-modal .rich-modal-head{align-items:flex-start}.product-publish-options{margin-top:18px;border:1px solid var(--line);border-radius:9px;background:#faf8f3;overflow:hidden}.product-publish-options summary{padding:14px 16px;cursor:pointer;font-weight:700;color:var(--ink);list-style:none;display:flex;justify-content:space-between;align-items:center}.product-publish-options summary::-webkit-details-marker{display:none}.product-publish-options summary:after{content:"＋";color:var(--gold);font-size:18px}.product-publish-options[open] summary:after{content:"−"}.product-publish-grid{padding:0 16px 16px}.product-active-toggle{display:flex;align-items:center;gap:9px;text-transform:none!important;letter-spacing:0!important;font-size:13px!important;color:var(--ink)!important}.product-active-toggle input{width:auto!important}.product-edit-modal textarea{min-height:110px}.product-edit-modal .actions{justify-content:flex-end}
+
+
+/* Confirmação visual não bloqueante da Central Administrativa */
+.admin-notice{position:fixed;right:24px;bottom:24px;z-index:10000;display:flex;align-items:center;gap:12px;width:min(430px,calc(100vw - 32px));padding:16px 16px 16px 18px;background:#fff;border:1px solid #d8e8d8;border-left:4px solid #368453;border-radius:12px;box-shadow:0 14px 42px #211e1926;color:var(--ink,#29251f);opacity:0;transform:translateY(12px);pointer-events:none;transition:opacity .22s ease,transform .22s ease}
+.admin-notice.is-visible{opacity:1;transform:translateY(0);pointer-events:auto}
+.admin-notice-icon{flex:0 0 30px;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#e7f4e9;color:#267244;font-size:17px;font-weight:700}
+.admin-notice-copy{font-size:13px;line-height:1.5;flex:1}
+.admin-notice-close{border:0;background:transparent;color:#746d63;font-size:23px;line-height:1;padding:2px 4px;cursor:pointer;border-radius:5px}
+.admin-notice-close:hover{background:#f5f0e7}
+.admin-notice.is-error{border-color:#f0d5d1;border-left-color:#ad4136}
+.admin-notice.is-error .admin-notice-icon{background:#fae9e6;color:#a33126}
+@media(max-width:600px){.admin-notice{right:12px;bottom:12px;width:calc(100vw - 24px);padding:14px}}
+@media(prefers-reduced-motion:reduce){.admin-notice{transition:none}}
