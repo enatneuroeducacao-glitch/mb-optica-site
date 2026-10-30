@@ -12,11 +12,24 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=20261030-49">
   <style>
-    .hero-photo-wrap{position:relative;min-height:550px;display:flex;align-items:center;justify-content:center;padding:40px 5vw;overflow:hidden}
-    .hero-photo-wrap::before{content:"";position:absolute;width:430px;height:430px;border-radius:50%;background:radial-gradient(circle,#ead0a3,#bb8a4a);opacity:.34;right:10%;top:10%}
-    .hero-photo{position:relative;z-index:2;width:min(78%,460px);height:600px;object-fit:cover;object-position:center 22%;border:8px solid #fff8f0;box-shadow:0 24px 60px #6f59352e,0 0 0 1px #b98a4b66;border-radius:18px 18px 120px 18px}
-    @media(max-width:900px){.hero-photo-wrap{min-height:480px;padding:25px 8vw;align-items:flex-end}.hero-photo{width:min(70%,360px);height:500px}.hero-photo-wrap::before{width:330px;height:330px;right:2%;top:8%}}
-    @media(max-width:600px){.hero-photo-wrap{min-height:430px;padding:10px 7vw 45px}.hero-photo{width:72%;height:430px;border-width:6px;border-radius:14px 14px 90px 14px}}
+    .hero-photo-wrap{position:relative;min-height:690px;display:grid;grid-template-columns:minmax(0,.88fr) minmax(280px,1.12fr);align-items:center;gap:18px;padding:28px 3vw 28px 0;overflow:hidden}
+    .hero-photo-wrap::before{content:"";position:absolute;width:430px;height:430px;border-radius:50%;background:radial-gradient(circle,#ead0a3,#bb8a4a);opacity:.34;right:4%;top:10%}
+    .hero-photo{position:relative;z-index:2;width:100%;max-width:390px;height:510px;justify-self:center;object-fit:cover;object-position:center 22%;border:8px solid #fff8f0;box-shadow:0 24px 60px #6f59352e,0 0 0 1px #b98a4b66;border-radius:18px 18px 100px 18px}
+    .hero-exam-card{position:relative;z-index:3;align-self:center;background:#fffdf9;border:1px solid #d8c7ac;border-radius:16px;padding:22px 20px;box-shadow:0 18px 50px #6f59351c;max-width:390px}
+    .hero-exam-card .eyebrow{font-size:.58rem;margin-bottom:8px}
+    .hero-exam-card h2{font-family:var(--serif);font-size:clamp(1.55rem,2vw,2.05rem);line-height:1.05;margin:0 0 10px;color:var(--dark)}
+    .hero-exam-intro{font-size:.72rem;line-height:1.5;color:var(--muted);margin:0 0 13px}
+    .hero-exam-form{display:grid;gap:6px}
+    .hero-exam-form label{font-size:.58rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:#665b4d}
+    .hero-exam-form input,.hero-exam-form select{width:100%;min-width:0;margin-top:3px;padding:9px 10px;border:1px solid var(--line);background:#fff;font:inherit;font-size:.72rem;color:var(--dark);border-radius:5px}
+    .hero-exam-form-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .hero-exam-form .btn{width:100%;margin-top:6px;padding:12px 10px;font-size:.6rem;letter-spacing:.07em}
+    .hero-exam-status{margin:0;font-size:.68rem;line-height:1.45;color:#386848}
+    .hero-exam-status:empty{display:none}
+    .hero-exam-note{display:block;margin-top:9px;font-size:.57rem;line-height:1.45;color:#82796d}
+    @media(max-width:1200px){.hero-photo-wrap{grid-template-columns:minmax(0,.8fr) minmax(250px,1.2fr);gap:12px;padding-right:18px}.hero-photo{height:470px}.hero-exam-card{padding:18px 15px}}
+    @media(max-width:900px){.hero-photo-wrap{min-height:0;padding:30px 6vw 42px;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);align-items:center}.hero-photo{width:100%;height:460px}.hero-photo-wrap::before{width:330px;height:330px;right:2%;top:8%}}
+    @media(max-width:600px){.hero-photo-wrap{display:flex;flex-direction:column;gap:18px;padding:12px 7vw 35px;align-items:stretch}.hero-photo{width:72%;height:350px;align-self:center;border-width:6px;border-radius:14px 14px 80px 14px}.hero-exam-card{width:100%;max-width:none;padding:22px 18px}.hero-photo-wrap::before{width:280px;height:280px;right:0;top:0}}
   </style>
 </head>
 <body>
@@ -56,7 +69,31 @@
         <div class="hero-note"><span>✦</span> Atendimento próximo, humano e personalizado</div>
       </div>
       <div class="hero-photo-wrap">
-        <img class="hero-photo" src="https://images.unsplash.com/photo-1501713117278-80d75143037a?auto=format&fit=crop&fm=jpg&q=80&w=1400" alt="Óculos em exposição — imagem ilustrativa">
+        <img class="hero-photo" src="https://images.unsplash.com/photo-1501713117278-80d75143037a?auto=format&fit=crop&fm=jpg&q=80&w=1400" alt="Pessoa usando óculos de sol — imagem ilustrativa">
+        <aside class="hero-exam-card" aria-labelledby="heroExamTitle">
+          <p class="eyebrow">CUIDE DA SUA VISÃO</p>
+          <h2 id="heroExamTitle">Quer agendar um exame?</h2>
+          <p class="hero-exam-intro">Consulte valores e peça as próximas datas e horários disponíveis para atendimento optométrico ou oftalmológico.</p>
+          <form id="heroExamForm" class="hero-exam-form">
+            <label for="heroExamName">Seu nome</label>
+            <input id="heroExamName" name="name" autocomplete="name" required placeholder="Nome completo">
+            <label for="heroExamPhone">Telefone / WhatsApp</label>
+            <input id="heroExamPhone" name="phone" type="tel" autocomplete="tel" required placeholder="(47) 99999-9999">
+            <label for="heroExamType">Tipo de exame</label>
+            <select id="heroExamType" name="examType" required>
+              <option value="Optométrico">Exame optométrico</option>
+              <option value="Oftalmológico">Consulta/exame oftalmológico</option>
+              <option value="Não sei qual preciso">Preciso de orientação</option>
+            </select>
+            <div class="hero-exam-form-row">
+              <div><label for="heroExamDate">Melhor data (opcional)</label><input id="heroExamDate" name="date" type="date"></div>
+              <div><label for="heroExamPeriod">Período</label><select id="heroExamPeriod" name="period"><option value="Qualquer período">Qualquer</option><option value="Manhã">Manhã</option><option value="Tarde">Tarde</option></select></div>
+            </div>
+            <button class="btn btn-gold" type="submit">Consultar valores e horários</button>
+            <p id="heroExamStatus" class="hero-exam-status" role="status" aria-live="polite"></p>
+          </form>
+          <small class="hero-exam-note">A solicitação será enviada pelo WhatsApp. A ótica confirmará valores, disponibilidade e agendamento após retorno.</small>
+        </aside>
       </div>
     </section>
 
