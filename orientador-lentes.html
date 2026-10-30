@@ -204,19 +204,55 @@ $("printBtn").addEventListener("click",()=>{
 });
 $("corridorWidth").addEventListener("input",update);$("progressivePreference").addEventListener("change",update);$("progressiveExperience").addEventListener("change",update);
 $("face").addEventListener("change",update);$("faceSize").addEventListener("change",update);$("style").addEventListener("change",update);["faceWidth","headWidth","currentFrameWidth","fitPreference"].forEach(id=>$(id).addEventListener("input",update));$("fitPreference").addEventListener("change",update);document.querySelectorAll('input[name="lens"],input[type="checkbox"]').forEach(el=>el.addEventListener("change",update));
-function collectQuoteSummary(){update();const read=id=>$(id)?.value?.trim()||"Não informado";const checked=name=>document.querySelector('input[name="'+name+'"]:checked')?.value||"Não informado";const checks=[["Antirreflexo","ar"],["Filtro azul","blue"],["Fotocromática","photo"],["Óculos solar separado","sun"]].map(([label,id])=>label+": "+($(id).checked?"Sim":"Não")).join("\n");return [
-"RESUMO DO ORIENTADOR MB ÓPTICA",
-"Tipo de lente: "+($( "rLens").textContent||"Não informado"),
-"Preferência de campo visual: "+($( "progressivePreference").selectedOptions[0]?.textContent||"Não informado"),
-"Corredor visual ilustrativo: "+($( "corridorLabel").textContent||"Não informado"),
-"Preferência de tratamento: "+checks,
-"Formato do rosto: "+($( "face").selectedOptions[0]?.textContent||"Não informado"),
-"Porte percebido do rosto: "+($( "faceSize").selectedOptions[0]?.textContent||"Não informado"),
-"Estilo de armação preferido: "+($( "style").selectedOptions[0]?.textContent||"Não informado"),
-"Medidas informadas: rosto "+read("faceWidth")+" mm; cabeça "+read("headWidth")+" mm; armação atual "+read("currentFrameWidth")+" mm",
-"Orientação de armação: "+($( "rMeasure").textContent||"Não informado"),
-"Orientação multifocal: "+($( "rOpening").textContent||"Não informado")
-].join("\n");}
+function collectQuoteSummary(){
+  update();
+  const read=id=>$(id)?.value?.trim()||"Não informado";
+  const selected=id=>$(id)?.selectedOptions?.[0]?.textContent?.trim()||"Não informado";
+  const result=id=>$(id)?.textContent?.trim()||"Não informado";
+  const yesNo=id=>$(id)?.checked?"Sim":"Não";
+  const prescription=[
+    ["Esférico", "sphOD", "sphOE"],
+    ["Cilíndrico", "cylOD", "cylOE"],
+    ["Adição (ADD)", "addOD", "addOE"]
+  ].map(([label,od,oe])=>"• "+label+": OD "+read(od)+" | OE "+read(oe)).join("\n");
+  const treatments=[
+    "• Antirreflexo: "+yesNo("ar"),
+    "• Filtro azul: "+yesNo("blue"),
+    "• Fotocromática: "+yesNo("photo"),
+    "• Óculos solar separado: "+yesNo("sun")
+  ].join("\n");
+  const sections=[
+    "👓 *MB ÓPTICA | ORIENTADOR DE LENTES*",
+    "Resumo das preferências para atendimento e orçamento",
+    "━━━━━━━━━━━━━━━━━━━━",
+    "📋 *1. DADOS DA RECEITA*",
+    prescription,
+    "Uso principal: "+selected("use"),
+    "Faixa de orçamento: "+selected("budget"),
+    "━━━━━━━━━━━━━━━━━━━━",
+    "🔎 *2. LENTES E TRATAMENTOS*",
+    "Tipo de lente: "+result("rLens"),
+    treatments,
+    "━━━━━━━━━━━━━━━━━━━━",
+    "🙂 *3. ROSTO, ARMAÇÃO E MEDIDAS*",
+    "Formato do rosto: "+selected("face"),
+    "Porte do rosto: "+selected("faceSize"),
+    "Estilo de armação: "+selected("style"),
+    "Largura do rosto: "+read("faceWidth")+" mm",
+    "Largura da cabeça: "+read("headWidth")+" mm",
+    "Largura da armação atual: "+read("currentFrameWidth")+" mm",
+    "Orientação de armação: "+result("rMeasure"),
+    "━━━━━━━━━━━━━━━━━━━━",
+    "👁️ *4. CAMPO VISUAL E ADAPTAÇÃO*",
+    "Prioridade visual: "+selected("progressivePreference"),
+    "Corredor visual ilustrativo: "+result("corridorLabel"),
+    "Orientação multifocal: "+result("rOpening"),
+    "━━━━━━━━━━━━━━━━━━━━",
+    "Solicito que a equipe da MB Óptica avalie estas preferências e me oriente sobre as opções adequadas.",
+    "Observação: este resumo é informativo e não substitui a conferência da receita, as medidas ópticas nem a orientação de um profissional habilitado."
+  ];
+  return sections.join("\n");
+}
 $("sendSummaryBtn").addEventListener("click",()=>{
   const status=$("summaryWhatsAppStatus");
   const destination="5547997052840";
