@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded",()=>{
  menuToggle?.addEventListener("click",()=>{const open=nav.classList.toggle("mobile-open");menuToggle.setAttribute("aria-expanded",String(open))});
  $$(".nav a").forEach(a=>a.addEventListener("click",()=>nav.classList.remove("mobile-open")));
  bindInterestButtons();
+ setupFloatingWhatsApp();
  $("#appointmentForm")?.addEventListener("submit",appointmentSubmit);
  $("#newsletterForm")?.addEventListener("submit",e=>{e.preventDefault();$("#newsletterMsg").textContent="Cadastro recebido. Em breve enviaremos novidades.";e.target.reset()});
  $$(".access-controls button").forEach(btn=>btn.addEventListener("click",()=>{const root=document.documentElement,current=parseFloat(getComputedStyle(root).getPropertyValue("--scale"))||1;if(btn.dataset.font==="up")root.style.setProperty("--scale",Math.min(current+.08,1.25));if(btn.dataset.font==="down")root.style.setProperty("--scale",Math.max(current-.08,.9));if(btn.dataset.font==="reset")root.style.setProperty("--scale",1)}));
