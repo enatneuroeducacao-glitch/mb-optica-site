@@ -63,7 +63,7 @@ function setupFloatingWhatsApp(){
 }
 
 function heroExamSubmit(e){
- e.preventDefault();
+ if(e)e.preventDefault();
  const status=$("#heroExamStatus");
  const name=$("#heroExamName").value.trim();
  const phone=$("#heroExamPhone").value.trim();
@@ -91,7 +91,7 @@ function heroExamSubmit(e){
  const opened=window.open(url,"_blank");
  if(opened){
   try{opened.opener=null}catch(_){}
-  if(status)status.textContent="Pedido preparado no WhatsApp. Revise e envie a mensagem para consultar valores e disponibilidade.";
+  if(status)status.textContent="O WhatsApp foi aberto com a solicitação preenchida. Toque em Enviar no WhatsApp para encaminhar o pedido à ótica; o agendamento será confirmado após a resposta da loja.";
  }else if(status){
   status.textContent="O navegador bloqueou a nova aba. ";
   const link=document.createElement("a");
@@ -100,6 +100,7 @@ function heroExamSubmit(e){
   link.className="appointment-fallback-link";
   status.appendChild(link);
  }
+ return false;
 }
 
 function appointmentSubmit(e){
