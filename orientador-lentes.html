@@ -206,87 +206,153 @@ $("corridorWidth").addEventListener("input",update);$("progressivePreference").a
 $("face").addEventListener("change",update);$("faceSize").addEventListener("change",update);$("style").addEventListener("change",update);["faceWidth","headWidth","currentFrameWidth","fitPreference"].forEach(id=>$(id).addEventListener("input",update));$("fitPreference").addEventListener("change",update);document.querySelectorAll('input[name="lens"],input[type="checkbox"]').forEach(el=>el.addEventListener("change",update));
 function collectQuoteSummary(){
   update();
-  const read=id=>$(id)?.value?.trim()||"Não informado";
-  const selected=id=>$(id)?.selectedOptions?.[0]?.textContent?.trim()||"Não informado";
-  const result=id=>$(id)?.textContent?.trim()||"Não informado";
-  const yesNo=id=>$(id)?.checked?"Sim":"Não";
-  const prescription=[
+  const read = id => {
+    const el = $(id);
+    if (!el) return "Não informado";
+    const value = (el.value || "").trim();
+    return value || "Não informado";
+  };
+  const selected = id => {
+    const el = $(id);
+    return el && el.selectedOptions && el.selectedOptions[0]
+      ? el.selectedOptions[0].textContent.trim()
+      : "Não informado";
+  };
+  const result = id => {
+    const el = $(id);
+    return el && el.textContent.trim() ? el.textContent.trim() : "Não informado";
+  };
+  const yesNo = id => $(id) && $(id).checked ? "Sim" : "Não";
+  const prescription = [
     ["Esférico", "sphOD", "sphOE"],
     ["Cilíndrico", "cylOD", "cylOE"],
     ["Adição (ADD)", "addOD", "addOE"]
-  ].map(([label,od,oe])=>"• "+label+": OD "+read(od)+" | OE "+read(oe)).join("\n");
-  const treatments=[
-    "• Antirreflexo: "+yesNo("ar"),
-    "• Filtro azul: "+yesNo("blue"),
-    "• Fotocromática: "+yesNo("photo"),
-    "• Óculos solar separado: "+yesNo("sun")
+  ].map(([label, od, oe]) =>
+    "• " + label + ": OD " + read(od) + " | OE " + read(oe)
+  ).join("\n");
+  const treatments = [
+    "• Antirreflexo: " + yesNo("ar"),
+    "• Filtro azul: " + yesNo("blue"),
+    "• Fotocromática: " + yesNo("photo"),
+    "• Óculos solar separado: " + yesNo("sun")
   ].join("\n");
-  const sections=[
+  return [
     "👓 *MB ÓPTICA | ORIENTADOR DE LENTES*",
     "Resumo das preferências para atendimento e orçamento",
     "━━━━━━━━━━━━━━━━━━━━",
     "📋 *1. DADOS DA RECEITA*",
     prescription,
-    "Uso principal: "+selected("use"),
-    "Faixa de orçamento: "+selected("budget"),
+    "Uso principal: " + selected("use"),
+    "Faixa de orçamento: " + selected("budget"),
     "━━━━━━━━━━━━━━━━━━━━",
     "🔎 *2. LENTES E TRATAMENTOS*",
-    "Tipo de lente: "+result("rLens"),
+    "Tipo de lente: " + result("rLens"),
     treatments,
     "━━━━━━━━━━━━━━━━━━━━",
     "🙂 *3. ROSTO, ARMAÇÃO E MEDIDAS*",
-    "Formato do rosto: "+selected("face"),
-    "Porte do rosto: "+selected("faceSize"),
-    "Estilo de armação: "+selected("style"),
-    "Largura do rosto: "+read("faceWidth")+" mm",
-    "Largura da cabeça: "+read("headWidth")+" mm",
-    "Largura da armação atual: "+read("currentFrameWidth")+" mm",
-    "Orientação de armação: "+result("rMeasure"),
+    "Formato do rosto: " + selected("face"),
+    "Porte do rosto: " + selected("faceSize"),
+    "Estilo de armação: " + selected("style"),
+    "Largura do rosto: " + read("faceWidth") + (read("faceWidth") === "Não informado" ? "" : " mm"),
+    "Largura da cabeça: " + read("headWidth") + (read("headWidth") === "Não informado" ? "" : " mm"),
+    "Largura da armação atual: " + read("currentFrameWidth") + (read("currentFrameWidth") === "Não informado" ? "" : " mm"),
+    "Orientação de armação: " + result("rMeasure"),
     "━━━━━━━━━━━━━━━━━━━━",
     "👁️ *4. CAMPO VISUAL E ADAPTAÇÃO*",
-    "Prioridade visual: "+selected("progressivePreference"),
-    "Corredor visual ilustrativo: "+result("corridorLabel"),
-    "Orientação multifocal: "+result("rOpening"),
+    "Prioridade visual: " + selected("progressivePreference"),
+    "Corredor visual ilustrativo: " + result("corridorLabel"),
+    "Orientação multifocal: " + result("rOpening"),
     "━━━━━━━━━━━━━━━━━━━━",
     "Solicito que a equipe da MB Óptica avalie estas preferências e me oriente sobre as opções adequadas.",
     "Observação: este resumo é informativo e não substitui a conferência da receita, as medidas ópticas nem a orientação de um profissional habilitado."
-  ];
-  return sections.join("\n");
+  ].join("\n");
 }
-$("sendSummaryBtn").addEventListener("click",()=>{
-  const status=$("summaryWhatsAppStatus");
-  const destination="5547997052840";
-  const authorizedContact=$("quoteConsent").checked;
-  const name=$("quoteName").value.trim();
-  const phone=$("quotePhone").value.trim();
-  const contactBlock=authorizedContact
-    ? (name ? "👤 *IDENTIFICAÇÃO*\\nNome: "+name+"\\n" : "") + (phone ? "WhatsApp para contato: "+phone+"\\n" : "")
-    : "";
-  const message=[
+
+function openWhatsAppMessage(message, statusElement, successMessage){
+  const url = "https://wa.me/5547997052840?text=" + encodeURIComponent(message);
+  const opened = window.open(url, "_blank");
+  if (opened) {
+    try { opened.opener = null; } catch (error) {}
+    if (statusElement) statusElement.textContent = successMessage;
+  } else {
+    if (statusElement) statusElement.textContent = "O navegador bloqueou a abertura do WhatsApp. Permita pop-ups para este site e tente novamente.";
+    window.location.href = url;
+  }
+}
+
+$("quoteBtn").addEventListener("click", () => {
+  const status = $("quoteStatus");
+  const name = $("quoteName").value.trim();
+  const phone = $("quotePhone").value.trim();
+  if (!$("quoteConsent").checked) {
+    status.textContent = "Para solicitar o orçamento pelo WhatsApp, marque primeiro “Autorizo o contato pelo WhatsApp”.";
+    $("quoteConsent").focus();
+    return;
+  }
+  if (!name || !phone) {
+    status.textContent = "Preencha seu nome e seu WhatsApp com DDD antes de continuar.";
+    (!name ? $("quoteName") : $("quotePhone")).focus();
+    return;
+  }
+  const promotion = $("promoConsent").checked
+    ? "Aceito receber informações sobre a promoção exclusiva."
+    : "Não solicitei mensagens promocionais.";
+  const message = [
     "Olá, equipe da *MB Óptica — Moni Becker*!",
     "",
-    "Gostaria de solicitar um orçamento com base nas minhas preferências registradas no Orientador de Lentes.",
+    "Gostaria de solicitar um orçamento gratuito com base nas minhas preferências do Orientador de Lentes.",
     "",
-    contactBlock ? contactBlock.trimEnd() : "",
+    "👤 *MEUS DADOS*",
+    "Nome: " + name,
+    "WhatsApp: " + phone,
+    "",
     collectQuoteSummary(),
     "",
     "📩 *SOLICITAÇÃO*",
-    "Por favor, avaliem as informações e me orientem sobre as opções adequadas e o orçamento.",
+    "Por favor, avaliem estas informações e me orientem sobre as opções adequadas e o orçamento.",
+    promotion,
     "",
     "ℹ️ Este resumo é informativo e não substitui a conferência da receita, as medidas ópticas nem a orientação de um profissional habilitado."
-  ].filter(Boolean).join("\\n");
-  const whatsappUrl="https://wa.me/"+destination+"?text="+encodeURIComponent(message);
-  const opened=window.open(whatsappUrl,"_blank","noopener");
-  if(opened){
-    status.textContent=authorizedContact
-      ? "Resumo organizado preparado no WhatsApp, incluindo os dados de contato autorizados. Confira a mensagem e toque em enviar."
-      : "Resumo organizado preparado no WhatsApp sem incluir nome ou telefone. Confira a mensagem e toque em enviar.";
-  }else{
-    status.textContent="O navegador bloqueou a abertura do WhatsApp. Permita pop-ups para este site e tente novamente.";
-    window.location.href=whatsappUrl;
-  }
+  ].join("\n");
+  openWhatsAppMessage(
+    message,
+    status,
+    "Mensagem organizada preparada no WhatsApp. Confira os dados e toque em enviar para concluir a solicitação."
+  );
 });
-extContent="Marque a autorização de contato para preparar a solicitação de orçamento.";return;}const destination="5547997052840";const summary=collectQuoteSummary();const promotion=$("promoConsent").checked?"Sim, quero receber a promoção exclusiva.":"Não autorizei mensagens promocionais.";const message="Olá, MB Óptica! Gostaria de solicitar um orçamento gratuito.\n\nNome: "+name+"\nMeu WhatsApp: "+phone+"\n\n"+summary+"\n\nPromoções: "+promotion+"\n\nPor favor, entrem em contato para confirmar o orçamento e a promoção disponível.";window.open("https://wa.me/"+destination+"?text="+encodeURIComponent(message),"_blank","noopener");$("quoteStatus").textContent="Mensagem preparada. Revise os dados no WhatsApp e toque em enviar para concluir a solicitação.";});
+
+$("sendSummaryBtn").addEventListener("click", () => {
+  const status = $("summaryWhatsAppStatus");
+  const authorizedContact = $("quoteConsent").checked;
+  const name = $("quoteName").value.trim();
+  const phone = $("quotePhone").value.trim();
+  const contactLines = [];
+  if (authorizedContact) {
+    if (name) contactLines.push("Nome para contato: " + name);
+    if (phone) contactLines.push("WhatsApp para contato: " + phone);
+  }
+  const message = [
+    "Olá, equipe da *MB Óptica — Moni Becker*!",
+    "",
+    "Encaminho meu resumo do Orientador de Lentes para avaliação e preparação de um orçamento.",
+    "",
+    contactLines.join("\n"),
+    "",
+    collectQuoteSummary(),
+    "",
+    "Por favor, avaliem as preferências e me orientem sobre as opções adequadas e o orçamento.",
+    "",
+    "ℹ️ Este resumo é informativo e não substitui a conferência da receita, as medidas ópticas nem a orientação de um profissional habilitado."
+  ].filter(Boolean).join("\n");
+  openWhatsAppMessage(
+    message,
+    status,
+    authorizedContact
+      ? "Resumo organizado preparado no WhatsApp, incluindo os dados de contato autorizados. Confira a mensagem e toque em enviar."
+      : "Resumo organizado preparado no WhatsApp sem incluir nome ou telefone. Confira a mensagem e toque em enviar."
+  );
+});
+
 $("year").textContent=new Date().getFullYear();update();
 </script>
 </body></html>
