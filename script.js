@@ -202,7 +202,67 @@ async function loadCmsContent(){
   }
   const servicesResult=await client.from("services").select("*").eq("active",true).order("sort_order").order("created_at",{ascending:false});const services=servicesResult.data||[];if(services.length){$(".service-list").innerHTML=services.map((x,i)=>'<div><span>'+String(i+1).padStart(2,"0")+'</span><div><h3>'+sanitizeCms(x.name||"")+'</h3><div class="service-desc">'+sanitizeCms(x.description||"")+'</div></div></div>').join("");if(services[0].image_url){const serviceImage=$("#serviceImage");if(serviceImage){serviceImage.src=services[0].image_url;serviceImage.alt=services[0].name||"Imagem dos serviços";serviceImage.style.backgroundImage="none"}}}
   const gallery=(await client.from("gallery").select("*").eq("active",true).order("sort_order").order("created_at",{ascending:false})).data||[];
-  if(gallery.length){$(".gallery-grid").innerHTML=gallery.map(x=>'<figure class="gallery-tile"><img src="'+escapeCms(x.image_url)+'" alt="'+escapeCms(x.alt_text||x.title||"Ótica Moni Becker")+'" loading="lazy"><figcaption>'+escapeCms(x.title||"ÓTICA MONI BECKER")+'</figcaption></figure>').join("")}
+  if(gallery.length){
+  const galleryGrid=$(".gallery-grid");
+  if(galleryGrid){
+   galleryGrid.innerHTML=gallery.map((x,i)=>'<figure class="gallery-tile"><button class="gallery-open" type="button" data-gallery-index="'+i+'" aria-label="Ampliar foto: '+escapeCms(x.title||x.alt_text||"Ótica Moni Becker")+'"><img src="'+escapeCms(x.image_url)+'" alt="'+escapeCms(x.alt_text||x.title||"Ótica Moni Becker")+'" loading="lazy"></button><figcaption>'+escapeCms(x.title||"ÓTICA MONI BECKER")+'</figcaption></figure>').join("");
+   initGalleryLightbox(gallery);
+  }
+ }
   const now=new Date();const offersResult=await client.from("offers").select("*").eq("active",true).order("sort_order").order("created_at",{ascending:false});const offers=(offersResult.data||[]).filter(o=>(!o.starts_at||new Date(o.starts_at)<=now)&&(!o.ends_at||new Date(o.ends_at)>=now));if(offers.length){const o=offers[0];setTitle("#promocoes h2",o.title);setText("#promocoes>div>p:last-child",o.description||s.offer_text);if(o.price_text)setText("#promocoes strong",o.price_text);if(o.image_url){const offer=document.querySelector("#promocoes");if(offer){offer.style.backgroundImage="linear-gradient(90deg,rgba(214,189,148,.96) 0%,rgba(214,189,148,.88) 55%,rgba(214,189,148,.55) 100%),url('"+escapeCss(o.image_url)+"')";offer.style.backgroundSize="cover";offer.style.backgroundPosition="center"}}}
  }catch(error){console.warn("CMS MB.Óptica:",error)}
+}
+
+function initGalleryLightbox(items){
+ const grid=$(".gallery-grid");
+ if(!grid)return;
+ document.getElementById("galleryLightbox")?.remove();
+ const modal=document.createElement("div");
+ modal.id="galleryLightbox";
+ modal.className="gallery-lightbox";
+ modal.hidden=true;
+ modal.setAttribute("role","dialog");
+ modal.setAttribute("aria-modal","true");
+ modal.setAttribute("aria-label","Visualização ampliada da galeria");
+ modal.innerHTML='<button class="gallery-lightbox-close" type="button" aria-label="Fechar foto ampliada">×</button><button class="gallery-lightbox-prev" type="button" aria-label="Foto anterior">‹</button><figure class="gallery-lightbox-figure"><img class="gallery-lightbox-image" alt=""><figcaption class="gallery-lightbox-caption"></figcaption></figure><button class="gallery-lightbox-next" type="button" aria-label="Próxima foto">›</button><p class="gallery-lightbox-count" aria-live="polite"></p>';
+ document.body.appendChild(modal);
+ let current=0,previousFocus=null;
+ const image=modal.querySelector(".gallery-lightbox-image");
+ const caption=modal.querySelector(".gallery-lightbox-caption");
+ const count=modal.querySelector(".gallery-lightbox-count");
+ const show=index=>{
+  current=(index+items.length)%items.length;
+  const item=items[current];
+  image.src=item.image_url;
+  image.alt=item.alt_text||item.title||"Foto da Ótica Moni Becker";
+  caption.textContent=item.title||"ÓTICA MONI BECKER";
+  count.textContent=(current+1)+" / "+items.length;
+ };
+ const close=()=>{
+  modal.hidden=true;
+  document.body.classList.remove("gallery-lightbox-open");
+  previousFocus?.focus();
+ };
+ const open=index=>{
+  previousFocus=document.activeElement;
+  show(index);
+  modal.hidden=false;
+  document.body.classList.add("gallery-lightbox-open");
+  modal.querySelector(".gallery-lightbox-close").focus();
+ };
+ grid.addEventListener("click",event=>{
+  const button=event.target.closest(".gallery-open");
+  if(!button)return;
+  open(Number(button.dataset.galleryIndex)||0);
+ });
+ modal.querySelector(".gallery-lightbox-close").addEventListener("click",close);
+ modal.querySelector(".gallery-lightbox-prev").addEventListener("click",()=>show(current-1));
+ modal.querySelector(".gallery-lightbox-next").addEventListener("click",()=>show(current+1));
+ modal.addEventListener("click",event=>{if(event.target===modal)close()});
+ document.addEventListener("keydown",event=>{
+  if(modal.hidden)return;
+  if(event.key==="Escape")close();
+  if(event.key==="ArrowLeft")show(current-1);
+  if(event.key==="ArrowRight")show(current+1);
+ });
 }
