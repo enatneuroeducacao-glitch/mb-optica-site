@@ -160,7 +160,7 @@ async function loadAll(){
   bindImageEditor();
   bindColorSync();
  }catch(e){console.error(e)}
- await Promise.all([loadStats(),loadList("products"),loadList("services"),loadList("gallery"),loadList("offers"),loadCollectionOptions(),loadCollections(),loadOrganizerProducts()]);
+ await Promise.all([loadStats(),loadList("products"),loadList("services"),loadList("gallery"),loadList("offers"),loadCollectionOptions(),loadCollections()]);
 }
 function initFormRichEditors(){
  [
@@ -379,102 +379,48 @@ async function createCollection(){
  }catch(e){alert(e.message||"Não foi possível criar a coleção.")}
 }
 
-const audienceLabels={feminino:"Feminino",masculino:"Masculino",infantil:"Infantil",unissex:"Unissex","melhor-idade":"Melhor idade"};
-const typeLabels={grau:"Grau",solar:"Solar"};
-let organizerProducts=[];
-function organizerOptions(items,value,labelFn){return (Array.isArray(items)?items:[]).map(x=>'<option value="'+esc(x.value)+'"'+(x.value===value?' selected':'')+'>'+esc(labelFn?labelFn(x):x.label)+'</option>').join("")}
-async function loadOrganizerProducts(){
- const box=$("#organizerTable");if(!box)return;
- let organizerStage="início";
+
+async function transferProductAlbum(id,select){
+ const category=select?.value||"";
+ if(!category)return showAdminNotice("Escolha o álbum de destino.","error");
+ const productName=select.closest(".album-product-card")?.querySelector(".album-product-info>strong")?.textContent||"este modelo";
+ const targetName=select.selectedOptions?.[0]?.textContent||category;
+ if(!confirm("Transferir "+productName+" para o álbum "+targetName+"?\nFoto, preço, descrição e estoque serão preservados."))return;
+ const button=select.parentElement.querySelector("button");
+ if(button){button.disabled=true;button.textContent="Transferindo..."}
  try{
-  organizerStage="consulta de produtos e coleções";
-  const [products,collections]=await Promise.all([
-   db.from("products").select("id,name,category,image_url,brand,model,audience,product_type,active").order("name"),
-   getCollections()
-  ]);
-  if(products.error)throw products.error;
-  organizerProducts=Array.isArray(products.data)?products.data.filter(Boolean):[];
-  const safeCollections=Array.isArray(collections)?collections.filter(Boolean):[];
-  window.__mbCollectionsCache=safeCollections;
-  organizerStage="montagem dos filtros";
-  const collectionOptions=safeCollections.map(c=>({value:c.slug||"",label:c.name||c.slug||"Sem nome"}));
-  const filter=$("#organizerCollectionFilter"),bulk=$("#organizerBulkCollection");
-  if(filter){const selected=filter.value;filter.innerHTML='<option value="">Todas</option>'+organizerOptions(collectionOptions);if(safeCollections.some(c=>c.slug===selected))filter.value=selected}
-  if(bulk){const selected=bulk.value;bulk.innerHTML='<option value="">Manter atual</option>'+organizerOptions(collectionOptions);if(safeCollections.some(c=>c.slug===selected))bulk.value=selected}
-  organizerStage="renderização dos modelos";
-  renderOrganizerProducts();
-  ["organizerSearch","organizerAudienceFilter","organizerTypeFilter","organizerCollectionFilter"].forEach(id=>{
-   const el=$("#"+id);if(el&&!el.dataset.bound){el.dataset.bound="1";el.addEventListener(id==="organizerSearch"?"input":"change",renderOrganizerProducts)}
-  });
-  const apply=$("#organizerApplyBulk");
-  if(apply&&!apply.dataset.bound){apply.dataset.bound="1";apply.addEventListener("click",applyOrganizerBulk)}
- }catch(err){console.error("Organizador de modelos:",organizerStage,err);box.innerHTML='<div class="empty">Falha em '+esc(organizerStage)+': '+esc(err?.message||"Não foi possível carregar os modelos.")+'</div>'}
-}
-function renderOrganizerProducts(){
- const box=$("#organizerTable");if(!box)return;
- const q=($("#organizerSearch")?.value||"").trim().toLowerCase();
- const audience=$("#organizerAudienceFilter")?.value||"",type=$("#organizerTypeFilter")?.value||"",category=$("#organizerCollectionFilter")?.value||"";
- const collectionsCache=window.__mbCollectionsCache||[];
- const rows=(Array.isArray(organizerProducts)?organizerProducts:[]).filter(p=>{
-  if(!p)return false;
-  const hay=[p.name,p.brand,p.model,p.category].map(v=>v??"").join(" ").toLowerCase();
-  return (!q||hay.includes(q))&&(!category||p.category===category)&&(!audience||(audience==="sem"?!p.audience:p.audience===audience))&&(!type||(type==="sem"?!p.product_type:p.product_type===type));
- });
- if(!rows.length){box.innerHTML='<div class="empty">Nenhum modelo encontrado com esses filtros.</div>';updateOrganizerSelectedCount();return}
- const audiences=Object.entries(audienceLabels).map(([value,label])=>({value,label}));
- const types=Object.entries(typeLabels).map(([value,label])=>({value,label}));
- const collections=collectionsCache.length?collectionsCache:[];
- box.innerHTML='<div class="table-wrap"><table class="table organizer-table"><thead><tr><th><input type="checkbox" id="organizerSelectVisible" aria-label="Selecionar modelos visíveis"></th><th>Modelo</th><th>Coleção</th><th>Público</th><th>Tipo</th><th>Ação</th></tr></thead><tbody>'+
- rows.map(p=>'<tr data-organizer-id="'+esc(p.id)+'"><td><input type="checkbox" class="organizer-row-check" value="'+esc(p.id)+'" aria-label="Selecionar '+esc(p.name)+'"></td><td><div class="organizer-product">'+(p.image_url?'<img src="'+esc(p.image_url)+'" alt="">':'<span class="organizer-no-image">MB</span>')+'<div><strong>'+esc(p.name||"Sem nome")+'</strong><small>'+esc([p.brand,p.model].filter(Boolean).join(" • ")||"")+'</small></div></div></td><td><select class="organizer-row-category" aria-label="Coleção de '+esc(p.name)+'">'+organizerOptions(collections.map(c=>({value:c.slug,label:c.name})),p.category||"")+(p.category&&!collections.some(c=>c.slug===p.category)?'<option value="'+esc(p.category)+'" selected>'+esc(p.category)+' (categoria atual)</option>':"")+'</select></td><td><select class="organizer-row-audience" aria-label="Público de '+esc(p.name)+'"><option value="">Não classificado</option>'+organizerOptions(audiences,p.audience)+'</select></td><td><select class="organizer-row-type" aria-label="Tipo de '+esc(p.name)+'"><option value="">Não classificado</option>'+organizerOptions(types,p.product_type)+'</select></td><td><button type="button" class="btn small primary organizer-save-row">Salvar</button></td></tr>').join("")+
- '</tbody></table></div>';
- const selectVisible=$("#organizerSelectVisible");
- selectVisible?.addEventListener("change",()=>{$$(".organizer-row-check").forEach(c=>c.checked=selectVisible.checked);updateOrganizerSelectedCount()});
- $$(".organizer-row-check").forEach(c=>c.addEventListener("change",updateOrganizerSelectedCount));
- $$(".organizer-save-row").forEach(b=>b.addEventListener("click",async()=>{
-  const tr=b.closest("tr"),id=tr?.dataset.organizerId;if(!id)return;
-  const payload={category:tr.querySelector(".organizer-row-category").value,audience:tr.querySelector(".organizer-row-audience").value||null,product_type:tr.querySelector(".organizer-row-type").value||null,updated_at:new Date().toISOString()};
-  b.disabled=true;b.textContent="Salvando...";
-  try{const r=await db.from("products").update(payload).eq("id",id);if(r.error)throw r.error;showAdminNotice("Classificação do modelo atualizada.");await loadOrganizerProducts();await loadCollections();await loadList("products")}
-  catch(e){showAdminNotice(e.message||"Não foi possível salvar a classificação.","error");b.disabled=false;b.textContent="Salvar"}
- }));
- updateOrganizerSelectedCount();
-}
-function updateOrganizerSelectedCount(){
- const n=$(".organizer-row-check:checked").length,el=$("#organizerSelectedCount");
- if(el)el.textContent=n+" selecionado"+(n===1?"":"s");
-}
-async function applyOrganizerBulk(){
- const ids=Array.from($$(".organizer-row-check:checked")).map(c=>c.value);
- if(!ids.length){showAdminNotice("Selecione pelo menos um modelo.","error");return}
- const audience=$("#organizerBulkAudience").value,type=$("#organizerBulkType").value,category=$("#organizerBulkCollection").value;
- const changes={updated_at:new Date().toISOString()};
- if(audience)changes.audience=audience;
- if(type)changes.product_type=type;
- if(category)changes.category=category;
- if(Object.keys(changes).length===1){showAdminNotice("Escolha ao menos uma classificação ou coleção para alterar.","error");return}
- const summary=[audience?("público: "+audienceLabels[audience]):"",type?("tipo: "+typeLabels[type]):"",category?("coleção: "+category):""].filter(Boolean).join(", ");
- if(!confirm("Aplicar "+summary+" a "+ids.length+" modelo(s)?"))return;
- const btn=$("#organizerApplyBulk");btn.disabled=true;btn.textContent="Aplicando...";
- try{
-  const results=await Promise.all(ids.map(id=>db.from("products").update(changes).eq("id",id)));
-  const failed=results.find(r=>r.error);if(failed?.error)throw failed.error;
-  $("#organizerBulkAudience").value="";$("#organizerBulkType").value="";$("#organizerBulkCollection").value="";
-  showAdminNotice("Classificação aplicada a "+ids.length+" modelo(s).");
-  await Promise.all([loadOrganizerProducts(),loadCollections(),loadList("products")]);
- }catch(e){showAdminNotice(e.message||"Não foi possível aplicar as alterações.","error")}
- finally{btn.disabled=false;btn.textContent="Aplicar aos selecionados"}
+  const r=await db.from("products").update({category,updated_at:new Date().toISOString()}).eq("id",id);
+  if(r.error)throw r.error;
+  showAdminNotice("Modelo transferido para "+targetName+".");
+  await Promise.all([loadCollections(),loadList("products"),loadStats()]);
+ }catch(e){
+  showAdminNotice(e.message||"Não foi possível transferir o modelo.","error");
+  if(button){button.disabled=false;button.textContent="Transferir"}
+ }
 }
 async function loadCollections(){
  const el=$("#collectionsTable");if(!el)return;
  try{
   const collections=await getCollections();
-  const r=await db.from("products").select("id,name,category,image_url,active").order("sort_order").order("created_at",{ascending:false});
+  const r=await db.from("products").select("id,name,category,image_url,active,price,audience,product_type").order("sort_order").order("created_at",{ascending:false});
   if(r.error)throw r.error;
   const products=(r.data||[]).filter(x=>x.active!==false);
   el.innerHTML=collections.map(col=>{
    const items=products.filter(x=>(x.category||"outros")===col.slug);
-   return '<article class="collection-admin-card"><div class="collection-admin-head"><div><span class="eyebrow">'+esc(col.name)+'</span><h3>'+items.length+' modelo'+(items.length===1?"":"s")+'</h3></div><button class="btn small" onclick="showSection(&quot;collection&quot;)">Adicionar modelo</button></div><div class="collection-admin-thumbs">'+(items.length?items.slice(0,8).map(x=>x.image_url?'<img src="'+esc(x.image_url)+'" alt="'+esc(x.name||col.name)+'">':'<div class="collection-thumb-empty">MB</div>').join(""):'<div class="empty">Nenhum modelo cadastrado nesta coleção.</div>')+'</div></article>';
+   const productCards=items.length?items.map(x=>{
+    const image=x.image_url?'<img class="album-product-image" src="'+esc(x.image_url)+'" alt="'+esc(x.name||"Óculos")+'">':'<div class="album-product-no-image">MB</div>';
+    const destinations=collections.filter(c=>c.slug!==col.slug).map(c=>'<option value="'+esc(c.slug)+'">'+esc(c.name)+'</option>').join("");
+    const transfer=destinations?'<div class="album-transfer"><select aria-label="Transferir modelo para outro álbum"><option value="">Transferir para...</option>'+destinations+'</select><button type="button" class="btn small album-transfer-btn">Transferir</button></div>':'';
+    return '<article class="album-product-card" data-product-id="'+esc(x.id)+'">'+image+'<div class="album-product-info"><strong>'+esc(x.name||"Sem nome")+'</strong><small>'+esc([x.audience,x.product_type].filter(Boolean).join(" • ")||"Classificação não informada")+'</small><div class="album-product-actions"><button type="button" class="btn small album-edit-btn">Editar</button><button type="button" class="btn danger small album-delete-btn">Excluir</button></div>'+transfer+'</div></article>';
+   }).join(""):'<div class="empty album-empty">Nenhum modelo cadastrado neste álbum.</div>';
+   return '<article class="collection-admin-card"><div class="collection-admin-head"><div><span class="eyebrow">'+esc(col.name)+'</span><h3>'+items.length+' modelo'+(items.length===1?"":"s")+'</h3></div><button class="btn small" onclick="showSection(&quot;collection&quot;)">Adicionar modelo</button></div><div class="album-products-grid">'+productCards+'</div></article>';
   }).join("");
+  el.querySelectorAll(".album-product-card").forEach(card=>{
+   const id=card.dataset.productId;
+   card.querySelector(".album-edit-btn")?.addEventListener("click",()=>editProductRow(id));
+   card.querySelector(".album-delete-btn")?.addEventListener("click",()=>removeRow("products",id));
+   card.querySelector(".album-transfer-btn")?.addEventListener("click",e=>transferProductAlbum(id,card.querySelector(".album-transfer select")));
+  });
  }catch(e){el.innerHTML='<div class="empty">'+esc(e.message||"Não foi possível carregar as coleções.")+'</div>'}
 }
 async function loadList(table){
@@ -576,7 +522,7 @@ async function editProductRow(id){
   if(payload.price!==null&&(!Number.isFinite(payload.price)||payload.price<0)){status.textContent="Informe um preço válido.";return}
   if(!linked){const stock=Number(stockInput.value);if(!Number.isInteger(stock)||stock<0){status.textContent="Informe uma quantidade inteira de estoque igual ou superior a zero.";return}payload.stock=stock;payload.stock_controlled=true}
   submit.disabled=true;status.textContent="Salvando...";
-  try{const update=await db.from("products").update(payload).eq("id",id);if(update.error)throw update.error;close();await loadList("products");await loadCollections();await loadOrganizerProducts();await loadStats();showAdminNotice("Produto atualizado. As opções de publicação foram salvas.");}
+  try{const update=await db.from("products").update(payload).eq("id",id);if(update.error)throw update.error;close();await loadList("products");await loadCollections();await loadStats();showAdminNotice("Produto atualizado. As opções de publicação foram salvas.");}
   catch(err){status.textContent=err.message||"Não foi possível salvar.";submit.disabled=false}
  });
 }
@@ -591,7 +537,7 @@ async function editRow(table,id){
 async function removeRow(table,id){if(!confirm("Excluir este registro?"))return;const r=await db.from(table).delete().eq("id",id);if(r.error){alert(r.error.message);return}await loadList(table);await loadStats();if(table==="products")await loadCollections()}
 
 $("#createCollectionBtn")?.addEventListener("click",createCollection);
-$("#productForm").addEventListener("submit",async e=>{e.preventDefault();try{const stock=Number($("#pStock").value);if(!Number.isInteger(stock)||stock<0){alert("Informe uma quantidade inteira igual ou superior a zero.");$("#pStock").focus();return}const image=await upload(await prepareUpload("pImage"));const description=$("#pDescriptionRich")?.value||$("#pDescription").value;const r=await db.from("products").insert({name:$("#pName").value,category:$("#pCategory").value,audience:$("#pAudience").value||null,product_type:$("#pType").value||null,price:$("#pPrice").value||null,description,image_url:image,active:true,stock_controlled:true,stock});if(r.error)throw r.error;editedImages.delete("pImage");e.target.reset();await loadList("products");await loadOrganizerProducts();await loadCollections();await loadStats();alert("Produto adicionado.")}catch(x){alert(x.message)}});
+$("#productForm").addEventListener("submit",async e=>{e.preventDefault();try{const stock=Number($("#pStock").value);if(!Number.isInteger(stock)||stock<0){alert("Informe uma quantidade inteira igual ou superior a zero.");$("#pStock").focus();return}const image=await upload(await prepareUpload("pImage"));const description=$("#pDescriptionRich")?.value||$("#pDescription").value;const r=await db.from("products").insert({name:$("#pName").value,category:$("#pCategory").value,audience:$("#pAudience").value||null,product_type:$("#pType").value||null,price:$("#pPrice").value||null,description,image_url:image,active:true,stock_controlled:true,stock});if(r.error)throw r.error;editedImages.delete("pImage");e.target.reset();await loadList("products");await loadCollections();await loadStats();alert("Produto adicionado.")}catch(x){alert(x.message)}});
 $("#serviceForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload(await prepareUpload("sImage"));const description=$("#sDescriptionRich")?.value||$("#sDescription").value;const r=await db.from("services").insert({name:$("#sName").value,description,image_url:image});if(r.error)throw r.error;editedImages.delete("sImage");e.target.reset();await loadList("services");await loadStats();alert("Serviço adicionado.")}catch(x){alert(x.message)}});
 $("#galleryForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload(await prepareUpload("gImage"));const r=await db.from("gallery").insert({title:$("#gTitle").value,alt_text:$("#gAlt").value,image_url:image});if(r.error)throw r.error;editedImages.delete("gImage");e.target.reset();await loadList("gallery");await loadStats();alert("Foto adicionada.")}catch(x){alert(x.message)}});
 $("#offerForm").addEventListener("submit",async e=>{e.preventDefault();try{const image=await upload(await prepareUpload("oImage"));const description=$("#oDescriptionRich")?.value||$("#oDescription").value;const r=await db.from("offers").insert({title:$("#oTitle").value,price_text:$("#oPrice").value,description,image_url:image,starts_at:$("#oStart").value||null,ends_at:$("#oEnd").value||null});if(r.error)throw r.error;editedImages.delete("oImage");e.target.reset();await loadList("offers");await loadStats();alert("Oferta adicionada.")}catch(x){alert(x.message)}});
