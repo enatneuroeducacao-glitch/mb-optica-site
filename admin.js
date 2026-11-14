@@ -422,8 +422,8 @@ function renderOrganizerProducts(){
  rows.map(p=>'<tr data-organizer-id="'+esc(p.id)+'"><td><input type="checkbox" class="organizer-row-check" value="'+esc(p.id)+'" aria-label="Selecionar '+esc(p.name)+'"></td><td><div class="organizer-product">'+(p.image_url?'<img src="'+esc(p.image_url)+'" alt="">':'<span class="organizer-no-image">MB</span>')+'<div><strong>'+esc(p.name||"Sem nome")+'</strong><small>'+esc([p.brand,p.model].filter(Boolean).join(" • ")||"")+'</small></div></div></td><td><select class="organizer-row-category" aria-label="Coleção de '+esc(p.name)+'">'+organizerOptions(collections.map(c=>({value:c.slug,label:c.name})),p.category||"")+(p.category&&!collections.some(c=>c.slug===p.category)?'<option value="'+esc(p.category)+'" selected>'+esc(p.category)+' (categoria atual)</option>':"")+'</select></td><td><select class="organizer-row-audience" aria-label="Público de '+esc(p.name)+'"><option value="">Não classificado</option>'+organizerOptions(audiences,p.audience)+'</select></td><td><select class="organizer-row-type" aria-label="Tipo de '+esc(p.name)+'"><option value="">Não classificado</option>'+organizerOptions(types,p.product_type)+'</select></td><td><button type="button" class="btn small primary organizer-save-row">Salvar</button></td></tr>').join("")+
  '</tbody></table></div>';
  const selectVisible=$("#organizerSelectVisible");
- selectVisible?.addEventListener("change",()=>{$$$(".organizer-row-check").forEach(c=>c.checked=selectVisible.checked);updateOrganizerSelectedCount()});
- $$$(".organizer-row-check").forEach(c=>c.addEventListener("change",updateOrganizerSelectedCount));
+ selectVisible?.addEventListener("change",()=>{$$(".organizer-row-check").forEach(c=>c.checked=selectVisible.checked);updateOrganizerSelectedCount()});
+ $$(".organizer-row-check").forEach(c=>c.addEventListener("change",updateOrganizerSelectedCount));
  $$(".organizer-save-row").forEach(b=>b.addEventListener("click",async()=>{
   const tr=b.closest("tr"),id=tr?.dataset.organizerId;if(!id)return;
   const payload={category:tr.querySelector(".organizer-row-category").value,audience:tr.querySelector(".organizer-row-audience").value||null,product_type:tr.querySelector(".organizer-row-type").value||null,updated_at:new Date().toISOString()};
@@ -438,7 +438,7 @@ function updateOrganizerSelectedCount(){
  if(el)el.textContent=n+" selecionado"+(n===1?"":"s");
 }
 async function applyOrganizerBulk(){
- const ids=Array.from($(".organizer-row-check:checked")).map(c=>c.value);
+ const ids=Array.from($$(".organizer-row-check:checked")).map(c=>c.value);
  if(!ids.length){showAdminNotice("Selecione pelo menos um modelo.","error");return}
  const audience=$("#organizerBulkAudience").value,type=$("#organizerBulkType").value,category=$("#organizerBulkCollection").value;
  const changes={updated_at:new Date().toISOString()};
