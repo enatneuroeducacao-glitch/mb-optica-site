@@ -411,13 +411,15 @@ async function loadCollections(){
     const image=x.image_url?'<img class="album-product-image" src="'+esc(x.image_url)+'" alt="'+esc(x.name||"Óculos")+'">':'<div class="album-product-no-image">MB</div>';
     const destinations=collections.filter(c=>c.slug!==col.slug).map(c=>'<option value="'+esc(c.slug)+'">'+esc(c.name)+'</option>').join("");
     const transfer=destinations?'<div class="album-transfer"><select aria-label="Transferir modelo para outro álbum"><option value="">Transferir para...</option>'+destinations+'</select><button type="button" class="btn small album-transfer-btn">Transferir</button></div>':'';
-    return '<article class="album-product-card" data-product-id="'+esc(x.id)+'">'+image+'<div class="album-product-info"><strong>'+esc(x.name||"Sem nome")+'</strong><small>'+esc([x.audience,x.product_type].filter(Boolean).join(" • ")||"Classificação não informada")+'</small><div class="album-product-actions"><button type="button" class="btn small album-edit-btn">Editar</button><button type="button" class="btn danger small album-delete-btn">Excluir</button></div>'+transfer+'</div></article>';
+    return '<article class="album-product-card" data-product-id="'+esc(x.id)+'">'+image+'<div class="album-product-info"><strong>'+esc(x.name||"Sem nome")+'</strong><small>'+esc([x.audience,x.product_type].filter(Boolean).join(" • ")||"Classificação não informada")+'</small><div class="album-product-actions"><button type="button" class="btn small album-edit-btn">Editar</button><button type="button" class="btn small album-edit-photo-btn">Editar foto</button><button type="button" class="btn small album-replace-photo-btn">Trocar foto</button><button type="button" class="btn danger small album-delete-btn">Excluir</button></div>'+transfer+'</div></article>';
    }).join(""):'<div class="empty album-empty">Nenhum modelo cadastrado neste álbum.</div>';
    return '<article class="collection-admin-card"><div class="collection-admin-head"><div><span class="eyebrow">'+esc(col.name)+'</span><h3>'+items.length+' modelo'+(items.length===1?"":"s")+'</h3></div><button class="btn small" onclick="showSection(&quot;collection&quot;)">Adicionar modelo</button></div><div class="album-products-grid">'+productCards+'</div></article>';
   }).join("");
   el.querySelectorAll(".album-product-card").forEach(card=>{
    const id=card.dataset.productId;
    card.querySelector(".album-edit-btn")?.addEventListener("click",()=>editProductRow(id));
+   card.querySelector(".album-edit-photo-btn")?.addEventListener("click",()=>editExistingImage("products",id));
+   card.querySelector(".album-replace-photo-btn")?.addEventListener("click",()=>replaceImage("products",id));
    card.querySelector(".album-delete-btn")?.addEventListener("click",()=>removeRow("products",id));
    card.querySelector(".album-transfer-btn")?.addEventListener("click",e=>transferProductAlbum(id,card.querySelector(".album-transfer select")));
   });
@@ -451,6 +453,7 @@ async function editExistingImage(table,id){
   if(u.error)throw u.error;
   editedImages.delete(inputId);
   await loadList(table);
+  if(table==="products")await loadCollections();
   alert("Foto editada e atualizada no site.");
  }catch(e){
   if(e.message!=="Edição cancelada.")alert(e.message||"Não foi possível editar a foto.");
@@ -471,6 +474,7 @@ async function replaceImage(table,id){
    if(r.error)throw r.error;
    editedImages.delete(inputId);
    await loadList(table);
+   if(table==="products")await loadCollections();
    alert("Foto atualizada após o editor.");
   }catch(e){if(e.message!=="Edição cancelada.")alert(e.message||"Não foi possível trocar a foto.")}
  };
