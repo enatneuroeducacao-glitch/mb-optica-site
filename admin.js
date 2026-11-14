@@ -521,7 +521,7 @@ async function loadList(table){
  rows.map(x=>'<tr><td>'+(x.image_url?'<img class="thumb" src="'+esc(x.image_url)+'">':"—")+'</td><td><strong>'+esc(x.name||x.title||"")+'</strong><br><small>'+esc(x.description||x.price_text||x.category||"")+'</small></td><td><button class="pill '+(x.active===false?"off":"on")+'" onclick="toggleActive(\''+table+'\',\''+x.id+'\','+(x.active===false?'true':'false')+')">'+(x.active===false?"Oculto":"Publicado")+'</button></td><td><button class="btn small" onclick="editRow(\''+table+'\',\''+x.id+'\')">Editar</button> '+(x.image_url?'<button class="btn small" onclick="editExistingImage(\''+table+'\',\''+x.id+'\')">Editar foto</button> <button class="btn small" onclick="replaceImage(\''+table+'\',\''+x.id+'\')">Trocar foto</button>':"")+' <button class="btn danger small" onclick="removeRow(\''+table+'\',\''+x.id+'\')">Excluir</button></td></tr>').join("")+
  "</tbody></table></div>"
 }
-async function toggleActive(table,id,value){const r=await db.from(table).update({active:value,updated_at:new Date().toISOString()}).eq("id",id);if(r.error){alert(r.error.message);return}loadList(table)}
+async function toggleActive(table,id,value){const changes=table==="gallery"?{active:value}:{active:value,updated_at:new Date().toISOString()};const r=await db.from(table).update(changes).eq("id",id);if(r.error){alert(r.error.message);return}loadList(table)}
 async function editExistingImage(table,id){
  const r=await db.from(table).select("image_url").eq("id",id).single();
  if(r.error)return alert(r.error.message);
@@ -537,7 +537,7 @@ async function editExistingImage(table,id){
   const edited=editedImages.get(inputId);
   if(!edited)return;
   const url=await upload(edited);
-  const u=await db.from(table).update({image_url:url,updated_at:new Date().toISOString()}).eq("id",id);
+  const changes=table==="gallery"?{image_url:url}:{image_url:url,updated_at:new Date().toISOString()};const u=await db.from(table).update(changes).eq("id",id);
   if(u.error)throw u.error;
   editedImages.delete(inputId);
   await loadList(table);
@@ -558,7 +558,7 @@ async function replaceImage(table,id){
    await openImageEditor(file,inputId);
    const edited=editedImages.get(inputId);if(!edited)return;
    const url=await upload(edited);
-   const r=await db.from(table).update({image_url:url,updated_at:new Date().toISOString()}).eq("id",id);
+   const changes=table==="gallery"?{image_url:url}:{image_url:url,updated_at:new Date().toISOString()};const r=await db.from(table).update(changes).eq("id",id);
    if(r.error)throw r.error;
    editedImages.delete(inputId);
    await loadList(table);
