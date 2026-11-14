@@ -382,26 +382,68 @@ async function loadCollectionOptions(){
   if(collections.some(x=>x.slug===current))select.value=current;
  }catch(e){console.error(e)}
 }
+function openCollectionCreator(existing){
+ return new Promise(resolve=>{
+  const existingNames=existing.map(x=>x.name);
+  const existingSlugs=new Set(existing.map(x=>x.slug));
+  const suggestions=["Feminino","Masculino","Solar","Infantil","Melhor idade","Unissex","Esportivo","Premium","Vintage","Clip-on"];
+  const available=suggestions.filter(name=>{
+   const slug=name.normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
+   return !existingSlugs.has(slug)&&!existingNames.some(x=>x.trim().toLowerCase()===name.toLowerCase());
+  });
+  const overlay=document.createElement("div");
+  overlay.className="collection-create-overlay";
+  overlay.innerHTML='<section class="collection-create-dialog" role="dialog" aria-modal="true" aria-labelledby="collectionCreateTitle"><div class="collection-create-top"><span class="collection-create-icon" aria-hidden="true">＋</span><button type="button" class="collection-create-close" aria-label="Fechar">×</button></div><p class="eyebrow">ORGANIZAÇÃO DA LOJA</p><h2 id="collectionCreateTitle">Nova coleção</h2><p class="collection-create-intro">Crie um álbum para agrupar seus modelos. Escolha uma sugestão ou digite um nome personalizado.</p><form class="collection-create-form"><label for="newCollectionName">Nome da coleção</label><input id="newCollectionName" name="name" type="text" maxlength="50" placeholder="Ex.: Unissex, Esportivo, Premium" autocomplete="off" required><p class="collection-create-error" role="alert" hidden></p><div class="collection-create-section"><span>SUGESTÕES</span><div class="collection-create-suggestions"></div></div><div class="collection-create-section collection-create-existing"><span>COLEÇÕES JÁ CADASTRADAS</span><div class="collection-create-existing-list"></div></div><div class="collection-create-actions"><button type="button" class="btn secondary" data-cancel>Cancelar</button><button type="submit" class="btn primary">Criar coleção</button></div></form></section>';
+  const input=overlay.querySelector("#newCollectionName");
+  const form=overlay.querySelector("form");
+  const suggestionsBox=overlay.querySelector(".collection-create-suggestions");
+  const existingBox=overlay.querySelector(".collection-create-existing-list");
+  const error=overlay.querySelector(".collection-create-error");
+  suggestionsBox.innerHTML=available.length?available.map(name=>'<button type="button" class="collection-suggestion">'+esc(name)+'</button>').join(""):'<span class="collection-create-empty">Não há sugestões novas no momento.</span>';
+  existingBox.innerHTML=existingNames.length?existingNames.map(name=>'<span class="collection-existing-chip">'+esc(name)+'</span>').join(""):'<span class="collection-create-empty">Ainda não há coleções cadastradas.</span>';
+  overlay.querySelector(".collection-create-existing").hidden=!existingNames.length;
+  let settled=false;
+  const finish=value=>{if(settled)return;settled=true;document.removeEventListener("keydown",onKey);overlay.remove();resolve(value)};
+  const onKey=e=>{if(e.key==="Escape")finish(null)};
+  suggestionsBox.addEventListener("click",e=>{
+   const chip=e.target.closest(".collection-suggestion");
+   if(!chip)return;
+   input.value=chip.textContent.trim();
+   error.hidden=true;
+   input.focus();
+  });
+  form.addEventListener("submit",e=>{
+   e.preventDefault();
+   const clean=input.value.trim();
+   if(!clean){error.textContent="Digite ou selecione um nome para a coleção.";error.hidden=false;input.focus();return}
+   const slug=clean.normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
+   if(!slug){error.textContent="Esse nome não gera um identificador válido. Tente outro nome.";error.hidden=false;input.focus();return}
+   if(existing.some(x=>x.slug===slug||x.name.trim().toLowerCase()===clean.toLowerCase())){error.textContent="Essa coleção já existe. Escolha uma sugestão diferente ou digite outro nome.";error.hidden=false;input.focus();return}
+   finish(clean);
+  });
+  overlay.querySelector("[data-cancel]").addEventListener("click",()=>finish(null));
+  overlay.querySelector(".collection-create-close").addEventListener("click",()=>finish(null));
+  overlay.addEventListener("click",e=>{if(e.target===overlay)finish(null)});
+  document.addEventListener("keydown",onKey);
+  document.body.appendChild(overlay);
+  input.focus();
+ });
+}
 async function createCollection(){
- const name=prompt("Nome da nova coleção:");
- if(name===null)return;
- const clean=name.trim();
- if(!clean)return alert("Informe o nome da coleção.");
- const slug=clean.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
- if(!slug)return alert("Não foi possível gerar um identificador para esta coleção.");
  try{
   const existing=await getCollections();
-  if(existing.some(x=>x.slug===slug||x.name.trim().toLowerCase()===clean.toLowerCase()))return alert("Essa coleção já existe.");
+  const clean=await openCollectionCreator(existing);
+  if(clean===null)return;
+  const slug=clean.normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
   const nextOrder=existing.reduce((m,x)=>Math.max(m,Number(x.sort_order)||0),0)+10;
   const r=await db.from("collections").insert({name:clean,slug,sort_order:nextOrder}).select("id,name,slug").single();
   if(r.error)throw r.error;
   await loadCollectionOptions();
   $("#pCategory").value=slug;
   await loadCollections();
-  alert("Coleção criada com sucesso.");
- }catch(e){alert(e.message||"Não foi possível criar a coleção.")}
+  showAdminNotice("Coleção criada e selecionada no cadastro de produto.","success");
+ }catch(e){showAdminNotice(e.message||"Não foi possível criar a coleção.","error")}
 }
-
 
 function confirmAlbumTransfer({productName,sourceName,targetName}){
  return new Promise(resolve=>{
