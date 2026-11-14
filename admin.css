@@ -82,3 +82,27 @@
 .album-transfer select{width:100%;min-width:0;max-width:145px;padding:6px 7px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:10px}
 .album-empty{grid-column:1/-1}
 @media(max-width:700px){.album-products-grid{grid-template-columns:1fr}.album-product-card{grid-template-columns:78px minmax(0,1fr)}.album-product-image,.album-product-no-image{width:78px;height:70px}}
+
+/* Confirmação de transferência com identidade visual MB Óptica */
+.album-confirm-overlay{position:fixed;inset:0;z-index:7000;display:grid;place-items:center;padding:18px;background:rgba(28,25,21,.62);backdrop-filter:blur(3px);animation:albumConfirmFade .16s ease-out}
+.album-confirm-dialog{width:min(470px,100%);padding:28px;background:#fff;border:1px solid #e7ddce;border-radius:16px;box-shadow:0 24px 80px rgba(0,0,0,.28);color:var(--ink,#29251f);animation:albumConfirmRise .2s ease-out}
+.album-confirm-mark{width:42px;height:42px;display:grid;place-items:center;margin-bottom:18px;border-radius:12px;background:#f4ead9;color:#a97832;font-size:25px;font-weight:700}
+.album-confirm-dialog>.eyebrow{margin:0 0 7px;color:#a97832;font-size:10px;letter-spacing:.16em;font-weight:800}
+.album-confirm-dialog h2{margin:0 0 10px;font:700 25px Georgia,serif;color:#29251f}
+.album-confirm-product{margin:0 0 18px;color:#6f675d;font-size:14px;line-height:1.5;font-weight:600}
+.album-confirm-route{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:center;padding:14px;border:1px solid #e8dfd2;border-radius:10px;background:#faf8f4}
+.album-confirm-route>div{min-width:0;display:flex;flex-direction:column;gap:6px}
+.album-confirm-route small{font-size:9px;letter-spacing:.12em;color:#8d8376;font-weight:800}
+.album-confirm-route strong{font-size:13px;color:#302b25;overflow-wrap:anywhere}
+.album-confirm-route>span{color:#a97832;font-size:19px;font-weight:700}
+.album-confirm-preserve{display:flex;gap:11px;align-items:flex-start;margin:15px 0 22px;padding:13px;border:1px solid #dcebdd;border-radius:9px;background:#f3f8f2}
+.album-confirm-preserve>span{flex:0 0 23px;width:23px;height:23px;display:grid;place-items:center;border-radius:50%;background:#dfefdf;color:#337344;font-weight:800}
+.album-confirm-preserve p{display:flex;flex-direction:column;gap:3px;margin:0}
+.album-confirm-preserve strong{font-size:12px;color:#315d39}
+.album-confirm-preserve small{font-size:11px;line-height:1.45;color:#54705a}
+.album-confirm-actions{display:flex;justify-content:flex-end;gap:9px}
+.album-confirm-actions .btn{min-height:40px;padding:9px 15px}
+@keyframes albumConfirmFade{from{opacity:0}to{opacity:1}}
+@keyframes albumConfirmRise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:480px){.album-confirm-dialog{padding:22px 18px}.album-confirm-dialog h2{font-size:22px}.album-confirm-actions{flex-direction:column-reverse}.album-confirm-actions .btn{width:100%}.album-confirm-route{gap:7px;padding:11px}.album-confirm-route strong{font-size:12px}}
+@media(prefers-reduced-motion:reduce){.album-confirm-overlay,.album-confirm-dialog{animation:none}}
