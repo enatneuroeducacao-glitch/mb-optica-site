@@ -388,7 +388,7 @@ function openCollectionCreator(existing){
   const existingSlugs=new Set(existing.map(x=>x.slug));
   const suggestions=["Feminino","Masculino","Solar","Infantil","Melhor idade","Unissex","Esportivo","Premium","Vintage","Clip-on"];
   const available=suggestions.filter(name=>{
-   const slug=name.normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
+   const slug=name.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
    return !existingSlugs.has(slug)&&!existingNames.some(x=>x.trim().toLowerCase()===name.toLowerCase());
   });
   const overlay=document.createElement("div");
@@ -416,7 +416,7 @@ function openCollectionCreator(existing){
    e.preventDefault();
    const clean=input.value.trim();
    if(!clean){error.textContent="Digite ou selecione um nome para a coleção.";error.hidden=false;input.focus();return}
-   const slug=clean.normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
+   const slug=clean.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
    if(!slug){error.textContent="Esse nome não gera um identificador válido. Tente outro nome.";error.hidden=false;input.focus();return}
    if(existing.some(x=>x.slug===slug||x.name.trim().toLowerCase()===clean.toLowerCase())){error.textContent="Essa coleção já existe. Escolha uma sugestão diferente ou digite outro nome.";error.hidden=false;input.focus();return}
    finish(clean);
@@ -434,7 +434,7 @@ async function createCollection(){
   const existing=await getCollections();
   const clean=await openCollectionCreator(existing);
   if(clean===null)return;
-  const slug=clean.normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
+  const slug=clean.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
   const nextOrder=existing.reduce((m,x)=>Math.max(m,Number(x.sort_order)||0),0)+10;
   const r=await db.from("collections").insert({name:clean,slug,sort_order:nextOrder}).select("id,name,slug").single();
   if(r.error)throw r.error;
