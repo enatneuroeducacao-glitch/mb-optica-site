@@ -392,6 +392,7 @@ async function loadOrganizerProducts(){
   ]);
   if(products.error)throw products.error;
   organizerProducts=products.data||[];
+  window.__mbCollectionsCache=collections;
   const collectionOptions=collections.map(c=>({value:c.slug,label:c.name}));
   const filter=$("#organizerCollectionFilter"),bulk=$("#organizerBulkCollection");
   if(filter){const selected=filter.value;filter.innerHTML='<option value="">Todas</option>'+organizerOptions(collectionOptions);if(collections.some(c=>c.slug===selected))filter.value=selected}
@@ -418,7 +419,7 @@ function renderOrganizerProducts(){
  const types=Object.entries(typeLabels).map(([value,label])=>({value,label}));
  const collections=collectionsCache.length?collectionsCache:[];
  box.innerHTML='<div class="table-wrap"><table class="table organizer-table"><thead><tr><th><input type="checkbox" id="organizerSelectVisible" aria-label="Selecionar modelos visíveis"></th><th>Modelo</th><th>Coleção</th><th>Público</th><th>Tipo</th><th>Ação</th></tr></thead><tbody>'+
- rows.map(p=>'<tr data-organizer-id="'+esc(p.id)+'"><td><input type="checkbox" class="organizer-row-check" value="'+esc(p.id)+'" aria-label="Selecionar '+esc(p.name)+'"></td><td><div class="organizer-product">'+(p.image_url?'<img src="'+esc(p.image_url)+'" alt="">':'<span class="organizer-no-image">MB</span>')+'<div><strong>'+esc(p.name||"Sem nome")+'</strong><small>'+esc([p.brand,p.model].filter(Boolean).join(" • ")||"")+'</small></div></div></td><td><select class="organizer-row-category" aria-label="Coleção de '+esc(p.name)+'">'+organizerOptions(collections.map(c=>({value:c.slug,label:c.name})),p.category||"")+'</select></td><td><select class="organizer-row-audience" aria-label="Público de '+esc(p.name)+'"><option value="">Não classificado</option>'+organizerOptions(audiences,p.audience)+'</select></td><td><select class="organizer-row-type" aria-label="Tipo de '+esc(p.name)+'"><option value="">Não classificado</option>'+organizerOptions(types,p.product_type)+'</select></td><td><button type="button" class="btn small primary organizer-save-row">Salvar</button></td></tr>').join("")+
+ rows.map(p=>'<tr data-organizer-id="'+esc(p.id)+'"><td><input type="checkbox" class="organizer-row-check" value="'+esc(p.id)+'" aria-label="Selecionar '+esc(p.name)+'"></td><td><div class="organizer-product">'+(p.image_url?'<img src="'+esc(p.image_url)+'" alt="">':'<span class="organizer-no-image">MB</span>')+'<div><strong>'+esc(p.name||"Sem nome")+'</strong><small>'+esc([p.brand,p.model].filter(Boolean).join(" • ")||"")+'</small></div></div></td><td><select class="organizer-row-category" aria-label="Coleção de '+esc(p.name)+'">'+organizerOptions(collections.map(c=>({value:c.slug,label:c.name})),p.category||"")+(p.category&&!collections.some(c=>c.slug===p.category)?'<option value="'+esc(p.category)+'" selected>'+esc(p.category)+' (categoria atual)</option>':"")+'</select></td><td><select class="organizer-row-audience" aria-label="Público de '+esc(p.name)+'"><option value="">Não classificado</option>'+organizerOptions(audiences,p.audience)+'</select></td><td><select class="organizer-row-type" aria-label="Tipo de '+esc(p.name)+'"><option value="">Não classificado</option>'+organizerOptions(types,p.product_type)+'</select></td><td><button type="button" class="btn small primary organizer-save-row">Salvar</button></td></tr>').join("")+
  '</tbody></table></div>';
  const selectVisible=$("#organizerSelectVisible");
  selectVisible?.addEventListener("change",()=>{$(".organizer-row-check").forEach(c=>c.checked=selectVisible.checked);updateOrganizerSelectedCount()});
@@ -550,7 +551,8 @@ async function editProductRow(id){
  overlay.addEventListener("click",e=>{if(e.target===overlay)close()});
  const category=overlay.querySelector("#editProductCategory");
  category.innerHTML=collections.map(c=>'<option value="'+esc(c.slug)+'">'+esc(c.name)+'</option>').join("");
- category.value=product.category||"outros";\n overlay.querySelector("#editProductAudience").value=product.audience||"";overlay.querySelector("#editProductType").value=product.product_type||"";
+ category.value=product.category||"outros"; 
+ overlay.querySelector("#editProductAudience").value=product.audience||"";overlay.querySelector("#editProductType").value=product.product_type||"";
  if(!collections.some(c=>c.slug===category.value)){category.insertAdjacentHTML("beforeend",'<option value="'+esc(product.category||"outros")+'">'+esc(product.category||"Outros")+'</option>');category.value=product.category||"outros"}
  overlay.querySelector("#editProductName").value=product.name||"";
  overlay.querySelector("#editProductPrice").value=product.price??"";
