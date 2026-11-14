@@ -41,6 +41,7 @@ const contactFields=[["contact_eyebrow","Contato — etiqueta"],["contact_title"
 const appearanceFields=[["logo_url","URL do logotipo","url"],["hero_image_url","URL da imagem principal","url"],["service_image_url","URL da imagem dos serviços","url"],["primary_color","Cor principal","color"],["cream_color","Cor de fundo","color"],["dark_color","Cor escura","color"],["muted_color","Cor de texto secundário","color"],["footer_tagline","Rodapé — frase"],["footer_copyright","Rodapé — copyright"],["privacy_text","Privacidade / LGPD"],["cookies_text","Cookies"]];
 
 document.addEventListener("DOMContentLoaded",async()=>{
+ bindCollectionPanels();
  bindNav(); $("#loginForm").addEventListener("submit",login); $("#logout").addEventListener("click",logout);
  $$(".quick button").forEach(b=>b.onclick=()=>showSection(b.dataset.go));
  $$(".quick a").forEach(a=>a.addEventListener("click",()=>{}));
@@ -48,7 +49,28 @@ document.addEventListener("DOMContentLoaded",async()=>{
 });
 
 function showSection(id){if(id==="security"){loadAdminUsers();loadSystemUsers()}$$( ".nav button").forEach(x=>x.classList.toggle("active",x.dataset.section===id));$$( ".section").forEach(x=>x.classList.add("hidden"));$("#"+id)?.classList.remove("hidden");const b=$('.nav button[data-section="'+id+'"]');if(b)$("#sectionTitle").textContent=b.textContent.replace(/^\S+\s/,"").replace(/\s*🔒$/,"");window.scrollTo({top:0,behavior:"smooth"})}
-function bindNav(){$$(".nav button").forEach(b=>b.onclick=()=>showSection(b.dataset.section))}
+function bindNav(){$(".nav button").forEach(b=>b.onclick=()=>showSection(b.dataset.section))}
+function bindCollectionPanels(){
+ $(".collection-workspace [data-toggle-panel]").forEach(button=>{
+  button.addEventListener("click",()=>{
+   const panel=document.getElementById(button.dataset.togglePanel);
+   if(!panel)return;
+   const opening=!panel.open;
+   $(".collection-workspace .collection-foldout").forEach(other=>{other.open=false});
+   $(".collection-workspace [data-toggle-panel]").forEach(other=>other.setAttribute("aria-expanded","false"));
+   panel.open=opening;
+   button.setAttribute("aria-expanded",String(opening));
+   if(opening)panel.scrollIntoView({behavior:"smooth",block:"nearest"});
+  });
+ });
+ $(".collection-workspace .collection-foldout").forEach(panel=>{
+  panel.addEventListener("toggle",()=>{
+   const button=$('.collection-workspace [data-toggle-panel="'+panel.id+'"]');
+   if(button)button.setAttribute("aria-expanded",String(panel.open));
+  });
+ });
+}
+
 async function login(e){e.preventDefault();setStatus("","");
  const userField=$("#loginUser"),passField=$("#loginPassword");
  const rawUser=(userField?.value||"").trim().toLowerCase(),password=passField?.value||"";
