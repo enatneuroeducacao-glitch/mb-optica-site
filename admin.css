@@ -106,3 +106,27 @@
 @keyframes albumConfirmRise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:480px){.album-confirm-dialog{padding:22px 18px}.album-confirm-dialog h2{font-size:22px}.album-confirm-actions{flex-direction:column-reverse}.album-confirm-actions .btn{width:100%}.album-confirm-route{gap:7px;padding:11px}.album-confirm-route strong{font-size:12px}}
 @media(prefers-reduced-motion:reduce){.album-confirm-overlay,.album-confirm-dialog{animation:none}}
+
+/* Interface compacta da página de coleções com painéis suspensos */
+.collection-workspace{padding:20px}
+.collection-workspace-head{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:16px}
+.collection-workspace-head h2{margin:0 0 5px}
+.collection-workspace-head p{margin:0}
+.collection-workspace-actions{display:flex;align-items:center;justify-content:flex-end;gap:9px;flex-wrap:wrap}
+.collection-workspace-actions .btn{white-space:nowrap}
+.collection-foldout{margin:0 0 12px;border:1px solid var(--line);border-radius:10px;background:#fbfaf7;overflow:hidden}
+.collection-foldout summary{padding:13px 16px;cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px;font-weight:700;color:var(--ink)}
+.collection-foldout summary::-webkit-details-marker{display:none}
+.collection-foldout summary:after{content:"＋";font-size:18px;color:var(--gold);font-weight:500}
+.collection-foldout[open] summary:after{content:"−"}
+.collection-foldout[open] summary{border-bottom:1px solid var(--line);background:#f7f2e9}
+.collection-foldout-body{padding:17px;background:#fff}
+.collection-foldout-body>.muted{margin-top:0}
+.collection-foldout-body .actions{margin-top:14px}
+.collection-workspace #collectionsTable{margin-top:18px}
+@media(max-width:760px){
+ .collection-workspace{padding:14px}
+ .collection-workspace-head{align-items:flex-start;flex-direction:column}
+ .collection-workspace-actions{width:100%;justify-content:flex-start}
+ .collection-workspace-actions .btn{flex:1;white-space:normal}
+}
