@@ -60,13 +60,14 @@ function bindCollectionPanels(){
    $$(".collection-workspace [data-toggle-panel]").forEach(other=>other.setAttribute("aria-expanded","false"));
    panel.open=opening;
    button.setAttribute("aria-expanded",String(opening));
+   button.classList.toggle("is-open",opening);
    if(opening)panel.scrollIntoView({behavior:"smooth",block:"nearest"});
   });
  });
  $$(".collection-workspace .collection-foldout").forEach(panel=>{
   panel.addEventListener("toggle",()=>{
    const button=$('.collection-workspace [data-toggle-panel="'+panel.id+'"]');
-   if(button)button.setAttribute("aria-expanded",String(panel.open));
+   if(button){button.setAttribute("aria-expanded",String(panel.open));button.classList.toggle("is-open",panel.open);}
   });
  });
 }
