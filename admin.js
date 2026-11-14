@@ -380,12 +380,35 @@ async function createCollection(){
 }
 
 
+function confirmAlbumTransfer({productName,sourceName,targetName}){
+ return new Promise(resolve=>{
+  const overlay=document.createElement("div");
+  overlay.className="album-confirm-overlay";
+  overlay.innerHTML='<section class="album-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="albumConfirmTitle" aria-describedby="albumConfirmDescription"><div class="album-confirm-mark" aria-hidden="true">↗</div><p class="eyebrow">ORGANIZAÇÃO DA COLEÇÃO</p><h2 id="albumConfirmTitle">Confirmar transferência?</h2><p class="album-confirm-product" id="albumConfirmDescription"></p><div class="album-confirm-route"><div><small>ÁLBUM ATUAL</small><strong class="album-confirm-source"></strong></div><span aria-hidden="true">→</span><div><small>NOVO ÁLBUM</small><strong class="album-confirm-target"></strong></div></div><div class="album-confirm-preserve"><span aria-hidden="true">✓</span><p><strong>Seus dados serão preservados</strong><small>Foto, preço, descrição e estoque não serão alterados.</small></p></div><div class="album-confirm-actions"><button type="button" class="btn secondary" data-album-cancel>Cancelar</button><button type="button" class="btn primary" data-album-confirm>Confirmar transferência</button></div></section>';
+  overlay.querySelector(".album-confirm-product").textContent=productName;
+  overlay.querySelector(".album-confirm-source").textContent=sourceName||"Coleção atual";
+  overlay.querySelector(".album-confirm-target").textContent=targetName;
+  document.body.appendChild(overlay);
+  const cancel=overlay.querySelector("[data-album-cancel]");
+  const confirmButton=overlay.querySelector("[data-album-confirm]");
+  let settled=false;
+  const finish=value=>{if(settled)return;settled=true;document.removeEventListener("keydown",onKey);overlay.remove();resolve(value)};
+  const onKey=e=>{if(e.key==="Escape")finish(false)};
+  cancel.addEventListener("click",()=>finish(false));
+  confirmButton.addEventListener("click",()=>finish(true));
+  overlay.addEventListener("click",e=>{if(e.target===overlay)finish(false)});
+  document.addEventListener("keydown",onKey);
+  cancel.focus();
+ });
+}
 async function transferProductAlbum(id,select){
  const category=select?.value||"";
  if(!category)return showAdminNotice("Escolha o álbum de destino.","error");
- const productName=select.closest(".album-product-card")?.querySelector(".album-product-info>strong")?.textContent||"este modelo";
+ const card=select.closest(".album-product-card");
+ const productName=card?.querySelector(".album-product-info>strong")?.textContent||"Este modelo";
+ const sourceName=card?.closest(".collection-admin-card")?.querySelector(".collection-admin-head .eyebrow")?.textContent||"Coleção atual";
  const targetName=select.selectedOptions?.[0]?.textContent||category;
- if(!confirm("Transferir "+productName+" para o álbum "+targetName+"?\nFoto, preço, descrição e estoque serão preservados."))return;
+ if(!await confirmAlbumTransfer({productName,sourceName,targetName}))return;
  const button=select.parentElement.querySelector("button");
  if(button){button.disabled=true;button.textContent="Transferindo..."}
  try{
