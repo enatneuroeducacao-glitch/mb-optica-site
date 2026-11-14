@@ -382,36 +382,42 @@ async function createCollection(){
 const audienceLabels={feminino:"Feminino",masculino:"Masculino",infantil:"Infantil",unissex:"Unissex","melhor-idade":"Melhor idade"};
 const typeLabels={grau:"Grau",solar:"Solar"};
 let organizerProducts=[];
-function organizerOptions(items,value,labelFn){return items.map(x=>'<option value="'+esc(x.value)+'"'+(x.value===value?' selected':'')+'>'+esc(labelFn?labelFn(x):x.label)+'</option>').join("")}
+function organizerOptions(items,value,labelFn){return (Array.isArray(items)?items:[]).map(x=>'<option value="'+esc(x.value)+'"'+(x.value===value?' selected':'')+'>'+esc(labelFn?labelFn(x):x.label)+'</option>').join("")}
 async function loadOrganizerProducts(){
  const box=$("#organizerTable");if(!box)return;
+ let organizerStage="início";
  try{
+  organizerStage="consulta de produtos e coleções";
   const [products,collections]=await Promise.all([
    db.from("products").select("id,name,category,image_url,brand,model,audience,product_type,active").order("name"),
    getCollections()
   ]);
   if(products.error)throw products.error;
-  organizerProducts=products.data||[];
-  window.__mbCollectionsCache=collections;
-  const collectionOptions=collections.map(c=>({value:c.slug,label:c.name}));
+  organizerProducts=Array.isArray(products.data)?products.data.filter(Boolean):[];
+  const safeCollections=Array.isArray(collections)?collections.filter(Boolean):[];
+  window.__mbCollectionsCache=safeCollections;
+  organizerStage="montagem dos filtros";
+  const collectionOptions=safeCollections.map(c=>({value:c.slug||"",label:c.name||c.slug||"Sem nome"}));
   const filter=$("#organizerCollectionFilter"),bulk=$("#organizerBulkCollection");
-  if(filter){const selected=filter.value;filter.innerHTML='<option value="">Todas</option>'+organizerOptions(collectionOptions);if(collections.some(c=>c.slug===selected))filter.value=selected}
-  if(bulk){const selected=bulk.value;bulk.innerHTML='<option value="">Manter atual</option>'+organizerOptions(collectionOptions);if(collections.some(c=>c.slug===selected))bulk.value=selected}
+  if(filter){const selected=filter.value;filter.innerHTML='<option value="">Todas</option>'+organizerOptions(collectionOptions);if(safeCollections.some(c=>c.slug===selected))filter.value=selected}
+  if(bulk){const selected=bulk.value;bulk.innerHTML='<option value="">Manter atual</option>'+organizerOptions(collectionOptions);if(safeCollections.some(c=>c.slug===selected))bulk.value=selected}
+  organizerStage="renderização dos modelos";
   renderOrganizerProducts();
   ["organizerSearch","organizerAudienceFilter","organizerTypeFilter","organizerCollectionFilter"].forEach(id=>{
    const el=$("#"+id);if(el&&!el.dataset.bound){el.dataset.bound="1";el.addEventListener(id==="organizerSearch"?"input":"change",renderOrganizerProducts)}
   });
   const apply=$("#organizerApplyBulk");
   if(apply&&!apply.dataset.bound){apply.dataset.bound="1";apply.addEventListener("click",applyOrganizerBulk)}
- }catch(err){box.innerHTML='<div class="empty">'+esc(err.message||"Não foi possível carregar os modelos.")+'</div>'}
+ }catch(err){console.error("Organizador de modelos:",organizerStage,err);box.innerHTML='<div class="empty">Falha em '+esc(organizerStage)+': '+esc(err?.message||"Não foi possível carregar os modelos.")+'</div>'}
 }
 function renderOrganizerProducts(){
  const box=$("#organizerTable");if(!box)return;
  const q=($("#organizerSearch")?.value||"").trim().toLowerCase();
  const audience=$("#organizerAudienceFilter")?.value||"",type=$("#organizerTypeFilter")?.value||"",category=$("#organizerCollectionFilter")?.value||"";
  const collectionsCache=window.__mbCollectionsCache||[];
- const rows=organizerProducts.filter(p=>{
-  const hay=[p.name,p.brand,p.model,p.category].join(" ").toLowerCase();
+ const rows=(Array.isArray(organizerProducts)?organizerProducts:[]).filter(p=>{
+  if(!p)return false;
+  const hay=[p.name,p.brand,p.model,p.category].map(v=>v??"").join(" ").toLowerCase();
   return (!q||hay.includes(q))&&(!category||p.category===category)&&(!audience||(audience==="sem"?!p.audience:p.audience===audience))&&(!type||(type==="sem"?!p.product_type:p.product_type===type));
  });
  if(!rows.length){box.innerHTML='<div class="empty">Nenhum modelo encontrado com esses filtros.</div>';updateOrganizerSelectedCount();return}
